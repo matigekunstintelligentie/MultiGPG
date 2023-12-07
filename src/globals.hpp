@@ -387,7 +387,7 @@ namespace g {
     // initialization
     parser.set_optional<string>("is", "initialization_strategy", "hh", "Strategy to sample the initial population");
     parser.set_optional<int>("d", "depth", 4, "Maximum depth that the trees can have");
-    parser.set_optional<int>("nr_multi_trees", "nr_multi_trees", 1, "Nr of multi trees in individual");
+    parser.set_optional<int>("nr_multi_trees", "nr_multi_trees", 3, "Nr of multi trees in individual");
     // problem & representation
     parser.set_optional<string>("ff", "fitness_function", "ac", "Fitness function");
     parser.set_optional<string>("fset", "function_set", "+,-,*,/,sin,cos,log", "Function set");

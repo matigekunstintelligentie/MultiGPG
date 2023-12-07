@@ -164,37 +164,35 @@ Individual * generate_individuals(int max_depth, string init_strategy, int nr_mu
     return individual;
 }
 
-Node * append_linear_scaling(Node * tree) {
-// ============================================================================
-//   // compute intercept and scaling coefficients, append them to the root
-//   Node * add_n, * mul_n, * slope_n, * interc_n;
-// 
-//   Vec p = tree->get_output(g::fit_func->X_train);
-// 
-//   pair<float,float> intc_slope = linear_scaling_coeffs(g::fit_func->y_train, p);
-//   
-//   if (intc_slope.second == 0){
-//     add_n = new Node(new Add());
-//     interc_n = new Node(new Const(intc_slope.first));
-//     add_n->append(interc_n);
-//     add_n->append(tree);
-//     return add_n;
-//   }
-// 
-//   mul_n = new Node(new Mul());
-//   slope_n = new Node(new Const(intc_slope.second));
-//   add_n = new Node(new Add());
-//   interc_n = new Node(new Const(intc_slope.first));
-//   mul_n->append(slope_n);
-//   mul_n->append(tree);
-//   add_n->append(interc_n);
-//   add_n->append(mul_n);
-// 
-//   // bring fitness info to new root
-//   add_n->fitness = tree->fitness;
-//     
-//   return add_n;
-// ============================================================================
+Node * append_linear_scaling(Node * tree, vector<Node*> & trees) {
+    // compute intercept and scaling coefficients, append them to the root
+    Node * add_n, * mul_n, * slope_n, * interc_n;
+  
+    Vec p = tree->get_output(g::fit_func->X_train, trees);
+  
+    pair<float,float> intc_slope = linear_scaling_coeffs(g::fit_func->y_train, p);
+    
+    if (intc_slope.second == 0){
+      add_n = new Node(new Add());
+      interc_n = new Node(new Const(intc_slope.first));
+      add_n->append(interc_n);
+      add_n->append(tree);
+      return add_n;
+    }
+  
+    mul_n = new Node(new Mul());
+    slope_n = new Node(new Const(intc_slope.second));
+    add_n = new Node(new Add());
+    interc_n = new Node(new Const(intc_slope.first));
+    mul_n->append(slope_n);
+    mul_n->append(tree);
+    add_n->append(interc_n);
+    add_n->append(mul_n);
+  
+    // bring fitness info to new root
+    add_n->fitness = tree->fitness;
+      
+    return add_n;
 return tree;
 }
 

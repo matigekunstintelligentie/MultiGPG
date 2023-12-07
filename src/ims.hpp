@@ -435,7 +435,7 @@ struct IMS {
     // if abs corr, append linear scaling terms
     if (g::fit_func->name() == "ac" || g::fit_func->name()=="lsmse"){
       for (auto it = elites_per_complexity.begin(); it != elites_per_complexity.end(); it++) {
-        Node * lin_scale = append_linear_scaling(it->second->trees[it->second->trees.size()-1]);
+        Node * lin_scale = append_linear_scaling(it->second->trees[it->second->trees.size()-1], it->second->trees);
         it->second->trees[it->second->trees.size()-1] = lin_scale;
         elites_per_complexity[it->first] = it->second;
       }
