@@ -1,0 +1,5 @@
+#!/bin/bash
+
+make clean
+make debug
+valgrind --leak-check=full --show-leak-kinds=all --tool=memcheck ./build/debug/gpg -csv_file "./results/optimisation_4/bfgs_b32_bike.csv" -bs_opt 32 -opt_per_gen 1 -use_optim -optimiser_choice bfgs -log -rci 0.0 -bs 2048 -tour 4 -feat_sel -1 -pop 1024 -g -1 -tol 0.00000001 -t 3600 -e -1 -ne -1 -disable_ims -d 4 -ff mse -fset +,-,*,/,sin,cos,log,sqrt -train dataset/bike_train.csv -random_state 0 -equal_p_coeffs -cmp 1.0 -reinject_elite

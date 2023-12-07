@@ -1,0 +1,5 @@
+#!/bin/bash
+
+#make clean
+#make debug
+./build/debug/gpg -train dataset/tower_train.csv -pop 1024 -t 3600 -verbose -fset +,-,*,/ -bs 2048 -use_optim -optimiser_choice lm -equal_p_coeffs
