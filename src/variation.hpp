@@ -908,21 +908,21 @@ Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, ve
 // ============================================================================
   
 
+   // variant of forced improvement that is potentially less aggressive, & less expensive to carry out
+    if(g::tournament_size > 1 && !ever_improved) {
+      // make a tournament between tournament size - 1 candidates + offspring
+      vector<Node*> tournament_candidates; tournament_candidates.reserve(g::tournament_size - 1);
+      for(int i = 0; i < g::tournament_size - 1; i++) {
+        tournament_candidates.push_back(population[Rng::randi(population.size())]);
+      }
+       tournament_candidates.push_back(offspring);
 // ============================================================================
-//   // variant of forced improvement that is potentially less aggressive, & less expensive to carry out
-//   if(g::tournament_size > 1 && !ever_improved) {
-//     // make a tournament between tournament size - 1 candidates + offspring
-//     vector<Node*> tournament_candidates; tournament_candidates.reserve(g::tournament_size - 1);
-//     for(int i = 0; i < g::tournament_size - 1; i++) {
-//       tournament_candidates.push_back(population[Rng::randi(population.size())]);
-//     }
-//     tournament_candidates.push_back(offspring);
-//     Individual * winner = tournament(tournament_candidates, g::tournament_size);
-//     offspring->clear();
-//     offspring = winner->trees[mt];
-//   }
+//        Node * winner = tournament(tournament_candidates, g::tournament_size);
+//        offspring->clear();
+//        offspring = winner->trees[mt];
 // ============================================================================
-  
+    }
+   
 
 
   return offspring;

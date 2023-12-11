@@ -17,6 +17,11 @@ struct Individual {
   }
 
   virtual ~Individual() noexcept(false) {
+    for(auto tree:this->trees){
+        if(tree){
+            delete tree;
+        }
+    }
   }
   
   Individual * clone(){
