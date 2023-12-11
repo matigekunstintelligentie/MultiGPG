@@ -47,20 +47,6 @@ struct Evolution {
     while (population.size() < pop_size) {
       auto * individual = generate_individuals(g::max_depth, g::init_strategy, g::nr_multi_trees);
 
-// ============================================================================
-//       
-//       print(individual->trees[0]->op->sym());
-//       print(individual->trees[0]->children.size());
-//       print(std::to_string((unsigned long long)(void**)individual->trees[0]));
-//       print(individual->trees[1]->children[0]->children[0]->children[0]->children[0]->children[0]->op->get_tree());
-//       print(std::to_string((unsigned long long)(void**)individual->trees[0]) == individual->trees[1]->children[0]->children[0]->children[0]->children[0]->children[0]->op->get_tree());
-// 
-// 
-//       print(individual->trees[1]->children[0]->children[0]->children[0]->children[0]->children.size());
-//       print(individual->trees[1]->children[0]->children[0]->children[0]->children[0]->children[0]->op->sym());
-//       
-// ============================================================================
-      
 
 
 // ============================================================================
@@ -92,7 +78,6 @@ struct Evolution {
     for(int i = 0; i < pop_size; i++) {
       auto * offspring = efficient_gom(population[i], population, fos, macro_generation);
       //check_n_set_elite(offspring);
-      //print( std::to_string((unsigned long long)(void**)offspring == (unsigned long long)(void**)population[i]));
       offspring_population.push_back(offspring);
 
     }

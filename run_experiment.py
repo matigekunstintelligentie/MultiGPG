@@ -56,6 +56,7 @@ parser.add_argument("--random_accept_p")
 parser.add_argument("--tour", type=int)
 parser.add_argument("--fset", type=str)
 parser.add_argument('--popsize', type=int)
+parser.add_argument('--nr_multi_trees', type=int)
 
 args = parser.parse_args()
 
@@ -83,7 +84,7 @@ g = GPGRegressor(t=args.t, g=args.g, e=-1, tour=args.tour, d=args.depth,  use_op
         no_large_fos=False, no_univ_exc_leaves_fos=False,
         finetune=False, bs_opt=args.batch_size,
         bs=2048, random_accept_p=args.random_accept_p,
-        verbose=True, csv_file="{}/{}_{}_{}.csv".format(args.dir, args.seed, args.csv_name, args.dataset), opt_per_gen=args.every_n_steps, use_clip=args.clip,
+        verbose=False, csv_file="{}/{}_{}_{}.csv".format(args.dir, args.seed, args.csv_name, args.dataset), opt_per_gen=args.every_n_steps, use_clip=args.clip,
         fset=args.fset, cmp=args.coeff_p, rci=0.0, use_ftol=args.use_ftol, tol=1e-9, use_mse_opt=args.use_mse_opt, log=args.log, reinject_elite=args.reinject_elite, ff=args.ff, use_local_search=args.use_local_search,
         optimise_after=args.optimise_after, add_addition_multiplication=args.add_addition_multiplication, add_any=args.add_any, use_max_range=args.use_max_range, equal_p_coeffs=args.equal_p_coeffs,
 

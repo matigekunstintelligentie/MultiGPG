@@ -25,7 +25,12 @@ struct FOSBuilder
         foses.reserve(g::nr_multi_trees);
         // Build FOS for each tree in mt
         for(int mt = 0; mt<g::nr_multi_trees; mt++){
-            int num_random_variables = indpopulation[0]->trees[0]->subtree().size();
+            // int num_random_variables = indpopulation[0]->trees[0]->subtree().size();
+            int num_random_variables = int(pow(2, g::max_depth + 1)) - 1;
+
+            if(g::add_any || g::add_addition_multiplication){
+                num_random_variables += 4;
+            }
     
             vector<Node*> population;
             population.reserve(indpopulation.size());

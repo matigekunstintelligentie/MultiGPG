@@ -444,10 +444,11 @@ struct IMS {
     if (!g::_call_as_lib) { // TODO: remove false
       print("\nAll elites found:");
       for (auto it = elites_per_complexity.begin(); it != elites_per_complexity.end(); it++) {
-        print(it->first, " ", it->second->fitness, ":", it->second->human_repr());
+        print(it->first, " ", it->second->fitness, ":", it->second->human_repr(true));
       }
       print("\nBest w.r.t. complexity for chosen importance:");
-      print(this->select_elite(g::rel_compl_importance)->human_repr());
+      print(this->select_elite(g::rel_compl_importance)->human_repr(true));
+        print(this->select_elite(g::rel_compl_importance)->human_repr(false));
     }
 
 // ============================================================================

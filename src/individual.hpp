@@ -31,22 +31,26 @@ struct Individual {
 
   void clear() {
     for(auto tree:this->trees){
-        tree->clear();   
+        tree->clear(this->trees);
     }
     delete this;
   }
   
   int get_num_nodes(bool excl_introns){
-      return trees[trees.size()-1]-> get_num_nodes(excl_introns);
+      return trees[trees.size()-1]-> get_num_nodes(this->trees, excl_introns);
   }
-  
-  
+
   Vec get_output(Mat & X, vector<Node *> & trees){
       return trees[trees.size()-1]->get_output(X, trees);
   }
 
-  string human_repr() {
-    return trees[trees.size()-1]->human_repr();
+  string human_repr(bool full_tree=false) {
+      if(full_tree) {
+          return trees[trees.size() - 1]->human_repr(this->trees);
+      }
+      else{
+          return trees[trees.size() - 1]->human_repr();
+      }
   }
 
   string np_repr() {

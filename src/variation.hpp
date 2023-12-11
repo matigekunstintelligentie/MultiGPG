@@ -42,23 +42,20 @@ Op * _sample_function() {
 }
 
 Op * _sample_terminal(int mt, vector<Node *> &trees) {
-     vector<Op *> B;
-     B.reserve(trees.size());
-     for(int i = 0; i<trees.size(); i++){
-         B.push_back(new OutputTree(i));
-     }
-     vector<Op *> AB;
-     AB.reserve( g::terminals.size() + B.size()); // preallocate memory
-     AB.insert( AB.end(), g::terminals.begin(), g::terminals.end());
-     AB.insert( AB.end(), B.begin(), B.end());
+    auto first = g::terminals.begin();
+    auto last = g::terminals.end()-(g::nr_multi_trees-mt-1);
+    vector<Op *> AB(first, last);
      
      Vec cumul_tset_probs(AB.size());
-     for(int i = 0; i<AB.size(); i++){
-         cumul_tset_probs[i] = 1./float(AB.size());
+
+     cumul_tset_probs[0] = 1./float(AB.size());
+     for(int i = 1; i<AB.size(); i++){
+         cumul_tset_probs[i] = cumul_tset_probs[i-1] + 1./float(AB.size());
+//print(to_string(cumul_tset_probs[i]), " ", to_string(g::cumul_tset_probs[i]), " ", AB[i]->sym(), " ", g::terminals[i]->sym());
      }
 
      return _sample_operator(AB, cumul_tset_probs);
-     
+
     //return _sample_operator(g::terminals, g::cumul_tset_probs);
 }
 

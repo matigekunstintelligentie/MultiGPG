@@ -16,6 +16,9 @@
 using namespace std;
 using namespace myeig;
 
+#include <filesystem>
+namespace fs = std::filesystem;
+
 namespace g {
 
   // ALL operators
@@ -86,6 +89,7 @@ namespace g {
   Fitness * mse_func = NULL;
 
   string path_to_training_set;
+  string path_to_validation_set;
   string lib_batch_size; // used when `fit` is called when using as lib
   int batch_size;
   string lib_batch_size_opt;
@@ -387,7 +391,7 @@ namespace g {
     // initialization
     parser.set_optional<string>("is", "initialization_strategy", "hh", "Strategy to sample the initial population");
     parser.set_optional<int>("d", "depth", 4, "Maximum depth that the trees can have");
-    parser.set_optional<int>("nr_multi_trees", "nr_multi_trees", 3, "Nr of multi trees in individual");
+    parser.set_optional<int>("nr_multi_trees", "nr_multi_trees", 2, "Nr of multi trees in individual");
     // problem & representation
     parser.set_optional<string>("ff", "fitness_function", "ac", "Fitness function");
     parser.set_optional<string>("fset", "function_set", "+,-,*,/,sin,cos,log", "Function set");
@@ -395,6 +399,7 @@ namespace g {
     parser.set_optional<string>("tset", "terminal_set", "auto", "Terminal set");
     parser.set_optional<string>("tset_probs", "terminal_set_probabilities", "auto", "Probabilities of sampling each element of the function set (same order as tset)");
     parser.set_optional<string>("train", "training_set", "./train.csv", "Path to the training set (needed only if calling as CLI)");
+    parser.set_optional<string>("val", "validation_set", "./val.csv", "Path to the validation set (needed only if calling as CLI)");
     parser.set_optional<string>("bs", "batch_size", "auto", "Batch size (default is 'auto', i.e., the entire training set)");
     parser.set_optional<string>("compl", "complexity_type", "node_count", "Measure to score the complexity of candidate sotluions (default is node_count)");
     parser.set_optional<float>("rci", "rel_compl_imp", 0.0, "Relative importance of complexity over accuracy to select the final elite (default is 0.0)");
@@ -445,6 +450,7 @@ namespace g {
     // random_state
     random_state = parser.get<int>("random_state");
     if (random_state >= 0){
+        print("zaad");
       Rng::set_seed(random_state);
       std::srand(random_state);
 
@@ -480,6 +486,11 @@ namespace g {
     print("initialization strategy: ", init_strategy);
     max_depth = parser.get<int>("d");
     nr_multi_trees = parser.get<int>("nr_multi_trees");
+
+    for(int i =0;i<nr_multi_trees-1;i++){
+        all_operators.push_back(new OutputTree(i));
+    }
+
     add_addition_multiplication = parser.get<bool>("add_addition_multiplication");
     add_any = parser.get<bool>("add_any");
 
@@ -521,13 +532,26 @@ namespace g {
       Mat Xy = load_csv(path_to_training_set);
       Mat X = remove_column(Xy, Xy.cols()-1);
 
+
       Vec y = Xy.col(Xy.cols()-1);
       fit_func->set_Xy(X,y);
       mse_func->set_Xy(X,y);
       if(use_max_range){
           set_max_coeff_range();
+      }
+        path_to_validation_set = parser.get<string>("val");
+        // load up
+        if (!exists(path_to_validation_set)) {
+            throw runtime_error("Training set not found at path "+path_to_validation_set);
         }
-    } 
+        Mat Xy_val = load_csv(path_to_training_set);
+        Mat X_val = remove_column(Xy_val, Xy_val.cols()-1);
+
+        Vec y_val = Xy_val.col(Xy_val.cols()-1);
+
+        fit_func->set_Xy(X_val,y_val, "val");
+        mse_func->set_Xy(X_val,y_val, "val");
+    }
     lib_batch_size = parser.get<string>("bs");
     if (!_call_as_lib) {
       set_batch_size(lib_batch_size);
@@ -604,17 +628,6 @@ namespace g {
       + " equal_p_coeffs " +  std::to_string(equal_p_coeffs)
       + " nr multi trees" + std::to_string(nr_multi_trees)
       );
-
-
-    // float total = 0.;
-    // for(int i =0; i<cumul_tset_probs.size();i++){
-    //   total += cumul_tset_probs[i];
-    // }
-    // print(lib_tset_probs);
-    // print(to_string(cumul_tset_probs.size()) + " " + to_string(terminals.size()) + " " + to_string(total));
-    // throw runtime_error("Unrecognized fitness function: "+fit_func_name);
-
-
   }
 
   void clear_globals() {

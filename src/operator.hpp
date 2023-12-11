@@ -14,7 +14,6 @@ enum OpType {
   otFun, otFeat, otConst, otPlaceholder
 };
 
-struct Node;
 
 
 template <typename T>
@@ -866,37 +865,93 @@ struct Const : Term {
   }
 };
 
-struct OutputTree : Fun {
-   int id;
+//struct OutputTree : Term {
+//   int id;
+//
+//   OutputTree(int id) {
+//     this->id = id;
+//   }
+//
+//   int arity() override {
+//    return 0;
+//   }
+//
+//   string sym() override {
+//    return "p_" + to_string(this->id);
+//   }
+//
+//   Op * clone() override {
+//    return new OutputTree(this->id);
+//   }
+//
+//   string human_repr(vector<string> & args) override {
+//     return "Placeholder" + to_string(id);
+//   }
+//
+//    string np_repr(vector<string> & args) override {
+//        return "Placeholder" + to_string(id);
+//    }
+//
+//    string torch_repr(vector<string> & args) override {
+//        return "Placeholder" + to_string(id);
+//    }
+//
+//    Vec apply(Mat & X) override {
+//        return Vec();
+//    }
+//
+//    pair<Vec, Vec> apply_der(Mat & X) override {
+//        return make_pair(Vec(), Vec());
+//    }
+//
+//   OpType type() override {
+//    return OpType::otPlaceholder;
+//  }
+//};
 
-   OutputTree(int id) {
-     this->id = id;
-   }
-   
-   int arity() override {
-    return 0;
-   }
-   
-   string sym() override {
-    return "p_" + to_string(this->id);
-   }
-   
-   Op * clone() override {
-    return new OutputTree(this->id);
-   }
-   
-   string human_repr(vector<string> & args) override {
-     return "Placeholder";
-   }
- 
- 
+struct OutputTree : Term {
 
-    
-   OpType type() override {
-    return OpType::otPlaceholder;
-  }
+    int id;
+    OutputTree(int id) {
+        this->id = id;
+    }
+
+    Op * clone() override {
+        return new OutputTree(this->id);
+    }
+
+    int arity() override {
+        return 0;
+    }
+
+    string sym() override {
+        return "p_"+to_string(id);
+    }
+
+    OpType type() override {
+        return OpType::otPlaceholder;
+    }
+
+    Vec apply(Mat & X) override {
+        return X.col(id);
+    }
+
+    pair<Vec, Vec> apply_der(Mat & X) override {
+        return make_pair(X.col(id), Vec::Constant(X.rows(), 0.));
+    }
+
+    string human_repr(vector<string> & args) override {
+
+        return "Placeholder_"+to_string(id);
+    }
+
+    string np_repr(vector<string> & args) override {
+        return "Placeholder_"+to_string(id);
+    }
+
+    string torch_repr(vector<string> & args) override {
+        return "Placeholder_"+to_string(id);
+    }
 };
-
-
 
 #endif
