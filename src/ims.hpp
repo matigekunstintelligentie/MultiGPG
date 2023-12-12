@@ -320,6 +320,7 @@ struct IMS {
         // perform generation
         evolutions[i]->gomea_generation(macro_generations);
 
+
         // update elites
         update_elites(evolutions[i]->population);
 
@@ -427,6 +428,8 @@ struct IMS {
         times.push_back(tock(start_time));
 
         }
+
+      curr_elite->clear();
     }
 
 

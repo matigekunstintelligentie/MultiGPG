@@ -72,16 +72,14 @@ struct Evolution {
     auto fos = fb->build_linkage_tree(population);
 
     // perform GOM
-    vector<Individual*> offspring_population; 
+    vector<Individual*> offspring_population;
     offspring_population.reserve(pop_size);
-    
+
     for(int i = 0; i < pop_size; i++) {
-      auto * offspring = efficient_gom(population[i], population, fos, macro_generation);
+      Individual * offspring= efficient_gom(population[i], population, fos, macro_generation);
       //check_n_set_elite(offspring);
       offspring_population.push_back(offspring);
-
     }
-
     // replace parent with offspring population
     clear_population(population);
 

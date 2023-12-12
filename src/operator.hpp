@@ -27,7 +27,9 @@ std::string to_string_with_precision(const T a_value, const int n = 6)
 
 struct Op {
 
-  virtual ~Op(){};
+  virtual ~Op(){
+
+  };
 
   virtual Op * clone() {
     throw runtime_error("Not implemented clone");  

@@ -29,13 +29,22 @@ struct Node {
       delete op;
   }
 
-  void clear(vector<Node*> &trees) {
-    auto nodes = subtree(trees);
-    for (int i = 1; i < nodes.size(); i++) {
-      delete nodes[i];
+    void clear() {
+        auto nodes = subtree();
+        for (int i = 1; i < nodes.size(); i++) {
+            delete nodes[i];
+        }
+        delete this;
     }
-    delete this;
-  }
+
+//  void clear(vector<Node*> &trees) {
+//    auto nodes = subtree(trees);
+//    print("clear", to_string(nodes.size()));
+//    for (int i = 1; i < nodes.size(); i++) {
+//      delete nodes[i];
+//    }
+//    delete this;
+//  }
 
   Node * clone() {
     Node * new_node = new Node(this->op->clone());

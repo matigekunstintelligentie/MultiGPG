@@ -17,17 +17,12 @@ struct Individual {
   }
 
   virtual ~Individual() noexcept(false) {
-    for(auto tree:this->trees){
-        if(tree){
-            delete tree;
-        }
-    }
   }
   
   Individual * clone(){
       Individual * ind = new Individual();
-      ind->trees.reserve(this->trees.size());
-      for(auto tree:this->trees){
+      ind->trees.reserve(trees.size());
+      for(auto tree:trees){
           ind->trees.push_back(tree->clone());
       }
       ind->fitness = this->fitness;
@@ -35,10 +30,11 @@ struct Individual {
   }
 
   void clear() {
-    for(auto tree:this->trees){
-        tree->clear(this->trees);
+    for(auto tree:trees){
+        tree->clear();
     }
     delete this;
+
   }
   
   int get_num_nodes(bool excl_introns){

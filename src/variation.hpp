@@ -155,8 +155,7 @@ Individual * generate_individuals(int max_depth, string init_strategy, int nr_mu
     Individual * individual = new Individual();
     individual->trees.reserve(nr_multi_trees);
     for(int mt=0;mt<nr_multi_trees;mt++){
-        auto * tree = generate_tree(max_depth, mt, individual->trees, init_strategy);
-        individual->trees.push_back(tree);
+        individual->trees.push_back(generate_tree(max_depth, mt, individual->trees, init_strategy));
     }
     return individual;
 }
@@ -937,7 +936,11 @@ Individual * efficient_gom(Individual * og_parent, vector<Individual *> & indpop
         for(int i =0; i<indpopulation.size();i++){
             population.push_back(indpopulation[i]->trees[mt]);
         }
-        parent->trees[mt] = efficient_gom(parent, mt, population, multi_fos[mt], macro_generations);
+//
+
+        Node * new_tree = efficient_gom(parent, mt, population, multi_fos[mt], macro_generations);
+        parent->trees[mt]->clear();
+        parent->trees[mt] = new_tree;
     }
     return parent;
 }
