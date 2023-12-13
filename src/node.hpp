@@ -141,7 +141,7 @@ struct Node {
 
   vector<Node*> subtree(vector<Node*> &trees) {
     vector<Node*> subtree;
-    subtree.reserve(256);
+    subtree.reserve(512);
     _subtree_recursive(subtree, trees);
     return subtree;
   }
