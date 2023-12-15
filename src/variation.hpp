@@ -192,159 +192,6 @@ Node * append_linear_scaling(Node * tree, vector<Node*> & trees) {
 return tree;
 }
 
-Node * coeff_opt_bfgs(Node * parent, bool return_copy=true){
-  Node * tree = parent;
-  
-// ============================================================================
-//   if(return_copy){
-//     tree = parent->clone();
-//   } 
-//    
-//   vector<Node*> nodes = tree->subtree(true);
-//   
-//   vector<double> coeffsd;
-//   vector<float> coeffsf;
-//   vector<Node*> coeff_ptrs;
-//   for(int i = 0; i < nodes.size(); i++) {
-//     if(nodes[i]->op->type()==OpType::otConst){
-//       coeffsd.push_back((double) ((Const*)nodes[i]->op)->c);
-//       coeffsf.push_back((float) ((Const*)nodes[i]->op)->c);
-//       coeff_ptrs.push_back(nodes[i]);
-//     }
-//   }
-//   
-//   if(coeff_ptrs.size()>0){
-// 
-// 
-//     pair<float,float> intc_slope = make_pair(0.,1.);
-// 
-//     if(!g::use_mse_opt){
-//       Vec p = tree->get_output(g::fit_func->X_train);
-//       intc_slope = linear_scaling_coeffs(g::fit_func->y_train, p);
-//     }
-// 
-//     g::mse_func->update_batch_opt(g::batch_size_opt);
-// 
-//        if(g::use_optimiser){
-// 
-//               column_vector starting_point;
-//               starting_point.set_size(coeffsd.size() + 2);
-// 
-//               for(int i=0; i<coeffsd.size(); i++){
-//                 ((Const*)coeff_ptrs[i]->op)->c = coeffsf[i];
-//                 starting_point(i) = coeffsd[i];
-//               }
-//               starting_point(coeffsd.size()) = intc_slope.first;
-//               starting_point(coeffsd.size() + 1) = intc_slope.second;
-// 
-//               //
-//               auto func = [tree, coeff_ptrs, intc_slope](column_vector cv) {
-//                  for(int i=0; i<coeff_ptrs.size(); i++){
-//                    ((Const*)coeff_ptrs[i]->op)->c = (float) cv(i);
-//                  }
-//                 
-// 
-//                  Vec out = cv(coeff_ptrs.size()) + cv(coeff_ptrs.size() + 1) * tree->get_output(g::mse_func->X_batch_opt);
-//                  g::mse_func->opt_evaluations += 1;
-// 
-//                  float fitness = 0.5*(g::mse_func->y_batch_opt-out).square().mean();
-//                  return (double) fitness;
-//               };
-// 
-//               //, intc_slope
-//               auto der = [tree, coeff_ptrs, intc_slope](column_vector cv) {
-//                 g::jacobian_evals += 1;
-//                 
-//                 for(int i=0; i<coeff_ptrs.size(); i++){
-//                   ((Const*)coeff_ptrs[i]->op)->c = (float) cv(i);
-//                 }
-// 
-//                 
-//                 dlib::matrix<double, 0, 1> res;
-//                 res.set_size(coeff_ptrs.size() + 2, 1);
-// 
-//                 Mat Jacobian(g::mse_func->X_batch_opt.rows(),coeff_ptrs.size() + 2);
-//                 Jacobian = Mat::Zero(g::mse_func->X_batch_opt.rows(),coeff_ptrs.size() + 2);
-//                 for(int i=0; i<coeff_ptrs.size(); i++){
-//                     ((Const*)coeff_ptrs[i]->op)->d = static_cast<float>(1);
-//                     pair<Vec,Vec> output = tree->get_output_der(g::mse_func->X_batch_opt);
-//                     g::mse_func->opt_evaluations += 1;
-// 
-//                     //res(i) = (double) intc_slope.second * -1./g::mse_func->X_batch_opt.rows() * ((g::mse_func->y_batch_opt-(intc_slope.first + intc_slope.second * output.first))*output.second.col(i)).sum();
-//                     res(i,0) = (double) cv(coeff_ptrs.size() + 1) * -1./g::mse_func->X_batch_opt.rows() * ((g::mse_func->y_batch_opt-(cv(coeff_ptrs.size()) + cv(coeff_ptrs.size() + 1) * output.first))*output.second.col(i)).sum();
-// 
-//                     if(g::use_clip){
-//                       res(i,0) = max(min(res(i),-1.),1.);
-//                     }
-// 
-//                     ((Const*)coeff_ptrs[i]->op)->d = static_cast<float>(0);
-//                 }
-// 
-// 
-//                 Vec o = tree->get_output(g::mse_func->X_batch_opt);
-//                 g::mse_func->opt_evaluations += 1;
-//                 
-//                 if(!g::use_mse_opt){
-//                     res(coeff_ptrs.size(),0) = (double) -1./g::mse_func->X_batch_opt.rows() * ((g::mse_func->y_batch_opt-(cv(coeff_ptrs.size()) + cv(coeff_ptrs.size() + 1) * o))).sum();
-//                     res(coeff_ptrs.size() + 1,0) = (double) -1./g::mse_func->X_batch_opt.rows() * ((g::mse_func->y_batch_opt-(cv(coeff_ptrs.size()) + cv(coeff_ptrs.size() + 1) * o))*o).sum();
-//                 }
-//                 else{
-//                     res(coeff_ptrs.size(),0) = (double) 0.;
-//                     res(coeff_ptrs.size() + 1,0) = (double) 1.;                    
-//                 }
-// 
-//                 if(g::use_clip){
-//                   res(coeff_ptrs.size(),0) = max(min(res(coeff_ptrs.size()),-1.),1.);
-//                   res(coeff_ptrs.size() + 1,0) = max(min(res(coeff_ptrs.size() + 1),-1.),1.);
-//                 }
-// 
-// 
-//                 return res;
-//              };
-// 
-//              try{
-// 
-//                   //find_min_using_approximate_derivatives(dlib::bfgs_search_strategy(),  // Use BFGS search algorithm
-//                   //     dlib::objective_delta_stop_strategy(1e-9, 10), // Stop when the change in rosen() is less than 1e-7 .be_verbose()
-//                   //     func, starting_point, -1);
-//                   if(g::use_ftol){
-//                       find_min(dlib::bfgs_search_strategy(),  
-//                       dlib::objective_delta_stop_strategy(g::tol, g::bfgs_max_iter),
-//                       func, der, starting_point, -1);
-//                   }
-//                   else{
-//                       find_min(dlib::bfgs_search_strategy(),  
-//                       dlib::gradient_norm_stop_strategy(g::tol, g::bfgs_max_iter),
-//                       func, der, starting_point, -1);
-//                   }
-// 
-// 
-// 
-//                     for(int i=0; i<coeff_ptrs.size(); i++){
-//                       ((Const*)coeff_ptrs[i]->op)->c = starting_point(i);
-//                     }
-// 
-//               }
-//             catch(const std::exception& e) //it would not work if you pass by value
-//             {
-//                 //std::cout << e.what();
-//             }
-// // ============================================================================
-// //               catch(...){
-// //           
-// //     
-// //               }
-// // ============================================================================
-//             
-//        }
-//   
-//   }
-// ============================================================================
-
-
-  return tree;
-}
-
 Node * coeff_opt_lm(Node * parent, vector<Node*> & trees,bool return_copy=true){
   Node * tree = parent;
   
@@ -430,6 +277,7 @@ Node * coeff_opt_lm(Node * parent, vector<Node*> & trees,bool return_copy=true){
 
                         Mat Jacobian(X_train_tmp.rows(),coeff_ptrs.size() + 2);
                         Jacobian=Mat::Zero(X_train_tmp.rows(),coeff_ptrs.size() + 2);
+
                         for(int i=0; i<coeff_ptrs.size(); i++){
                             ((Const*)coeff_ptrs[i]->op)->d = static_cast<float>(1);
 
@@ -450,13 +298,16 @@ Node * coeff_opt_lm(Node * parent, vector<Node*> & trees,bool return_copy=true){
                         Vec output = tree->get_output(g::mse_func->X_batch_opt, trees_tmp);
                         g::mse_func->opt_evaluations += 1;
 
+
+                        // TODO: change .size() to .rows() in gpg!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                         if(!g::use_mse_opt){
-                            Jacobian.col(coeff_ptrs.size()) = Vec::Zero(X_train_tmp.size()) + 1.;
+
+                            Jacobian.col(coeff_ptrs.size()) = Vec::Zero(X_train_tmp.rows()) + 1.;
                             Jacobian.col(coeff_ptrs.size() + 1) = -output;
                         }
                         else{
-                            Jacobian.col(coeff_ptrs.size()) = Vec::Zero(X_train_tmp.size());
-                            Jacobian.col(coeff_ptrs.size() + 1) = Vec::Zero(X_train_tmp.size());
+                            Jacobian.col(coeff_ptrs.size()) = Vec::Zero(X_train_tmp.rows());
+                            Jacobian.col(coeff_ptrs.size() + 1) = Vec::Zero(X_train_tmp.rows());
                         }
 
                         if(g::use_clip){
@@ -523,39 +374,39 @@ Node * coeff_opt_lm(Node * parent, vector<Node*> & trees,bool return_copy=true){
 
 Node * coeff_mut(Node * parent, bool return_copy=true, vector<int> * changed_indices = NULL, vector<Op*> * backup_ops = NULL) {
   Node * tree = parent;
-// ============================================================================
-//   if (return_copy) {
-//     tree = parent->clone();
-//   }
-//   
-//   if (g::cmut_prob > 0 && g::cmut_temp > 0) {
-//     // apply coeff mut to all nodes that are constants
-//     vector<Node*> nodes = tree->subtree();
-//     for(int i = 0; i < nodes.size(); i++) {
-//       Node * n = nodes[i];
-//       if (n->op->type() == OpType::otConst && Rng::randu() < g::cmut_prob) {
-// 
-//         float prev_c = ((Const*)n->op)->c;
-//         float std = g::cmut_temp*abs(prev_c);
-// 
-//         // cmut_eps = 0;
-//         if (std < g::cmut_eps){
-//           std = g::cmut_eps;
-//         }
-//         float mutated_c = prev_c + Rng::randn()*std; 
-//         ((Const*)n->op)->c = mutated_c;
-//         if (changed_indices != NULL) {
-//           changed_indices->push_back(i);
-//           backup_ops->push_back(new Const(prev_c));
-//           if (find(changed_indices->begin(), changed_indices->end(), i) == changed_indices->end()) {
-//             changed_indices->push_back(i);
-//             backup_ops->push_back(new Const(prev_c));
-//           };
-//         }
-//       }
-//     }
-//   }
-// ============================================================================
+
+   if (return_copy) {
+     tree = parent->clone();
+   }
+
+   if (g::cmut_prob > 0 && g::cmut_temp > 0) {
+     // apply coeff mut to all nodes that are constants
+     vector<Node*> nodes = tree->subtree();
+     for(int i = 0; i < nodes.size(); i++) {
+       Node * n = nodes[i];
+       if (n->op->type() == OpType::otConst && Rng::randu() < g::cmut_prob) {
+
+         float prev_c = ((Const*)n->op)->c;
+         float std = g::cmut_temp*abs(prev_c);
+
+         // cmut_eps = 0;
+         if (std < g::cmut_eps){
+           std = g::cmut_eps;
+         }
+         float mutated_c = prev_c + Rng::randn()*std;
+         ((Const*)n->op)->c = mutated_c;
+         if (changed_indices != NULL) {
+           changed_indices->push_back(i);
+           backup_ops->push_back(new Const(prev_c));
+           if (find(changed_indices->begin(), changed_indices->end(), i) == changed_indices->end()) {
+             changed_indices->push_back(i);
+             backup_ops->push_back(new Const(prev_c));
+           };
+         }
+       }
+     }
+   }
+
   return tree;
 }
 
@@ -748,10 +599,10 @@ Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, ve
    }
 
 
-   float fitness_before = offspring->fitness;
+
 
    if((macro_generations%g::opt_per_gen)==0 && g::use_optimiser && mt==(g::nr_multi_trees - 1)){
-     print(offspring->human_repr());
+
      offspring_nodes = offspring->subtree(parent->trees);
      bool coeff_found = false;
      for(int i = 0; i < offspring_nodes.size(); i++) {
@@ -766,19 +617,17 @@ Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, ve
 
        Node * offspring_opt;
        if(g::optimiser_choice=="lm"){
-         offspring_opt= coeff_opt_lm(offspring, parent->trees, true);
-       }
-       if(g::optimiser_choice=="bfgs"){
-         offspring_opt= coeff_opt_bfgs(offspring, true);
+         offspring_opt = coeff_opt_lm(offspring, parent->trees, true);
        }
 
-       //Possibly redundant
-       parent->trees[mt] = offspring_opt;
+//       //Possibly redundant
+        parent->trees[mt] = offspring_opt;
+        float fitness_after = g::fit_func->get_fitness(parent);
 
-        if(fitness_before > offspring_opt->fitness){
+//
+        if(fitness_before > fitness_after){
            offspring->clear();
            offspring = offspring_opt;
-
            ever_improved = true;
         }
         else{
@@ -786,7 +635,6 @@ Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, ve
         }
      }
    }
-// ============================================================================
   
 
    // variant of forced improvement that is potentially less aggressive, & less expensive to carry out

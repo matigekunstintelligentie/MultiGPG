@@ -167,7 +167,6 @@ struct Node {
 
     vector<Node*> subtree(bool check_introns) {
         vector<Node*> subtree;
-        print("WARNING: set manually");
         subtree.reserve(256);
         _subtree_recursive(subtree, check_introns);
         return subtree;
