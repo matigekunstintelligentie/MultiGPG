@@ -31,7 +31,7 @@ namespace g {
 
   // ALL fitness functions 
   vector<Fitness*> all_fitness_functions = {
-    new MAEFitness(), new MSEFitness(), new AbsCorrFitness(), new LSMSEFitness()
+    new MSEFitness(), new LSMSEFitness()
   };
 
   // budget
@@ -41,6 +41,7 @@ namespace g {
   int max_evaluations;
   long long max_node_evaluations;
   bool disable_ims = false;
+  bool MO_mode = false;
 
   int jacobian_evals = 0;
 
@@ -435,6 +436,7 @@ namespace g {
     parser.set_optional<bool>("use_max_range", "use_max_range", false, "Whether the max or 10 is used as initalisation range");
     parser.set_optional<bool>("equal_p_coeffs", "equal_p_coeffs", false, "Whether the leafs are sampled with equal probability");
     parser.set_optional<float>("random_accept_p", "random_accept_p", 0.0, "Whether GOM steps are randomly accepted");
+    parser.set_optional<bool>("MO_mode", "MO_mode", true, "Whether Multi objective mode is activated");
   
     // set options
     parser.run_and_exit_if_error();
@@ -566,7 +568,7 @@ namespace g {
     }
 
 
-    
+    MO_mode = parser.get<bool>("MO_mode");
     use_max_range = parser.get<bool>("use_max_range");
     equal_p_coeffs = parser.get<bool>("equal_p_coeffs");
     random_accept_p = parser.get<float>("random_accept_p");

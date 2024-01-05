@@ -32,13 +32,11 @@ struct Fitness {
   virtual float get_fitness(Individual * n, Mat & X, Vec & y) {
     throw runtime_error("Not implemented");
   }
+
+  virtual vector<float> get_fitness_MO(Individual * n, Mat & X, Vec & y){
+    throw runtime_error("Not implemented");
+  }
   
-// ============================================================================
-//   virtual float get_fitness(Node * n, Mat & X, Vec & y, bool print) {
-//     throw runtime_error("Dikke drollen");
-//   }
-// 
-// ============================================================================
   // shorthand for training set
   float get_fitness(Individual * n, Mat * X=NULL, Vec * y=NULL) {
     if (!X)
@@ -51,6 +49,15 @@ struct Fitness {
     //node_evaluations += n->get_num_nodes(true); 
     // call specific implementation
     return get_fitness(n, *X, *y);
+  }
+
+  // shorthand for training set
+  vector<float> get_fitness_MO(Individual * n, Mat * X=NULL, Vec * y=NULL) {
+    vector<float> fitness;
+    fitness.reserve(2);
+    fitness[0] = get_fitness(n, X, y);
+    fitness[1] = n->get_num_nodes(true);
+    return fitness;
   }
 
   float get_fitness_opt(Individual * n, Mat * X=NULL, Vec * y=NULL) {
@@ -66,8 +73,6 @@ struct Fitness {
     return get_fitness(n, *X, *y);
   }
 
-
-
   Vec get_fitnesses(vector<Individual*> population, bool compute=true, Mat * X=NULL, Vec * y=NULL) {  
     Vec fitnesses(population.size());
     for(int i = 0; i < population.size(); i++) {
@@ -78,6 +83,22 @@ struct Fitness {
     }
     return fitnesses;
   }
+
+  Vec get_fitnesses_MO(vector<Individual*> population, bool compute=true, Mat * X=NULL, Vec * y=NULL) {  
+    //TODO: hardcoded size
+    Vec fitnesses(population.size(), 2);
+    for(int i = 0; i < population.size(); i++) {
+      if(compute){
+        fitnesses[i,0] = get_fitness(population[i], X, y);
+      }
+      else{
+        fitnesses[i,0] = population[i]->fitness;
+      }
+      fitnesses[i,1] = population[i]->get_num_nodes(true);
+    }
+    return fitnesses;
+  }
+
 
   void _set_X(Mat & X, string type="train") {
     if (type == "train")
@@ -222,30 +243,7 @@ struct LSMSEFitness : Fitness {
 
 };
 
-struct AbsCorrFitness : Fitness {
 
-  string name() override {
-    return "ac";
-  }
-
-  Fitness * clone() override {
-    return new AbsCorrFitness();
-  }
-
-  float get_fitness(Individual * n, Mat & X, Vec & y) override {
-    Vec out = n->get_output(X, n->trees);
-
-    float fitness = 1.0-abs(corr(y, out));
-    // Below, the < 0 can happen due to float overflow, while 
-    // the = 0 is meant to penalize constants as much as broken solutions
-    if (isnan(fitness) || fitness < 0)  
-      fitness = INF;
-    n->fitness = fitness;
-
-    return fitness;
-  }
-
-};
 
 
 
