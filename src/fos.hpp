@@ -64,8 +64,11 @@ struct FOSBuilder
             }
             
             vector<vector<int>> fos = fast_upgma(MI);
-            // remove the root to avoid complete replacements
-            fos.pop_back();
+
+            // remove the root to avoid complete replacements in last tree, other trees may fully be replaced
+            if(mt==g::nr_multi_trees - 1){
+              fos.pop_back();
+            }
             
             if (g::no_large_subsets) {
               vector<vector<int>> trimmed_fos; trimmed_fos.reserve(fos.size());
@@ -85,7 +88,8 @@ struct FOSBuilder
                 }
               }
               fos = trimmed_fos;
-            } else if (g::no_univariate_except_leaves) {
+            } 
+            else if (g::no_univariate_except_leaves) {
               // find leaves positions
               unordered_set<int> position_of_leaves;
               vector<Node*> some_nodes = population[0]->subtree();

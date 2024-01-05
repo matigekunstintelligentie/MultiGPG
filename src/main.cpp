@@ -14,8 +14,8 @@ using namespace myeig;
 int main(int argc, char** argv){
   g::read_options(argc, argv);
 
-  // auto t = Test();
-  // t.run_all();
+  auto t = Test();
+  t.run_all();
 
 //  Individual * ind = generate_individuals(4, "hh", 2);
 //
