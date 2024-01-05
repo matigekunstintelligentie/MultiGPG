@@ -76,7 +76,7 @@ struct Evolution {
     offspring_population.reserve(pop_size);
 
     for(int i = 0; i < pop_size; i++) {
-      Individual * offspring= efficient_gom(population[i], population, fos, macro_generation);
+      Individual * offspring = efficient_gom(population[i], population, fos, macro_generation);
       //check_n_set_elite(offspring);
       offspring_population.push_back(offspring);
     }

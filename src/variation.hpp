@@ -192,428 +192,221 @@ Node * append_linear_scaling(Node * tree, vector<Node*> & trees) {
 return tree;
 }
 
-Node * coeff_opt_bfgs(Node * parent, bool return_copy=true){
+Node * coeff_opt_lm(Node * parent, vector<Node*> & trees,bool return_copy=true){
   Node * tree = parent;
   
-// ============================================================================
-//   if(return_copy){
-//     tree = parent->clone();
-//   } 
-//    
-//   vector<Node*> nodes = tree->subtree(true);
-//   
-//   vector<double> coeffsd;
-//   vector<float> coeffsf;
-//   vector<Node*> coeff_ptrs;
-//   for(int i = 0; i < nodes.size(); i++) {
-//     if(nodes[i]->op->type()==OpType::otConst){
-//       coeffsd.push_back((double) ((Const*)nodes[i]->op)->c);
-//       coeffsf.push_back((float) ((Const*)nodes[i]->op)->c);
-//       coeff_ptrs.push_back(nodes[i]);
-//     }
-//   }
-//   
-//   if(coeff_ptrs.size()>0){
-// 
-// 
-//     pair<float,float> intc_slope = make_pair(0.,1.);
-// 
-//     if(!g::use_mse_opt){
-//       Vec p = tree->get_output(g::fit_func->X_train);
-//       intc_slope = linear_scaling_coeffs(g::fit_func->y_train, p);
-//     }
-// 
-//     g::mse_func->update_batch_opt(g::batch_size_opt);
-// 
-//        if(g::use_optimiser){
-// 
-//               column_vector starting_point;
-//               starting_point.set_size(coeffsd.size() + 2);
-// 
-//               for(int i=0; i<coeffsd.size(); i++){
-//                 ((Const*)coeff_ptrs[i]->op)->c = coeffsf[i];
-//                 starting_point(i) = coeffsd[i];
-//               }
-//               starting_point(coeffsd.size()) = intc_slope.first;
-//               starting_point(coeffsd.size() + 1) = intc_slope.second;
-// 
-//               //
-//               auto func = [tree, coeff_ptrs, intc_slope](column_vector cv) {
-//                  for(int i=0; i<coeff_ptrs.size(); i++){
-//                    ((Const*)coeff_ptrs[i]->op)->c = (float) cv(i);
-//                  }
-//                 
-// 
-//                  Vec out = cv(coeff_ptrs.size()) + cv(coeff_ptrs.size() + 1) * tree->get_output(g::mse_func->X_batch_opt);
-//                  g::mse_func->opt_evaluations += 1;
-// 
-//                  float fitness = 0.5*(g::mse_func->y_batch_opt-out).square().mean();
-//                  return (double) fitness;
-//               };
-// 
-//               //, intc_slope
-//               auto der = [tree, coeff_ptrs, intc_slope](column_vector cv) {
-//                 g::jacobian_evals += 1;
-//                 
-//                 for(int i=0; i<coeff_ptrs.size(); i++){
-//                   ((Const*)coeff_ptrs[i]->op)->c = (float) cv(i);
-//                 }
-// 
-//                 
-//                 dlib::matrix<double, 0, 1> res;
-//                 res.set_size(coeff_ptrs.size() + 2, 1);
-// 
-//                 Mat Jacobian(g::mse_func->X_batch_opt.rows(),coeff_ptrs.size() + 2);
-//                 Jacobian = Mat::Zero(g::mse_func->X_batch_opt.rows(),coeff_ptrs.size() + 2);
-//                 for(int i=0; i<coeff_ptrs.size(); i++){
-//                     ((Const*)coeff_ptrs[i]->op)->d = static_cast<float>(1);
-//                     pair<Vec,Vec> output = tree->get_output_der(g::mse_func->X_batch_opt);
-//                     g::mse_func->opt_evaluations += 1;
-// 
-//                     //res(i) = (double) intc_slope.second * -1./g::mse_func->X_batch_opt.rows() * ((g::mse_func->y_batch_opt-(intc_slope.first + intc_slope.second * output.first))*output.second.col(i)).sum();
-//                     res(i,0) = (double) cv(coeff_ptrs.size() + 1) * -1./g::mse_func->X_batch_opt.rows() * ((g::mse_func->y_batch_opt-(cv(coeff_ptrs.size()) + cv(coeff_ptrs.size() + 1) * output.first))*output.second.col(i)).sum();
-// 
-//                     if(g::use_clip){
-//                       res(i,0) = max(min(res(i),-1.),1.);
-//                     }
-// 
-//                     ((Const*)coeff_ptrs[i]->op)->d = static_cast<float>(0);
-//                 }
-// 
-// 
-//                 Vec o = tree->get_output(g::mse_func->X_batch_opt);
-//                 g::mse_func->opt_evaluations += 1;
-//                 
-//                 if(!g::use_mse_opt){
-//                     res(coeff_ptrs.size(),0) = (double) -1./g::mse_func->X_batch_opt.rows() * ((g::mse_func->y_batch_opt-(cv(coeff_ptrs.size()) + cv(coeff_ptrs.size() + 1) * o))).sum();
-//                     res(coeff_ptrs.size() + 1,0) = (double) -1./g::mse_func->X_batch_opt.rows() * ((g::mse_func->y_batch_opt-(cv(coeff_ptrs.size()) + cv(coeff_ptrs.size() + 1) * o))*o).sum();
-//                 }
-//                 else{
-//                     res(coeff_ptrs.size(),0) = (double) 0.;
-//                     res(coeff_ptrs.size() + 1,0) = (double) 1.;                    
-//                 }
-// 
-//                 if(g::use_clip){
-//                   res(coeff_ptrs.size(),0) = max(min(res(coeff_ptrs.size()),-1.),1.);
-//                   res(coeff_ptrs.size() + 1,0) = max(min(res(coeff_ptrs.size() + 1),-1.),1.);
-//                 }
-// 
-// 
-//                 return res;
-//              };
-// 
-//              try{
-// 
-//                   //find_min_using_approximate_derivatives(dlib::bfgs_search_strategy(),  // Use BFGS search algorithm
-//                   //     dlib::objective_delta_stop_strategy(1e-9, 10), // Stop when the change in rosen() is less than 1e-7 .be_verbose()
-//                   //     func, starting_point, -1);
-//                   if(g::use_ftol){
-//                       find_min(dlib::bfgs_search_strategy(),  
-//                       dlib::objective_delta_stop_strategy(g::tol, g::bfgs_max_iter),
-//                       func, der, starting_point, -1);
-//                   }
-//                   else{
-//                       find_min(dlib::bfgs_search_strategy(),  
-//                       dlib::gradient_norm_stop_strategy(g::tol, g::bfgs_max_iter),
-//                       func, der, starting_point, -1);
-//                   }
-// 
-// 
-// 
-//                     for(int i=0; i<coeff_ptrs.size(); i++){
-//                       ((Const*)coeff_ptrs[i]->op)->c = starting_point(i);
-//                     }
-// 
-//               }
-//             catch(const std::exception& e) //it would not work if you pass by value
-//             {
-//                 //std::cout << e.what();
-//             }
-// // ============================================================================
-// //               catch(...){
-// //           
-// //     
-// //               }
-// // ============================================================================
-//             
-//        }
-//   
-//   }
-// ============================================================================
+
+   if(return_copy){
+     tree = parent->clone();
+   }
+
+   vector<Node*> nodes = tree->subtree(true);
+
+   vector<float> coeffsf;
+   vector<Node*> coeff_ptrs;
+   for(int i = 0; i < nodes.size(); i++) {
+     if(nodes[i]->op->type()==OpType::otConst){
+       coeffsf.push_back((float) ((Const*)nodes[i]->op)->c);
+       coeff_ptrs.push_back(nodes[i]);
+     }
+   }
+
+   int size = coeffsf.size() + 2;
+   Eigen::VectorXf coeffsfv(size);
+   for(int i=0; i<coeffsf.size(); i++) {
+     coeffsfv(i) = coeffsf[i];
+   }
+
+   if(coeff_ptrs.size()>0){
 
 
-  return tree;
-}
+     pair<float,float> intc_slope = make_pair(0.,1.);
+     if(!g::use_mse_opt){
+       Vec p = tree->get_output(g::fit_func->X_train, trees);
+       intc_slope = linear_scaling_coeffs(g::fit_func->y_train, p);
+     }
 
-Node * coeff_opt_lm(Node * parent, bool return_copy=true){
-  Node * tree = parent;
-  
-// ============================================================================
-//   if(return_copy){
-//     tree = parent->clone();
-//   }
-//    
-//      
-// // ============================================================================
-// //      tree = new Node(new Add());
-// //      tree->append(new Node(new Const(4.)));
-// //      Node * tree2 = new Node(new Mul());
-// //      tree2->append(new Node(new Feat(8)));
-// //      tree2->append(new Node(new Const(5.)));
-// //      tree->append(tree2);
-// // ============================================================================
-//      // Node * rhs = new Node(new Sub());
-//      // Node * one = new Node(new Cube());
-//      // one->append(new Node(new Const(2.)));
-// 
-//      // rhs->append(one);
-//      // rhs->append(new Node(new Feat(0)));
-//      // tree->append(rhs);
-//      
-//      
-//   //tree = new Node();
-//     
-//      
-//    
-//   vector<Node*> nodes = tree->subtree(true);
-//   
-//   vector<float> coeffsf;
-//   vector<Node*> coeff_ptrs;
-//   for(int i = 0; i < nodes.size(); i++) {
-//     if(nodes[i]->op->type()==OpType::otConst){
-//       coeffsf.push_back((float) ((Const*)nodes[i]->op)->c);
-//       coeff_ptrs.push_back(nodes[i]);
-//     }
-//   }
-// 
-//   int size = coeffsf.size() + 2;
-//   Eigen::VectorXf coeffsfv(size);
-//   for(int i=0; i<coeffsf.size(); i++) {
-//     coeffsfv(i) = coeffsf[i];
-//   }
-//   
-//   if(coeff_ptrs.size()>0){
-//     
-// 
-//     pair<float,float> intc_slope = make_pair(0.,1.);
-//     if(!g::use_mse_opt){
-//       Vec p = tree->get_output(g::fit_func->X_train);
-//       intc_slope = linear_scaling_coeffs(g::fit_func->y_train, p);
-//     }
-// 
-//     coeffsfv(coeff_ptrs.size()) = intc_slope.first;
-//     coeffsfv(coeff_ptrs.size() + 1) = intc_slope.second;
-// 
-//     g::mse_func->update_batch_opt(g::batch_size_opt);
-// 
-//   
-// // ============================================================================\
-// // For testing functions derivatives
-//    // for(int i=0; i<coeff_ptrs.size(); i++){
-//    //    ((Const*)coeff_ptrs[i]->op)->c = (float) coeffsfv(i);
-//    //  }
-// 
-//    //   column_vector res(coeff_ptrs.size());
-//    //   Mat X_t(3,1);
-//    //   X_t << 1.,2.,3.;
-//    //   Vec y_t(3);
-//    //   y_t << 5., 10., 15.;
-//    //   Mat Jacobian(X_t.rows(),coeff_ptrs.size());
-//    //   Jacobian=Mat::Zero(X_t.rows(),coeff_ptrs.size());
-//    //   for(int i=0; i<coeff_ptrs.size(); i++){True
-//    //       ((Const*)coeff_ptrs[i]->op)->d = static_cast<float>(1);
-//          
-//    //       pair<Vec,Vec> output = tree->get_output_der(X_t);
-//    //       if(g::use_clip){
-//    //         Jacobian.col(i) = output.second.cwiseMin(-1).cwiseMax(1);
-//    //       }
-//    //       else{
-//    //         Jacobian.col(i) = output.second;
-//    //       }
-//    //       print(output.first);
-// 
-//    //       //res(i) = (double) -2/X_t.rows() * ((y_t-output.first)*output.second).sum();
-//    //       res(i) = (double) -1./3. * ((y_t-output.first)*Jacobian.col(i)).sum();
-// 
-//          
-//    //       ((Const*)coeff_ptrs[i]->op)->d = static_cast<float>(0);
-//    //   }
-// 
-//    //   print(tree->human_repr());
-//    //   print(res(0), " *** ", res(1));
-//    //   throw std::invalid_argument("a or b negative");
-// 
-// 
-// 
-// 
-//        if(g::use_optimiser){
-// 
-// 
-//               struct LMFunctor
-//               {
-//                   // 'm' pairs of (x, f(x))
-//                   Mat X_train;
-//                   Vec y_train;
-//                   Node* tree;
-//                   std::vector<Node*> coeff_ptrs;
-//                   pair<float,float> intc_slope;
-// 
-//                   // Compute 'm' errors, one for each data point, for the given parameter values in 'x'
-//                   int operator()(const Eigen::VectorXf &x, Eigen::VectorXf &fvec) const
-//                   {
-//                       for(int i=0; i<coeff_ptrs.size(); i++){
-//                         ((Const*)coeff_ptrs[i]->op)->c = (float) x(i);
-//                       }
-//                       Mat X_train_tmp = X_train;
-//                       fvec = y_train - (x(coeff_ptrs.size()) + x(coeff_ptrs.size()+1) * tree->get_output(X_train_tmp));
-//                       g::mse_func->opt_evaluations += 1;
-// 
-//                       return 0;
-//                   }
-// 
-//                   // Compute the jacobian of the errors
-//                   int df(const Eigen::VectorXf &x, Eigen::MatrixXf &fjac) const
-//                   {
-//                       g::jacobian_evals += 1;
-//                       // 'x' has dimensions n x 1
-//                       // It contains the current estimates for the parameters.
-// 
-//                       // 'fjac' has dimensions m x n
-//                       // It will contain the jacobian of the errors, calculated numerically in this case.
-// 
-//  
-//                        Mat X_train_tmp = X_train;
-//  
-//                        for(int i=0; i<coeff_ptrs.size(); i++){
-//                          ((Const*)coeff_ptrs[i]->op)->c = (float) x(i);
-//                        }
-//                        
-//                        Mat Jacobian(X_train_tmp.rows(),coeff_ptrs.size() + 2);
-//                        Jacobian=Mat::Zero(X_train_tmp.rows(),coeff_ptrs.size() + 2);
-//                        for(int i=0; i<coeff_ptrs.size(); i++){
-//                            ((Const*)coeff_ptrs[i]->op)->d = static_cast<float>(1);
-//                            
-//                            pair<Vec,Vec> output = tree->get_output_der(X_train_tmp);
-//                            g::mse_func->opt_evaluations += 1;
-//                            if(g::use_clip){
-//                              Jacobian.col(i) = (-output.second * x(coeff_ptrs.size()+1)).cwiseMin(-1).cwiseMax(1);
-//                            }
-//                            else{
-//                              Jacobian.col(i) = -output.second * x(coeff_ptrs.size()+1);
-//                            }
-//                            
-//                            
-//                            ((Const*)coeff_ptrs[i]->op)->d = static_cast<float>(0);
-//                        }
-//                        Vec output = tree->get_output(g::mse_func->X_batch_opt);
-//                        g::mse_func->opt_evaluations += 1;
-//                        
-//                        if(!g::use_mse_opt){
-//                            Jacobian.col(coeff_ptrs.size()) = Vec::Zero(X_train_tmp.size()) + 1.;
-//                            Jacobian.col(coeff_ptrs.size() + 1) = -output;
-//                        }
-//                        else{
-//                            Jacobian.col(coeff_ptrs.size()) = Vec::Zero(X_train_tmp.size());
-//                            Jacobian.col(coeff_ptrs.size() + 1) = Vec::Zero(X_train_tmp.size());
-//                        }
-//                        
-//                        if(g::use_clip){
-//                         Jacobian.col(coeff_ptrs.size()) = Jacobian.col(coeff_ptrs.size()).cwiseMin(-1).cwiseMax(1);
-//                         Jacobian.col(coeff_ptrs.size() + 1) = Jacobian.col(coeff_ptrs.size() + 1).cwiseMin(-1).cwiseMax(1);
-//                        }
-// 
-// 
-//                        fjac = Jacobian.matrix();
-// 
-// 
-//                       return 0;
-//                   }
-// 
-//                   // Number of data points, i.e. values.
-//                   int m;
-// 
-//                   // Returns 'm', the number of values.
-//                   int values() const { return m; }
-// 
-//                   // The number of parameters, i.e. inputs.
-//                   int n;
-// 
-//                   // Returns 'n', the number of inputs.
-//                   int inputs() const { return n; }
-//               };
-// 
-//               LMFunctor functor;
-// 
-//               functor.X_train = g::mse_func->X_batch_opt;
-//               functor.y_train = g::mse_func->y_batch_opt;
-//               functor.m = g::mse_func->X_batch_opt.rows();
-//               functor.n = g::mse_func->X_batch_opt.cols();
-//               functor.intc_slope = intc_slope;
-//               
-//               functor.tree = tree;
-//               functor.coeff_ptrs = coeff_ptrs;
-// 
-//               Eigen::LevenbergMarquardt<LMFunctor, float> lm(functor);
-//               lm.parameters.maxfev = g::lm_max_fev;
-//               //lm.parameters.factor = 10000000;
-//               lm.parameters.gtol = 0.;
-//               lm.parameters.ftol = 0.;
-//               lm.parameters.xtol = 0.;
-// 
-//               if(g::use_ftol){
-//                 lm.parameters.ftol = g::tol;
-//               }
-//               else{
-//                 lm.parameters.gtol = g::tol;
-//               }
-// 
-//               int status = lm.minimize(coeffsfv);
-// 
-//               for(int i=0; i<coeff_ptrs.size(); i++){
-//                 ((Const*)coeff_ptrs[i]->op)->c = coeffsfv(i);
-//               }
-//             }
-//   
-//   }
-// ============================================================================
+     coeffsfv(coeff_ptrs.size()) = intc_slope.first;
+     coeffsfv(coeff_ptrs.size() + 1) = intc_slope.second;
+
+     g::mse_func->update_batch_opt(g::batch_size_opt);
+
+     if(g::use_optimiser){
+
+
+               struct LMFunctor
+               {
+                   // 'm' pairs of (x, f(x))
+                   vector<Node*> trees;
+                   Mat X_train;
+                   Vec y_train;
+                   Node* tree;
+                   std::vector<Node*> coeff_ptrs;
+                   pair<float,float> intc_slope;
+
+                   // Compute 'm' errors, one for each data point, for the given parameter values in 'x'
+                   int operator()(const Eigen::VectorXf &x, Eigen::VectorXf &fvec) const
+                   {
+                       for(int i=0; i<coeff_ptrs.size(); i++){
+                         ((Const*)coeff_ptrs[i]->op)->c = (float) x(i);
+                       }
+                       Mat X_train_tmp = X_train;
+                       vector<Node*> trees_tmp = trees;
+                       fvec = y_train - (x(coeff_ptrs.size()) + x(coeff_ptrs.size()+1) * tree->get_output(X_train_tmp, trees_tmp));
+                       g::mse_func->opt_evaluations += 1;
+
+                       return 0;
+                   }
+
+                   // Compute the jacobian of the errors
+                   int df(const Eigen::VectorXf &x, Eigen::MatrixXf &fjac) const
+                   {
+                       g::jacobian_evals += 1;
+                       // 'x' has dimensions n x 1
+                       // It contains the current estimates for the parameters.
+
+                       // 'fjac' has dimensions m x n
+                       // It will contain the jacobian of the errors, calculated numerically in this case.
+
+
+                        Mat X_train_tmp = X_train;
+
+                        for(int i=0; i<coeff_ptrs.size(); i++){
+                          ((Const*)coeff_ptrs[i]->op)->c = (float) x(i);
+                        }
+
+                        Mat Jacobian(X_train_tmp.rows(),coeff_ptrs.size() + 2);
+                        Jacobian=Mat::Zero(X_train_tmp.rows(),coeff_ptrs.size() + 2);
+
+                        for(int i=0; i<coeff_ptrs.size(); i++){
+                            ((Const*)coeff_ptrs[i]->op)->d = static_cast<float>(1);
+
+                            pair<Vec,Vec> output = tree->get_output_der(X_train_tmp);
+                            g::mse_func->opt_evaluations += 1;
+                            if(g::use_clip){
+                              Jacobian.col(i) = (-output.second * x(coeff_ptrs.size()+1)).cwiseMin(-1).cwiseMax(1);
+                            }
+                            else{
+                              Jacobian.col(i) = -output.second * x(coeff_ptrs.size()+1);
+                            }
+
+
+                            ((Const*)coeff_ptrs[i]->op)->d = static_cast<float>(0);
+                        }
+
+                        vector<Node*> trees_tmp = trees;
+                        Vec output = tree->get_output(g::mse_func->X_batch_opt, trees_tmp);
+                        g::mse_func->opt_evaluations += 1;
+
+
+                        // TODO: change .size() to .rows() in gpg!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                        if(!g::use_mse_opt){
+
+                            Jacobian.col(coeff_ptrs.size()) = Vec::Zero(X_train_tmp.rows()) + 1.;
+                            Jacobian.col(coeff_ptrs.size() + 1) = -output;
+                        }
+                        else{
+                            Jacobian.col(coeff_ptrs.size()) = Vec::Zero(X_train_tmp.rows());
+                            Jacobian.col(coeff_ptrs.size() + 1) = Vec::Zero(X_train_tmp.rows());
+                        }
+
+                        if(g::use_clip){
+                         Jacobian.col(coeff_ptrs.size()) = Jacobian.col(coeff_ptrs.size()).cwiseMin(-1).cwiseMax(1);
+                         Jacobian.col(coeff_ptrs.size() + 1) = Jacobian.col(coeff_ptrs.size() + 1).cwiseMin(-1).cwiseMax(1);
+                        }
+
+
+                        fjac = Jacobian.matrix();
+
+
+                       return 0;
+                   }
+
+                   // Number of data points, i.e. values.
+                   int m;
+
+                   // Returns 'm', the number of values.
+                   int values() const { return m; }
+
+                   // The number of parameters, i.e. inputs.
+                   int n;
+
+                   // Returns 'n', the number of inputs.
+                   int inputs() const { return n; }
+               };
+
+               LMFunctor functor;
+
+               functor.trees = trees;
+               functor.X_train = g::mse_func->X_batch_opt;
+               functor.y_train = g::mse_func->y_batch_opt;
+               functor.m = g::mse_func->X_batch_opt.rows();
+               functor.n = g::mse_func->X_batch_opt.cols();
+               functor.intc_slope = intc_slope;
+
+               functor.tree = tree;
+               functor.coeff_ptrs = coeff_ptrs;
+
+               Eigen::LevenbergMarquardt<LMFunctor, float> lm(functor);
+               lm.parameters.maxfev = g::lm_max_fev;
+               //lm.parameters.factor = 10000000;
+               lm.parameters.gtol = 0.;
+               lm.parameters.ftol = 0.;
+               lm.parameters.xtol = 0.;
+
+               if(g::use_ftol){
+                 lm.parameters.ftol = g::tol;
+               }
+               else{
+                 lm.parameters.gtol = g::tol;
+               }
+
+               int status = lm.minimize(coeffsfv);
+
+               for(int i=0; i<coeff_ptrs.size(); i++){
+                 ((Const*)coeff_ptrs[i]->op)->c = coeffsfv(i);
+               }
+             }
+
+   }
   return tree;
 }
 
 Node * coeff_mut(Node * parent, bool return_copy=true, vector<int> * changed_indices = NULL, vector<Op*> * backup_ops = NULL) {
   Node * tree = parent;
-// ============================================================================
-//   if (return_copy) {
-//     tree = parent->clone();
-//   }
-//   
-//   if (g::cmut_prob > 0 && g::cmut_temp > 0) {
-//     // apply coeff mut to all nodes that are constants
-//     vector<Node*> nodes = tree->subtree();
-//     for(int i = 0; i < nodes.size(); i++) {
-//       Node * n = nodes[i];
-//       if (n->op->type() == OpType::otConst && Rng::randu() < g::cmut_prob) {
-// 
-//         float prev_c = ((Const*)n->op)->c;
-//         float std = g::cmut_temp*abs(prev_c);
-// 
-//         // cmut_eps = 0;
-//         if (std < g::cmut_eps){
-//           std = g::cmut_eps;
-//         }
-//         float mutated_c = prev_c + Rng::randn()*std; 
-//         ((Const*)n->op)->c = mutated_c;
-//         if (changed_indices != NULL) {
-//           changed_indices->push_back(i);
-//           backup_ops->push_back(new Const(prev_c));
-//           if (find(changed_indices->begin(), changed_indices->end(), i) == changed_indices->end()) {
-//             changed_indices->push_back(i);
-//             backup_ops->push_back(new Const(prev_c));
-//           };
-//         }
-//       }
-//     }
-//   }
-// ============================================================================
+
+   if (return_copy) {
+     tree = parent->clone();
+   }
+
+   if (g::cmut_prob > 0 && g::cmut_temp > 0) {
+     // apply coeff mut to all nodes that are constants
+     vector<Node*> nodes = tree->subtree();
+     for(int i = 0; i < nodes.size(); i++) {
+       Node * n = nodes[i];
+       if (n->op->type() == OpType::otConst && Rng::randu() < g::cmut_prob) {
+
+         float prev_c = ((Const*)n->op)->c;
+         float std = g::cmut_temp*abs(prev_c);
+
+         // cmut_eps = 0;
+         if (std < g::cmut_eps){
+           std = g::cmut_eps;
+         }
+         float mutated_c = prev_c + Rng::randn()*std;
+         ((Const*)n->op)->c = mutated_c;
+         if (changed_indices != NULL) {
+           changed_indices->push_back(i);
+           backup_ops->push_back(new Const(prev_c));
+           if (find(changed_indices->begin(), changed_indices->end(), i) == changed_indices->end()) {
+             changed_indices->push_back(i);
+             backup_ops->push_back(new Const(prev_c));
+           };
+         }
+       }
+     }
+   }
+
   return tree;
 }
 
@@ -665,27 +458,18 @@ Node * mutation(Node * parent, vector<Op*> & functions, vector<Op*> & terminals,
 
 
 Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, vector<vector<int>> & fos, int macro_generations) {
-  //Individual * parent = original_parent->clone();
-  Node * offspring = parent->trees[mt]->clone();
-
-  float improvement_opt = 0.;
-  float improvement_coeff = 0.;
-  float improvement_gom = 0.;
+//  Node * offspring = parent->trees[mt]->clone();
+  Node * offspring = parent->trees[mt];
 
   float backup_fitness = parent->fitness;
   vector<Node*> offspring_nodes = offspring->subtree();
 
+
+
   auto random_fos_order = Rng::rand_perm(fos.size());
 
   bool ever_improved = false;
-  
-  
-// ============================================================================
-//   if(mt>0){
-//       print("parent fitness:", to_string(parent->fitness));
-//   }
-// ============================================================================
-  
+
   for(int fos_idx = 0; fos_idx < fos.size(); fos_idx++) {
     
     auto crossover_mask = fos[random_fos_order[fos_idx]];
@@ -726,7 +510,8 @@ Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, ve
     float new_fitness = backup_fitness;
     if (change_is_meaningful) {
       // gotta recompute
-      parent->trees[mt] = offspring;
+
+      //parent->trees[mt] = offspring;
       new_fitness = g::fit_func->get_fitness(parent);
     }
 
@@ -741,13 +526,11 @@ Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, ve
         off_n->op = back_op->clone();
         offspring->fitness = backup_fitness;
       }
-      parent->trees[mt] = offspring;
+      //parent->trees[mt] = offspring;
       parent->fitness = backup_fitness;
     } else if (new_fitness < backup_fitness) {
       // it improved
-      if(!isinf(backup_fitness)){
-        improvement_gom += backup_fitness-new_fitness;
-      }
+
       backup_fitness = new_fitness;
       
       ever_improved = true;
@@ -758,153 +541,100 @@ Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, ve
       delete op;
     }
     
-// ============================================================================
-//     if(g::cmut_prob>0.){
-//      
-//       effectively_changed_indices.clear();
-//       backup_ops.clear();
-//       
-//       // apply coeff mut
-// 
-//       coeff_mut(offspring, false, &effectively_changed_indices, &backup_ops);
-// 
-//       
-//       // check if at least one change was meaningful
-//       for(int i : effectively_changed_indices) {
-//         Node * n = offspring_nodes[i];
-//         if (!n->is_intron()) {
-//           change_is_meaningful = true;
-//           break;
-//         }
-//       }
-// 
-//       // assume nothing changed
-//       new_fitness = offspring->fitness;
-//       if (change_is_meaningful) {
-//         // gotta recompute
-//         parent->trees[mt] = offspring;
-//         new_fitness = g::fit_func->get_fitness(parent);
-//       }
-// 
-// 
-// 
-//       // check is not worse
-//       if (new_fitness > backup_fitness) {
-//         if(Rng::randu()<g::random_accept_p){
-//           // it didn't improve, but got accepted
-//           if(!isinf(backup_fitness)){
-//             improvement_coeff += (backup_fitness-new_fitness);
-//           }
-//           backup_fitness = new_fitness;
-//         }
-//         else{
-//           // undo
-//           for(int i = 0; i < effectively_changed_indices.size(); i++) {
-//             int changed_idx = effectively_changed_indices[i];
-//             Node * off_n = offspring_nodes[changed_idx];
-//             Op * back_op = backup_ops[i];
-//             delete off_n->op;
-//             off_n->op = back_op->clone();
-//             offspring->fitness = backup_fitness;
-//           }
-//         }
-//       } else if (new_fitness < backup_fitness) {
-//         // it improved
-//         if(!isinf(backup_fitness)){
-//           improvement_coeff += (backup_fitness-new_fitness);
-//         }
-//         backup_fitness = new_fitness;
-// 
-//         ever_improved = true;
-//       }
-// 
-//       // discard backup
-//       for(Op * op : backup_ops) {
-//         delete op;
-//       }
-//     }
-// ============================================================================
+    if(g::cmut_prob>0.){
+
+       effectively_changed_indices.clear();
+       backup_ops.clear();
+
+       // apply coeff mut
+
+       coeff_mut(offspring, false, &effectively_changed_indices, &backup_ops);
+
+       // check if at least one change was meaningful
+       for(int i : effectively_changed_indices) {
+         Node * n = offspring_nodes[i];
+         if (!n->is_intron()) {
+           change_is_meaningful = true;
+           break;
+         }
+       }
+       // assume nothing changed
+       new_fitness = offspring->fitness;
+       if (change_is_meaningful) {
+         // gotta recompute
+         new_fitness = g::fit_func->get_fitness(parent);
+       }
+
+
+
+       // check is not worse
+       if (new_fitness > backup_fitness) {
+         if(Rng::randu()<g::random_accept_p){
+           // it didn't improve, but got accepted
+           backup_fitness = new_fitness;
+         }
+         else{
+           // undo
+           for(int i = 0; i < effectively_changed_indices.size(); i++) {
+             int changed_idx = effectively_changed_indices[i];
+             Node * off_n = offspring_nodes[changed_idx];
+             Op * back_op = backup_ops[i];
+             delete off_n->op;
+             off_n->op = back_op->clone();
+             offspring->fitness = backup_fitness;
+           }
+         }
+       } else if (new_fitness < backup_fitness) {
+         // it improved
+         backup_fitness = new_fitness;
+
+         ever_improved = true;
+       }
+
+       // discard backup
+       for(Op * op : backup_ops) {
+         delete op;
+       }
+     }
    }
-   
 
 
-// ============================================================================
-// 
-//   float fitness_before = offspring->fitness;
-//   
-//   if((macro_generations%g::opt_per_gen)==0 && g::use_optimiser){
-//     bool coeff_found = false;
-//     for(int i = 0; i < offspring_nodes.size(); i++) {
-//       if(offspring_nodes[i]->op->type()==OpType::otConst && !offspring_nodes[i]->is_intron()){
-//         coeff_found = true;
-//       }
-//     }
-// 
-//     if(coeff_found){
-//       float fitness_before = offspring->fitness;
-// 
-//       Node * offspring_opt;
-//       if(g::optimiser_choice=="lm"){
-//         offspring_opt= coeff_opt_lm(offspring, true);
-//       }
-//       if(g::optimiser_choice=="bfgs"){
-//         offspring_opt= coeff_opt_bfgs(offspring, true);
-//       }
-//       
+
+
+   if((macro_generations%g::opt_per_gen)==0 && g::use_optimiser && mt==(g::nr_multi_trees - 1)){
+
+     offspring_nodes = offspring->subtree(parent->trees);
+     bool coeff_found = false;
+     for(int i = 0; i < offspring_nodes.size(); i++) {
+       if(offspring_nodes[i]->op->type()==OpType::otConst && !offspring_nodes[i]->is_intron()){
+         coeff_found = true;
+         break;
+       }
+     }
+
+     if(coeff_found){
+       float fitness_before = offspring->fitness;
+
+       Node * offspring_opt;
+       if(g::optimiser_choice=="lm"){
+         offspring_opt = coeff_opt_lm(offspring, parent->trees, true);
+       }
+
 //       //Possibly redundant
-//       parent->trees[mt] = offspring_opt;
-//       float fitness_after = g::fit_func->get_fitness(parent);
-// 
-// // ============================================================================
-// //       // Node * offspring_opt_lm = coeff_opt_lm(offspring, true);
-// //       print("begin ", offspring->human_repr());
-// //       Node * offspring_opt_bfgs = coeff_opt_bfgs(offspring, true);
-// //       print("mid ", offspring->human_repr());
-// //       Node * offspring_opt_bfgs2 = coeff_opt_bfgs(offspring, true);
-// // 
-// //       // float fitness_after_lm = g::fit_func->get_fitness(offspring_opt_lm);
-// //       float fitness_after_bfgs = g::fit_func->get_fitness(offspring_opt_bfgs);
-// //       float fitness_after_bfgs2 = g::fit_func->get_fitness(offspring_opt_bfgs2);
-// //       
-// //       if(abs(fitness_after_bfgs-fitness_after_bfgs2)>1e-6){
-// //           print("After bfgs ", offspring_opt_bfgs->human_repr()," ",fitness_after_bfgs);
-// //           print("After bfgs2 ", offspring_opt_bfgs2->human_repr()," ",fitness_after_bfgs2);
-// //           throw std::invalid_argument("a or b negative");
-// //       }
-// // ============================================================================
-// 
-//       // print("Before ", offspring->human_repr()," ",fitness_before);
-//       // print("After lm ", offspring_opt_lm->human_repr()," ",fitness_after_lm);
-//       // print("After bfgs ", offspring_opt_bfgs->human_repr()," ",fitness_after_bfgs);
-// 
-// 
-// 
-// // ============================================================================
-// //       print("Before ", offspring->human_repr()," ",fitness_before);
-// //       print("After ", offspring_opt->human_repr()," ",fitness_after);
-//       
-// 
-//        if(fitness_before > offspring_opt->fitness){
-//           if(!isinf(fitness_before)){
-//             improvement_opt += fitness_before - fitness_after;
-//           }
-//           if(improvement_opt>0.){
-//             g::nr_improvements += 1;
-//             g::amount_improvements += improvement_opt;
-//           }
-// 
-//           offspring->clear();
-//           offspring = offspring_opt;
-//           
-//           ever_improved = true;
-// 
-//        }
-//        else{
-//            offspring_opt->clear();
-//        }
-//     }
-//   }
-// ============================================================================
+        parent->trees[mt] = offspring_opt;
+        float fitness_after = g::fit_func->get_fitness(parent);
+
+//
+        if(fitness_before > fitness_after){
+           offspring->clear();
+           offspring = offspring_opt;
+           ever_improved = true;
+        }
+        else{
+            offspring_opt->clear();
+        }
+     }
+   }
   
 
    // variant of forced improvement that is potentially less aggressive, & less expensive to carry out
@@ -915,14 +645,11 @@ Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, ve
         tournament_candidates.push_back(population[Rng::randi(population.size())]);
       }
        tournament_candidates.push_back(offspring);
-// ============================================================================
-//        Node * winner = tournament(tournament_candidates, g::tournament_size);
-//        offspring->clear();
-//        offspring = winner->trees[mt];
-// ============================================================================
-    }
-   
 
+       Node * winner = tournament(tournament_candidates, g::tournament_size);
+       offspring->clear();
+       offspring = winner;
+    }
 
   return offspring;
 }
@@ -930,7 +657,7 @@ Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, ve
 Individual * efficient_gom(Individual * og_parent, vector<Individual *> & indpopulation, vector<vector<vector<int>>> & multi_fos, int macro_generations){
     Individual * parent = og_parent->clone();
 
-    for(int mt=0;mt<g::nr_multi_trees;mt++){          
+    for(int mt=0;mt<g::nr_multi_trees;mt++){
         vector<Node*> population;
         population.reserve(indpopulation.size());
         for(int i =0; i<indpopulation.size();i++){
@@ -939,7 +666,7 @@ Individual * efficient_gom(Individual * og_parent, vector<Individual *> & indpop
 //
 
         Node * new_tree = efficient_gom(parent, mt, population, multi_fos[mt], macro_generations);
-        parent->trees[mt]->clear();
+//
         parent->trees[mt] = new_tree;
     }
     return parent;

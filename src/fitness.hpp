@@ -177,6 +177,10 @@ struct MAEFitness : Fitness {
       fitness = INF;
     n->fitness = fitness;
 
+    for(auto trees:n->trees){
+        n->fitness = fitness;
+    }
+
     return fitness;;
   }
 

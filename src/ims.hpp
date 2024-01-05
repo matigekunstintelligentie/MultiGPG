@@ -401,6 +401,7 @@ struct IMS {
         }
       }
 
+      print(" ~ macro generation: ", macro_generations, ", curr. best fit: ",curr_best_fit);
       if(g::log){
 // ============================================================================
 //         if(g::fit_func->name()=="mse"){
@@ -409,7 +410,7 @@ struct IMS {
 //         }
 // ============================================================================
 
-        print(" ~ macro generation: ", macro_generations, ", curr. best fit: ",curr_best_fit);
+
         //print(curr_elite->human_repr());
 
 

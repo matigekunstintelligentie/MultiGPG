@@ -424,7 +424,7 @@ namespace g {
     parser.set_optional<float>("tol", "tol", 1e-9, "Set tolerance");
     parser.set_optional<bool>("use_clip", "use_clip", false, "Whether gradients are clipped between -1 and 1");
     parser.set_optional<bool>("log", "log", false, "Whether to log");
-    parser.set_optional<string>("optimiser_choice", "optimiser_choice", "bfgs", "Selection of optimiser");
+    parser.set_optional<string>("optimiser_choice", "optimiser_choice", "lm", "Selection of optimiser");
     parser.set_optional<int>("opt_per_gen", "opt_per_gen", 1, "Optimise per x gens)");
     parser.set_optional<string>("csv_file", "csv_file", "required.csv", "CSV file that is written to.");
     parser.set_optional<string>("bs_opt", "batch_size_opt", "auto", "Batch size (default is 'auto', i.e., the entire training set)");
