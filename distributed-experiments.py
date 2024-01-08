@@ -84,7 +84,7 @@ def run(experiment):
 
 
 n_processes = 15
-duration = 600
+duration = 100
 
 experiments = []
 

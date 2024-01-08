@@ -867,42 +867,42 @@ struct Const : Term {
   }
 };
 
-struct FunTree : Fun {
+// struct FunTree : Fun {
 
-    int id;
-    OutputTree(int id) {
-        this->id = id;
-    }
+//     int id;
+//     OutputTree(int id) {
+//         this->id = id;
+//     }
 
-    Op * clone() override {
-        return new OutputTree(this->id);
-    }
+//     Op * clone() override {
+//         return new OutputTree(this->id);
+//     }
 
-    int arity() override {
-        return 0;
-    }
+//     int arity() override {
+//         return 0;
+//     }
 
-    string sym() override {
-        return "p_"+to_string(id);
-    }
+//     string sym() override {
+//         return "p_"+to_string(id);
+//     }
 
-    OpType type() override {
-        return OpType::otFun;
-    }
+//     OpType type() override {
+//         return OpType::otFun;
+//     }
 
-    string human_repr(vector<string> & args) override {
+//     string human_repr(vector<string> & args) override {
 
-        return "Placeholder_"+to_string(id);
-    }
+//         return "Placeholder_"+to_string(id);
+//     }
 
-    string np_repr(vector<string> & args) override {
-        return "Placeholder_"+to_string(id);
-    }
+//     string np_repr(vector<string> & args) override {
+//         return "Placeholder_"+to_string(id);
+//     }
 
-    string torch_repr(vector<string> & args) override {
-        return "Placeholder_"+to_string(id);
-    }
-};
+//     string torch_repr(vector<string> & args) override {
+//         return "Placeholder_"+to_string(id);
+//     }
+// };
 
 struct OutputTree : Term {
 

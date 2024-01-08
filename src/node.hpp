@@ -15,7 +15,7 @@ struct Node {
   Node * parent = NULL;
   vector<Node*> children;
   Op * op = NULL;
-  float fitness;
+  vector<float> fitness = {9999999,9999999};
 
 
   //Node() {};

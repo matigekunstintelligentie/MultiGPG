@@ -55,8 +55,8 @@ struct Fitness {
   vector<float> get_fitness_MO(Individual * n, Mat * X=NULL, Vec * y=NULL) {
     vector<float> fitness;
     fitness.reserve(2);
-    fitness[0] = get_fitness(n, X, y);
-    fitness[1] = n->get_num_nodes(true);
+    fitness.push_back(get_fitness(n, X, y));
+    fitness.push_back(n->get_num_nodes(true));
     return fitness;
   }
 
@@ -79,7 +79,7 @@ struct Fitness {
       if (compute)
         fitnesses[i] = get_fitness(population[i], X, y);
       else
-        fitnesses[i] = population[i]->fitness;
+        fitnesses[i] = population[i]->fitness[0];
     }
     return fitnesses;
   }
@@ -92,7 +92,7 @@ struct Fitness {
         fitnesses[i,0] = get_fitness(population[i], X, y);
       }
       else{
-        fitnesses[i,0] = population[i]->fitness;
+        fitnesses[i,0] = population[i]->fitness[0];
       }
       fitnesses[i,1] = population[i]->get_num_nodes(true);
     }
@@ -175,10 +175,10 @@ struct MAEFitness : Fitness {
     float fitness = (y - out).abs().mean();
     if (isnan(fitness) || fitness < 0) // the latter can happen due to float overflow
       fitness = INF;
-    n->fitness = fitness;
+    n->fitness[0] = fitness;
 
     for(auto trees:n->trees){
-        n->fitness = fitness;
+        n->fitness[0] = fitness;
     }
 
     return fitness;;
@@ -205,7 +205,7 @@ struct MSEFitness : Fitness {
     if (isnan(fitness) || fitness < 0) // the latter can happen due to float overflow
       fitness = INF;
 
-    n->fitness = fitness;
+    n->fitness[0] = fitness;
 
     return fitness;
   }
@@ -239,7 +239,7 @@ struct LSMSEFitness : Fitness {
     float fitness = (y-out).square().mean();
     if (isnan(fitness) || fitness < 0) // the latter can happen due to float overflow
       fitness = INF;
-    n->fitness = fitness;
+    n->fitness[0] = fitness;
 
 
     return fitness;

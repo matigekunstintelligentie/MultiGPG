@@ -21,6 +21,7 @@ using namespace myeig;
 struct IMS {
   //vectors for storing csv outputs
   vector<float> best_fitnesses;
+  vector<int> best_sizes;
   vector<float> best_fitnesses_mse;
   vector<float> best_fitnesses_val_mse;
   vector<float> times;
@@ -65,7 +66,7 @@ struct IMS {
 
     for(auto it = elites_per_complexity.begin(); it != elites_per_complexity.end(); ++it) {
 
-      float f = it->second->fitness;
+      float f = it->second->fitness[0];
       float c = it->first;
       
       if (f > max_fit)
@@ -415,6 +416,7 @@ struct IMS {
 
 
         best_fitnesses.push_back(1. - curr_best_fit/(g::fit_func->y_train - g::fit_func->y_train.mean()).square().mean());
+        best_sizes.push_back(curr_elite->get_num_nodes(true));
         best_fitnesses_mse.push_back(curr_best_fit);
         best_fitnesses_val_mse.push_back(g::fit_func->get_fitness(select_elite(0.0), g::mse_func->X_val, g::mse_func->y_val));
 
@@ -448,11 +450,30 @@ struct IMS {
     if (!g::_call_as_lib) { // TODO: remove false
       print("\nAll elites found:");
       for (auto it = elites_per_complexity.begin(); it != elites_per_complexity.end(); it++) {
-        print(it->first, " ", it->second->fitness, ":", it->second->human_repr(true));
+        print(it->first, " ", it->second->fitness[0], ":", it->second->human_repr(true));
       }
       print("\nBest w.r.t. complexity for chosen importance:");
       print(this->select_elite(g::rel_compl_importance)->human_repr(true));
         print(this->select_elite(g::rel_compl_importance)->human_repr(false));
+    }
+
+    if(g::log){
+      ofstream csv_file;
+      csv_file.open(g::csv_file, ios::app);
+
+      string str = "";
+      for(int i=0;i<best_fitnesses.size()-1;i++){
+        str += to_string(best_fitnesses[i]) + ","; 
+      }
+      str += to_string(best_fitnesses[best_fitnesses.size()-1])+"\t";
+
+      for(int i=0;i<best_sizes.size()-1;i++){
+        str += to_string(best_sizes[i]) + ","; 
+      }
+      str += to_string(best_sizes[best_sizes.size()-1])+"\n";
+
+      csv_file << str;
+      csv_file.close();
     }
 
 // ============================================================================

@@ -455,13 +455,27 @@ Node * mutation(Node * parent, vector<Op*> & functions, vector<Op*> & terminals,
   return offspring;
 }
  
-
+bool weakly_dominates(vector<float> fitness1, vector<float> fitness2){
+    bool weakly_dominates = false;
+    // TODO: more than 2 objectives
+    for(int i=0; i<2; i++){
+      // TODO: only works because fitnesses are subject to minimisation!
+      if(fitness1[i]<fitness2[i]){
+        weakly_dominates = true;
+      }
+      if(fitness1[i]>fitness2[i]){
+        weakly_dominates = false;
+        break;
+      }
+    }
+    return weakly_dominates;
+}
 
 Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, vector<vector<int>> & fos, int macro_generations) {
 //  Node * offspring = parent->trees[mt]->clone();
   Node * offspring = parent->trees[mt];
 
-  float backup_fitness = parent->fitness;
+  vector<float> backup_fitness = parent->fitness;
   vector<Node*> offspring_nodes = offspring->subtree();
 
 
@@ -507,16 +521,16 @@ Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, ve
     }
 
     // assume nothing changed
-    float new_fitness = backup_fitness;
+    vector<float> new_fitness = backup_fitness;
     if (change_is_meaningful) {
       // gotta recompute
 
       //parent->trees[mt] = offspring;
-      new_fitness = g::fit_func->get_fitness(parent);
+      new_fitness = g::fit_func->get_fitness_MO(parent);
     }
 
     // check is not worse
-    if (new_fitness > backup_fitness) {
+    if (weakly_dominates(backup_fitness, new_fitness)) {
       // undo
       for(int i = 0; i < effectively_changed_indices.size(); i++) {
         int changed_idx = effectively_changed_indices[i];
@@ -528,7 +542,7 @@ Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, ve
       }
       //parent->trees[mt] = offspring;
       parent->fitness = backup_fitness;
-    } else if (new_fitness < backup_fitness) {
+    } else if (weakly_dominates(new_fitness, backup_fitness)) {
       // it improved
 
       backup_fitness = new_fitness;
@@ -562,7 +576,7 @@ Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, ve
        new_fitness = offspring->fitness;
        if (change_is_meaningful) {
          // gotta recompute
-         new_fitness = g::fit_func->get_fitness(parent);
+         new_fitness = g::fit_func->get_fitness_MO(parent);
        }
 
 
@@ -584,7 +598,7 @@ Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, ve
              offspring->fitness = backup_fitness;
            }
          }
-       } else if (new_fitness < backup_fitness) {
+       } else if (weakly_dominates(new_fitness, backup_fitness)) {
          // it improved
          backup_fitness = new_fitness;
 
@@ -613,7 +627,7 @@ Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, ve
      }
 
      if(coeff_found){
-       float fitness_before = offspring->fitness;
+       vector<float> fitness_before = offspring->fitness;
 
        Node * offspring_opt;
        if(g::optimiser_choice=="lm"){
@@ -622,10 +636,10 @@ Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, ve
 
 //       //Possibly redundant
         parent->trees[mt] = offspring_opt;
-        float fitness_after = g::fit_func->get_fitness(parent);
+        vector<float> fitness_after = g::fit_func->get_fitness_MO(parent);
 
 //
-        if(fitness_before > fitness_after){
+        if(weakly_dominates(fitness_after, fitness_before)){
            offspring->clear();
            offspring = offspring_opt;
            ever_improved = true;

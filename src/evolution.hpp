@@ -62,7 +62,7 @@ struct Evolution {
 //        already_generated.insert(str_tree);
 // ============================================================================
 
-       g::fit_func->get_fitness(individual);
+       g::fit_func->get_fitness_MO(individual);
       population.push_back(individual);
     }
   } 

@@ -9,11 +9,13 @@ using namespace std;
 
 struct Individual {
   vector<Node*> trees;
-  float fitness;
+  vector<float> fitness = {9999999,9999999};
 
   //Node() {};
 
-  Individual() {
+  
+  
+  Individual(){
   }
 
   virtual ~Individual() noexcept(false) {
