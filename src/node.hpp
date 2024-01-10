@@ -246,7 +246,7 @@ struct Node {
     return false;
   }
 
-  Vec get_output(Mat & X, vector<Node*> & trees) {
+  Vec get_output(const Mat & X, const vector<Node*> & trees) {
     if(op->type()==OpType::otPlaceholder){
         return trees[((OutputTree*) op)->id]->get_output(X, trees);
     }

@@ -17,20 +17,43 @@
 struct Evolution {
   
   vector<Individual*> population;
-  FOSBuilder * fb = NULL;
+  vector<vector<FOSBuilder *>> fbs;
   int gen_number = 0;
   int pop_size = 0;
 
   Evolution(int pop_size) {
     this->pop_size = pop_size;
-    fb = new FOSBuilder();
+    // For each MO cluster make for each multi-tree a fosbuilder. Fosbuilder cannot be shared due to initial bias
+    if(g::MO_mode){
+        fbs.reserve(7);
+        for(int i = 0; i<7; i++){
+            vector<FOSBuilder *> cluster_fbs;
+            for(int j = 0; j<g::nr_multi_trees; j++){
+                cluster_fbs.push_back(new FOSBuilder());
+            }
+            fbs.push_back(cluster_fbs);
+        }
+    }
+    else {
+        fbs.reserve(1);
+        vector<FOSBuilder *> cluster_fbs;
+        for (int j = 0; j < g::nr_multi_trees; j++) {
+            cluster_fbs.push_back(new FOSBuilder());
+        }
+        fbs.push_back(cluster_fbs);
+    }
     init_pop();
   }
 
   ~Evolution() {
     clear_population(population);
-    if (fb)
-      delete fb;
+    for(auto cluster_fbs : fbs){
+        for(auto mt_fb: cluster_fbs){
+            if(mt_fb){
+                delete mt_fb;
+            }
+        }
+    }
   }
 
   void clear_population(vector<Individual*> & population) {
@@ -41,44 +64,45 @@ struct Evolution {
   }
 
   void init_pop() {
-// ============================================================================
-//     unordered_set<string> already_generated;
-// ============================================================================
+    unordered_set<string> already_generated;
     population.reserve(pop_size);
     int init_attempts = 0;
     while (population.size() < pop_size) {
       auto * individual = generate_individuals(g::max_depth, g::init_strategy, g::nr_multi_trees);
 
-
-
-// ============================================================================
-//        string str_tree = tree->str_subtree();
-//         if (init_attempts < g::max_init_attempts && already_generated.find(str_tree) != already_generated.end()) {
-//           tree->clear();
-//           init_attempts++;
-//           if (init_attempts == g::max_init_attempts) {
-//             print("[!] Warning: could not initialize a syntactically-unique population within ", init_attempts, " attempts");
-//           }
-//           continue;
-//         } 
-//        already_generated.insert(str_tree);
-// ============================================================================
-
-       g::fit_func->get_fitness_MO(individual);
-      population.push_back(individual);
+      string str_tree = individual->human_repr();
+      if (init_attempts < g::max_init_attempts && already_generated.find(str_tree) != already_generated.end()) {
+           individual->clear();
+           init_attempts++;
+           if (init_attempts == g::max_init_attempts) {
+             print("[!] Warning: could not initialize a syntactically-unique population within ", init_attempts, " attempts");
+           }
+           continue;
+         }
+        already_generated.insert(str_tree);
+        g::fit_func->get_fitness_MO(individual);
+        population.push_back(individual);
     }
   } 
 
-  void gomea_generation(int macro_generation) {
-    // build linkage tree fos
-    auto fos = fb->build_linkage_tree(population);
+  void gomea_generation_SO(int macro_generation) {
+    vector<vector<vector<int>>> foses;
+    foses.reserve(g::nr_multi_trees);
+    for(int i =0; i<g::nr_multi_trees;i++){
+        vector<Node *> fos_pop;
+        fos_pop.reserve(population.size());
+        for(int j =0; j<population.size();j++){
+            fos_pop.push_back(population[j]->trees[i]);
+        }
+        foses.push_back(fbs[0][i]->build_linkage_tree(fos_pop, i));
+    }
 
     // perform GOM
     vector<Individual*> offspring_population;
     offspring_population.reserve(pop_size);
 
     for(int i = 0; i < pop_size; i++) {
-      Individual * offspring = efficient_gom(population[i], population, fos, macro_generation);
+      Individual * offspring = efficient_gom_SO(population[i], population, foses, macro_generation);
       //check_n_set_elite(offspring);
       offspring_population.push_back(offspring);
     }
@@ -265,102 +289,56 @@ struct Evolution {
 
   }
 
-  void gomea_MO_generation(int macro_generation){
-      vector<Individual*> offspring_population;
-
-      int nr_objectives = 2;
-      int NIS = 1 + log10(g::pop_size);
-
-      // Make clusters
-      pair<pair<vector<vector<Individual*>>, vector<vector<Individual*>>>, vector<int>> output = K_leader_means(population);
-      vector<vector<Individual *>> clustered_population = output.first.first;
-      vector<vector<Individual *>> clustered_population_equal = output.first.second;
-      vector<int> clusternr = output.second;
-
-      vector<vector<vector<vector<int>>>> FOSs;
-      for(int i=0; i<clustered_population.size();i++){
-          FOSs.push_back(fb->build_linkage_tree(clustered_population_equal[i]));
-      }
-
-      vector<pair<int, int>> idx;
-      for(int i=0;i<clustered_population.size();i++){
-          for(int j=0;j<clustered_population.size();j++){
-              idx.emplace_back(i, j);
-          }
-      }
-
-//      for(int x=0; x<idx.size(); x++){
-//          int &i = idx[x].first;
-//          int &j = idx[x].second;
+//  void gomea_MO_generation(int macro_generation){
+//      vector<Individual*> offspring_population;
 //
-//          Individual *offspring;
-//          if(clustered_population.size()>1){
-//              offspring = GOMMO();
-//          }
-//          else{
-//              offspring = GOMMO();
-//          }
-//          offspring_population.push_back(offspring);
+//      int nr_objectives = 2;
+//      int NIS = 1 + log10(g::pop_size);
+//
+//      // Make clusters
+//      pair<pair<vector<vector<Individual*>>, vector<vector<Individual*>>>, vector<int>> output = K_leader_means(population);
+//      vector<vector<Individual *>> clustered_population = output.first.first;
+//      vector<vector<Individual *>> clustered_population_equal = output.first.second;
+//      vector<int> clusternr = output.second;
+//
+//      vector<vector<vector<vector<int>>>> FOSs;
+//      for(int i=0; i<clustered_population.size();i++){
+//          FOSs.push_back(fb->build_linkage_tree(clustered_population_equal[i]));
 //      }
-
-      assert(offspring_population.size()==population.size());
-
-      for(int i=0; i<population.size(); i++){
-          population[i]->clear();
-      }
-
-      population = offspring_population;
-  }
+//
+//      vector<pair<int, int>> idx;
+//      for(int i=0;i<clustered_population.size();i++){
+//          for(int j=0;j<clustered_population.size();j++){
+//              idx.emplace_back(i, j);
+//          }
+//      }
+//
+////      for(int x=0; x<idx.size(); x++){
+////          int &i = idx[x].first;
+////          int &j = idx[x].second;
+////
+////          Individual *offspring;
+////          if(clustered_population.size()>1){
+////              offspring = GOMMO();
+////          }
+////          else{
+////              offspring = GOMMO();
+////          }
+////          offspring_population.push_back(offspring);
+////      }
+//
+//      assert(offspring_population.size()==population.size());
+//
+//      for(int i=0; i<population.size(); i++){
+//          population[i]->clear();
+//      }
+//
+//      population = offspring_population;
+//  }
 
 
   void run() {
-
     throw runtime_error("Not implemented, please use IMS (with max runs 1 if you want a single population)");
-
-    /*
-    for(int i = 0; i < g::max_generations; i++) {
-      if(g::_call_as_lib && PyErr_CheckSignals() == -1) {
-        exit(1);
-      }
-
-      // update mini batch
-      bool is_updated = g::fit_func->update_batch(g::batch_size);
-      if (is_updated && elite) {
-        elite->clear();
-        elite = NULL;
-        // TODO: remove elite and keep map
-        for (auto it = elites_per_complexity.begin(); it != elites_per_complexity.end(); it++) {
-          it->second->clear();
-        }
-        elites_per_complexity.clear();
-      }
-      
-      gomea_generation();
-      print("gen: ",gen_number, " elite fitness: ", elite->fitness); // TODO: remove elite
-      if (converged(population, true)) {
-        print("population converged");
-        break;
-      }
-
-    }
-
-    // if abs corr, append linear scaling terms
-    if (g::fit_func->name() == "ac") {
-      elite = append_linear_scaling(elite); 
-      for (auto it = elites_per_complexity.begin(); it != elites_per_complexity.end(); it++) {
-        elites_per_complexity[it->first] = append_linear_scaling(it->second);
-      }
-    }
-
-    // TODO: remove this
-    for (auto it = elites_per_complexity.begin(); it != elites_per_complexity.end(); it++) {
-      print(it->first, " ", it->second->fitness, ":", it->second->human_repr());
-    }
-
-    if (!g::_call_as_lib) {
-      print(elite->human_repr());
-    }
-    */
   }
 
 };

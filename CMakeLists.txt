@@ -28,8 +28,8 @@ set(EIGEN3_INCLUDE_DIR "${EIGEN3_INCLUDE_DIR}")
 if(NOT EIGEN3_INCLUDE_DIR)
   message(FATAL_ERROR "Please point the environment variable EIGEN3_INCLUDE_DIR to the include directory of your Eigen3 installation.")
 endif()
-add_subdirectory(./dlib dlib_build)
-include_directories(./dlib/)
+#add_subdirectory(./dlib dlib_build)
+#include_directories(./dlib/)
 # Include python libraries
 find_package(Python COMPONENTS Interpreter Development NumPy REQUIRED)
 debug_message("Found Python\n\tDIRS: ${Python_INCLUDE_DIRS}\t${Python_NumPy_INCLUDE_DIRS}\n\tLIBS: ${Python_LIBRARIES}")
@@ -51,12 +51,13 @@ target_include_directories(${PROJECT_NAME} PRIVATE src)
 target_include_directories(${PROJECT_NAME} PUBLIC ${Python_INCLUDE_DIRS} ${Python_NumPy_INCLUDE_DIRS})
 target_include_directories(${PROJECT_NAME} PUBLIC ${EIGEN3_INCLUDE_DIR})
 # linking
-target_link_libraries(${PROJECT_NAME} PRIVATE ${Python_LIBRARIES} Python::NumPy pybind11::headers dlib::dlib)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${Python_LIBRARIES} Python::NumPy pybind11::headers) # dlib::dlib
 # Do not check for CTRL+C from Python for the standalone executable
 target_compile_definitions(${PROJECT_NAME} PUBLIC CLI=1)
 target_compile_definitions(${PROJECT_NAME} PUBLIC NUM_PRECISION=${NUM_PRECISION})
 ### Pybind interface (pyfe)
-add_library(${PY_LIB_NAME} MODULE src/python_interface.cpp)
+add_library(${PY_LIB_NAME} MODULE src/python_interface.cpp
+        src/bfgs.h)
 set_target_properties(${PY_LIB_NAME} PROPERTIES LINKER_LANGUAGE CXX)
 target_compile_definitions(${PY_LIB_NAME} PUBLIC NUM_PRECISION=${NUM_PRECISION})
 target_include_directories(${PY_LIB_NAME} PUBLIC ${Python_INCLUDE_DIRS} ${Python_NumPy_INCLUDE_DIRS})

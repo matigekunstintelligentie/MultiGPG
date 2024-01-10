@@ -43,34 +43,42 @@ namespace g {
   bool disable_ims = false;
   bool MO_mode = false;
 
+  // logging
+  string csv_file;
   int jacobian_evals = 0;
+  int nr_improvements = 0;
+  float improvement_gom = 0.;
+  float improvement_opt = 0.;
+  float improvement_coeff = 0.;
+  bool log = false;
 
-  // joe
-  int nr_multi_trees;
+  // Optimisation choices
+  // Optimiser specific
+  string optimiser_choice;
   bool use_optimiser=false;
   bool use_local_search=false;
-  string optimiser_choice;
-  int opt_per_gen;
-  string csv_file;
   bool use_clip=false;
-  bool reinject_elite=false;
-
   float tol;
   bool use_ftol=false;
   bool use_mse_opt=false;
   int lm_max_fev = 10;
   int bfgs_max_iter = 2;
-  int nr_improvements = 0;
-  float amount_improvements = 0.;
-  bool log=false;
   bool optimise_after = false;
+
+  int opt_per_gen;
+  int warm_start = 0;
+
+  // GOMEA choices
+  int nr_multi_trees;
+  bool reinject_elite=false;
   bool add_addition_multiplication = false;
   bool add_any = false;
+  float random_accept_p = 0.0;
+
+  // coefficients and range
   float range = 10.;
   bool use_max_range=false;
   bool equal_p_coeffs=false;
-  float random_accept_p = 0.0;
-
 
   // representation
   int max_depth;
@@ -97,7 +105,7 @@ namespace g {
   int batch_size_opt;
 
   // variation
-  int max_init_attempts = 10000;
+  int max_init_attempts = 0;
   bool no_linkage;
   float cmut_eps;
   float cmut_prob;
@@ -299,9 +307,9 @@ namespace g {
 
   void set_batch_size_opt(string lib_batch_size_opt) {
     if (lib_batch_size_opt == "auto") {
-      batch_size_opt = fit_func->X_train.rows();
+      batch_size_opt = mse_func->X_train.rows();
     } else {
-      int n = fit_func->X_train.rows();
+      int n = mse_func->X_train.rows();
       batch_size_opt = stoi(lib_batch_size_opt);
       if (batch_size_opt > n) {
         //print("[!] Warning: batch size is larger than the number of training examples. Setting it to ", n);
@@ -417,25 +425,30 @@ namespace g {
     parser.set_optional<int>("random_state", "random_state", -1, "Random state (seed)");
     parser.set_optional<bool>("verbose", "verbose", false, "Verbose");
     parser.set_optional<bool>("lib", "call_as_lib", false, "Whether the code is called as a library (e.g., from Python)");
-    // joe
+    // optimisation
     parser.set_optional<bool>("use_optim", "use_optim", false, "Whether optimisation is used");
     parser.set_optional<bool>("use_ftol", "use_ftol", false, "Whether ftol is used");
     parser.set_optional<bool>("use_mse_opt", "use_mse_opt", false, "Whether ftol is used");
     parser.set_optional<float>("tol", "tol", 1e-9, "Set tolerance");
     parser.set_optional<bool>("use_clip", "use_clip", false, "Whether gradients are clipped between -1 and 1");
-    parser.set_optional<bool>("log", "log", false, "Whether to log");
-    parser.set_optional<string>("optimiser_choice", "optimiser_choice", "lm", "Selection of optimiser");
-    parser.set_optional<int>("opt_per_gen", "opt_per_gen", 1, "Optimise per x gens)");
-    parser.set_optional<string>("csv_file", "csv_file", "required.csv", "CSV file that is written to.");
+    parser.set_optional<string>("optimiser_choice", "optimiser_choice", "none", "Selection of optimiser");
     parser.set_optional<string>("bs_opt", "batch_size_opt", "auto", "Batch size (default is 'auto', i.e., the entire training set)");
-    parser.set_optional<bool>("reinject_elite", "reinject_elite", false, "Whether to reinject elites into the new population");
     parser.set_optional<bool>("use_local_search", "use_local_search", false, "Whether local search is used");
-    parser.set_optional<bool>("optimise_after", "optimise_after", false, "Whether local search is used");
+    parser.set_optional<bool>("optimise_after", "optimise_after", false, "Whether optimisation is used after evolution is done");
+    //gomea
+    parser.set_optional<int>("opt_per_gen", "opt_per_gen", 1, "Optimise per x gens)");
+    parser.set_optional<int>("warm_start", "warm_start", 0, "Optimise after x gens)");
+    parser.set_optional<bool>("reinject_elite", "reinject_elite", false, "Whether to reinject elites into the new population");
     parser.set_optional<bool>("add_addition_multiplication", "add_addition_multiplication", false, "Whether addition and multiplication is added to individuals");
     parser.set_optional<bool>("add_any", "add_any", false, "Whether any two function are added to individuals");
+    // logging
+    parser.set_optional<bool>("log", "log", false, "Whether to log");
+    parser.set_optional<string>("csv_file", "csv_file", "required.csv", "CSV file that is written to.");
+    // coefficients and rangge
     parser.set_optional<bool>("use_max_range", "use_max_range", false, "Whether the max or 10 is used as initalisation range");
     parser.set_optional<bool>("equal_p_coeffs", "equal_p_coeffs", false, "Whether the leafs are sampled with equal probability");
     parser.set_optional<float>("random_accept_p", "random_accept_p", 0.0, "Whether GOM steps are randomly accepted");
+
     parser.set_optional<bool>("MO_mode", "MO_mode", true, "Whether Multi objective mode is activated");
   
     // set options
@@ -456,31 +469,31 @@ namespace g {
       Rng::set_seed(random_state);
       std::srand(random_state);
 
-      //print("random state: ", random_state);
+      print("random state: ", random_state);
     } else {
-      //print("random state: not set");
+      print("random state: not set");
     }
 
     // budget
     disable_ims = parser.get<bool>("disable_ims");
     if (disable_ims) {
       pop_size = parser.get<int>("pop");
-      //print("pop. size: ",pop_size);
+      print("pop. size: ",pop_size);
     } else {
       pop_size = 64;
-      //print("IMS active");
+      print("IMS active");
     }
    
     max_generations = parser.get<int>("g");
     max_time = parser.get<int>("t");
     max_evaluations = parser.get<int>("e");
     max_node_evaluations = parser.get<long>("ne");
-    // print("budget: ", 
-    //   max_generations > -1 ? max_generations : INF, " generations, ", 
-    //   max_time > -1 ? max_time : INF, " time [s], ", 
-    //   max_evaluations > -1 ? max_evaluations : INF, " evaluations, ", 
-    //   max_node_evaluations > -1 ? max_node_evaluations : INF, " node evaluations" 
-    // );
+    print("budget: ",
+       max_generations > -1 ? max_generations : INF, " generations, ",
+       max_time > -1 ? max_time : INF, " time [s], ",
+       max_evaluations > -1 ? max_evaluations : INF, " evaluations, ",
+       max_node_evaluations > -1 ? max_node_evaluations : INF, " node evaluations"
+    );
 
 
     // initialization
@@ -496,19 +509,12 @@ namespace g {
     add_addition_multiplication = parser.get<bool>("add_addition_multiplication");
     add_any = parser.get<bool>("add_any");
 
-// ============================================================================
-//     if(add_addition_multiplication){
-//         print(add_addition_multiplication);
-//         max_depth = max_depth + 2;
-//     }
-// ============================================================================
-    
     print("max. depth: ", max_depth);
     
     // variation
     cmut_prob = parser.get<float>("cmp");
     cmut_temp = parser.get<float>("cmt");
-    //print("coefficient mutation probability: ", cmut_prob, ", temperature: ",cmut_temp);
+    print("coefficient mutation probability: ", cmut_prob, ", temperature: ",cmut_temp);
     tournament_size = parser.get<int>("tour");
     print("tournament size: ", tournament_size);
 
@@ -521,7 +527,7 @@ namespace g {
     // problem
     string fit_func_name = parser.get<string>("ff");
     set_fit_func(fit_func_name);
-    //print("fitness function: ", fit_func_name);
+    print("fitness function: ", fit_func_name);
 
     _call_as_lib = parser.get<bool>("lib");
     if (!_call_as_lib) {

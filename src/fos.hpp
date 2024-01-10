@@ -19,99 +19,80 @@ struct FOSBuilder
   bool first_time = true;
   Mat B;
 
-  vector<vector<vector<int>>> build_linkage_tree(vector<Individual *> &indpopulation){
-        vector<vector<vector<int>>> foses;
-        
-        foses.reserve(g::nr_multi_trees);
-        // Build FOS for each tree in mt
-        for(int mt = 0; mt<g::nr_multi_trees; mt++){
-            int num_random_variables = indpopulation[0]->trees[0]->subtree().size();
-            //int num_random_variables = int(pow(2, g::max_depth + 1)) - 1;
+  vector<vector<int>> build_linkage_tree(vector<Node *> &population, int mt){
+        int num_random_variables = population[0]->subtree().size();
 
-            if(g::add_any || g::add_addition_multiplication){
-                num_random_variables += 4;
-            }
-    
-            vector<Node*> population;
-            population.reserve(indpopulation.size());
-            for(int i =0; i<indpopulation.size();i++){
-                population.push_back(indpopulation[i]->trees[mt]);
-            }
-            
-            Mat MI;
-            
-            if (g::no_linkage)
-            {
-                
-              MI = Rng::randu_mat(num_random_variables, num_random_variables);
-              // make symmetric
-              for(int i = 0; i < MI.rows(); i++) {
-                for(int j = i+1; j < MI.cols(); j++) {
-                  MI(j,i) = MI(i,j);
-                }
-                MI(i,i) = 1.0;
-              }
-            }
-            else
-            {
-              // discretize population symbols for speed
-              auto discrpop_n_numsymb = discretize_population_symbols(population, num_random_variables);
-              auto discr_pop = discrpop_n_numsymb.first;
-              int num_symbs = discrpop_n_numsymb.second;
-              // estimate MI
-              // MI gets zero with + 2
-              MI = compute_MI(discr_pop, num_symbs, num_random_variables);
-            }
-            
-            vector<vector<int>> fos = fast_upgma(MI);
-
-            // remove the root to avoid complete replacements in last tree, other trees may fully be replaced
-            if(mt==g::nr_multi_trees - 1){
-              fos.pop_back();
-            }
-            
-            if (g::no_large_subsets) {
-              vector<vector<int>> trimmed_fos; trimmed_fos.reserve(fos.size());
-              for (auto subset : fos) {
-                if (subset.size() <= num_random_variables / 2) {
-                  trimmed_fos.push_back(subset);
-                }
-              }
-              fos = trimmed_fos;
-            }
-            
-            if (g::no_univariate) {
-              vector<vector<int>> trimmed_fos; trimmed_fos.reserve(fos.size());
-              for (auto subset : fos) {
-                if (subset.size() > 1) {
-                  trimmed_fos.push_back(subset);
-                }
-              }
-              fos = trimmed_fos;
-            } 
-            else if (g::no_univariate_except_leaves) {
-              // find leaves positions
-              unordered_set<int> position_of_leaves;
-              vector<Node*> some_nodes = population[0]->subtree();
-              for(int i = 0; i < num_random_variables; i++) {
-                if (some_nodes[i]->depth() == g::max_depth) {
-                  position_of_leaves.insert(i);
-                }
-              }
-            
-              vector<vector<int>> trimmed_fos; trimmed_fos.reserve(fos.size());
-              for (auto subset : fos) {
-                bool keep = subset.size() > 1 || position_of_leaves.find(subset[0]) != position_of_leaves.end();
-                if (keep) {
-                  trimmed_fos.push_back(subset);
-                } 
-              }
-              fos = trimmed_fos;
-            
-            }
-            foses.push_back(fos);
+        if(g::add_any || g::add_addition_multiplication){
+            num_random_variables += 4;
         }
-        return foses;
+
+        Mat MI;
+            
+        if (g::no_linkage){
+          MI = Rng::randu_mat(num_random_variables, num_random_variables);
+          // make symmetric
+          for(int i = 0; i < MI.rows(); i++) {
+            for(int j = i+1; j < MI.cols(); j++) {
+              MI(j, i) = MI(i, j);
+            }
+            MI(i,i) = 1.0;
+          }
+        }
+        else{
+          // discretize population symbols for speed
+          auto discrpop_n_numsymb = discretize_population_symbols(population, num_random_variables);
+          auto discr_pop = discrpop_n_numsymb.first;
+          int num_symbs = discrpop_n_numsymb.second;
+          // estimate MI
+          // MI gets zero with + 2
+          MI = compute_MI(discr_pop, num_symbs, num_random_variables);
+        }
+            
+        vector<vector<int>> fos = fast_upgma(MI);
+        // remove the root to avoid complete replacements in last tree, other trees may fully be replaced
+        if(mt==g::nr_multi_trees - 1){
+          fos.pop_back();
+        }
+            
+        if (g::no_large_subsets) {
+          vector<vector<int>> trimmed_fos; trimmed_fos.reserve(fos.size());
+          for (auto subset : fos) {
+            if (subset.size() <= num_random_variables / 2) {
+              trimmed_fos.push_back(subset);
+            }
+          }
+          fos = trimmed_fos;
+        }
+            
+        if (g::no_univariate) {
+          vector<vector<int>> trimmed_fos; trimmed_fos.reserve(fos.size());
+          for (auto subset : fos) {
+            if (subset.size() > 1) {
+              trimmed_fos.push_back(subset);
+            }
+          }
+          fos = trimmed_fos;
+        }
+        else if (g::no_univariate_except_leaves) {
+          // find leaves positions
+          unordered_set<int> position_of_leaves;
+          vector<Node*> some_nodes = population[0]->subtree();
+          for(int i = 0; i < num_random_variables; i++) {
+            if (some_nodes[i]->depth() == g::max_depth) {
+              position_of_leaves.insert(i);
+            }
+          }
+            
+          vector<vector<int>> trimmed_fos; trimmed_fos.reserve(fos.size());
+          for (auto subset : fos) {
+            bool keep = subset.size() > 1 || position_of_leaves.find(subset[0]) != position_of_leaves.end();
+            if (keep) {
+              trimmed_fos.push_back(subset);
+            }
+          }
+          fos = trimmed_fos;
+        }
+        return fos;
   }
 
   // utility for helping linkage learning to consider a contained number of constants
