@@ -319,7 +319,8 @@ struct IMS {
 
 
         // perform generation
-        evolutions[i]->gomea_generation(macro_generations);
+        evolutions[i]->gomea_MO_generation(macro_generations);
+
 
 
         // update elites
