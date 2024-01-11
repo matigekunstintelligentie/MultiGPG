@@ -266,7 +266,7 @@ struct Node {
   }
 
 
-  pair<Vec, Vec> get_output_der(Mat & X) {
+  pair<Vec, Vec> get_output_der(const Mat & X) {
     int a = op->arity();
     if (a == 0){
         return op->apply_der(X);

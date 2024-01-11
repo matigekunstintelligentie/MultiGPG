@@ -29,16 +29,16 @@ struct Fitness {
     throw runtime_error("Not implemented");
   }
 
-  virtual float get_fitness(Individual * n, Mat & X, Vec & y) {
+  virtual vector<float> get_fitness_SO(Individual * n, Mat & X, Vec & y, bool change_fitness = true) {
     throw runtime_error("Not implemented");
   }
 
-  virtual vector<float> get_fitness_MO(Individual * n, Mat & X, Vec & y){
+  virtual vector<float> get_fitness_MO(Individual * n, Mat & X, Vec & y, bool change_fitness = true){
     throw runtime_error("Not implemented");
   }
   
   // shorthand for training set
-  float get_fitness(Individual * n, Mat * X=NULL, Vec * y=NULL) {
+  vector<float> get_fitness_SO(Individual * n, Mat * X=NULL, Vec * y=NULL, bool change_fitness = true) {
     if (!X)
       X = & this->X_batch;
     if (!y)
@@ -46,22 +46,22 @@ struct Fitness {
 
     // update evaluations
     evaluations += 1;
-    //node_evaluations += n->get_num_nodes(true); 
-    // call specific implementation
-    return get_fitness(n, *X, *y);
+    return get_fitness_SO(n, *X, *y, change_fitness);
   }
 
   // shorthand for training set
-  vector<float> get_fitness_MO(Individual * n, Mat * X=NULL, Vec * y=NULL) {
-    vector<float> fitness;
-    fitness.reserve(2);
-    fitness.push_back(get_fitness(n, X, y));
-    fitness.push_back(n->get_num_nodes(true));
-    return fitness;
+  vector<float> get_fitness_MO(Individual * n, Mat * X=NULL, Vec * y=NULL, bool change_fitness = true) {
+      if (!X)
+          X = & this->X_batch;
+      if (!y)
+          y = & this->y_batch;
+
+      // update evaluations
+      evaluations += 1;
+    return get_fitness_MO(n, *X, *y, change_fitness);
   }
 
   float get_fitness_opt(Individual * n, Mat * X=NULL, Vec * y=NULL) {
-    
     if (!X)
       X = & this->X_batch_opt;
     if (!y)
@@ -70,31 +70,33 @@ struct Fitness {
     // update evaluations
     //node_evaluations += n->get_num_nodes(true); 
     // call specific implementation
-    return get_fitness(n, *X, *y);
+    return get_fitness_SO(n, *X, *y, false)[0];
   }
 
-  Vec get_fitnesses(vector<Individual*> population, bool compute=true, Mat * X=NULL, Vec * y=NULL) {  
+  Vec get_fitnesses_SO(vector<Individual*> population, bool compute=true, Mat * X=NULL, Vec * y=NULL) {
     Vec fitnesses(population.size());
     for(int i = 0; i < population.size(); i++) {
       if (compute)
-        fitnesses[i] = get_fitness(population[i], X, y);
+        fitnesses[i] = get_fitness_SO(population[i], X, y, true)[0];
       else
         fitnesses[i] = population[i]->fitness[0];
     }
     return fitnesses;
   }
 
-  Vec get_fitnesses_MO(vector<Individual*> population, bool compute=true, Mat * X=NULL, Vec * y=NULL) {  
+  Mat get_fitnesses_MO(vector<Individual*> population, bool compute=true, Mat * X=NULL, Vec * y=NULL) {
     //TODO: hardcoded size
-    Vec fitnesses(population.size(), 2);
+    Mat fitnesses(population.size(), 2);
     for(int i = 0; i < population.size(); i++) {
       if(compute){
-        fitnesses[i,0] = get_fitness(population[i], X, y);
+        vector<float> fs = get_fitness_MO(population[i], X, y, true);
+        fitnesses(i,0) = fs[0];
+        fitnesses(i,1) = fs[1];
       }
       else{
-        fitnesses[i,0] = population[i]->fitness[0];
+        fitnesses(i,0) = population[i]->fitness[0];
+        fitnesses(i,1) = population[i]->fitness[1];
       }
-      fitnesses[i,1] = population[i]->get_num_nodes(true);
     }
     return fitnesses;
   }
@@ -159,33 +161,6 @@ struct Fitness {
   }
 };
 
-struct MAEFitness : Fitness {
-
-  string name() override {
-    return "mae";
-  }
-  
-  Fitness * clone() override {
-    return new MAEFitness();
-  }
-
-  float get_fitness(Individual * n, Mat & X, Vec & y) override {
-    Vec out = n->get_output(X, n->trees);
-
-    float fitness = (y - out).abs().mean();
-    if (isnan(fitness) || fitness < 0) // the latter can happen due to float overflow
-      fitness = INF;
-    n->fitness[0] = fitness;
-
-    for(auto trees:n->trees){
-        n->fitness[0] = fitness;
-    }
-
-    return fitness;;
-  }
-
-};
-
 struct MSEFitness : Fitness {
 
   string name() override {
@@ -196,18 +171,39 @@ struct MSEFitness : Fitness {
     return new MSEFitness();
   }
 
-  float get_fitness(Individual * n, Mat & X, Vec & y) override {
-
+  vector<float> get_fitness_SO(Individual * n, Mat & X, Vec & y, bool change_fitness=true) override {
+    vector<float> fitnessses;
+    fitnessses.reserve(1);
     Vec out = n->get_output(X, n->trees);
     
     float fitness = (y-out).square().mean();
 
     if (isnan(fitness) || fitness < 0) // the latter can happen due to float overflow
-      fitness = INF;
+      fitness = 999999;
 
-    n->fitness[0] = fitness;
+    if(change_fitness) {
+        n->fitness[0] = fitness;
+    }
+    fitnessses.push_back(fitness);
+    return fitnessses;
+  }
 
-    return fitness;
+  vector<float> get_fitness_MO(Individual * n, Mat & X, Vec & y, bool change_fitness=true) override {
+
+    Vec out = n->get_output(X, n->trees);
+
+    float fitness = (y-out).square().mean();
+
+    if (isnan(fitness) || fitness < 0) // the latter can happen due to float overflow
+        fitness = 999999;
+
+    if(change_fitness) {
+        n->fitness[0] = fitness;
+
+        n->fitness[1] = n->get_num_nodes(true);
+    }
+
+    return n->fitness;
   }
 
 };
@@ -224,7 +220,7 @@ struct LSMSEFitness : Fitness {
     return new LSMSEFitness();
   }
 
-  float get_fitness(Individual * n, Mat & X, Vec & y) override {
+  vector<float> get_fitness_SO(Individual * n, Mat & X, Vec & y, bool change_fitness) override {
     Vec out = n->get_output(X, n->trees);
     pair<float,float> intc_slope = linear_scaling_coeffs(y, out);
     
@@ -237,13 +233,38 @@ struct LSMSEFitness : Fitness {
 
 
     float fitness = (y-out).square().mean();
-    if (isnan(fitness) || fitness < 0) // the latter can happen due to float overflow
-      fitness = INF;
-    n->fitness[0] = fitness;
+    if (isnan(fitness) || fitness < 0 || isinf(fitness)) // the latter can happen due to float overflow
+      fitness = 999999;
 
+    if(change_fitness) {
+        n->fitness[0] = fitness;
+    }
 
-    return fitness;
+    return n->fitness;
   }
+
+  vector<float> get_fitness_MO(Individual * n, Mat & X, Vec & y,bool change_fitness) override {
+        Vec out = n->get_output(X, n->trees);
+        pair<float,float> intc_slope = linear_scaling_coeffs(y, out);
+
+        if (intc_slope.second == 0){
+            out = intc_slope.first + out;
+        }
+        else{
+            out = intc_slope.first + intc_slope.second*out;
+        }
+
+
+        float fitness = (y-out).square().mean();
+        if (isnan(fitness) || fitness < 0 || isinf(fitness)) // the latter can happen due to float overflow
+            fitness = 999999;
+      if(change_fitness) {
+        n->fitness[0] = fitness;
+        n->fitness[1] = n->get_num_nodes(true);
+      }
+
+        return n->fitness;
+    }
 
 };
 

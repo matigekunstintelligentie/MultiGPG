@@ -11,7 +11,6 @@
 #include "cmdparser.hpp"
 #include "feature_selection.hpp"
 #include "rng.hpp"
-#include <dlib/rand.h>
 
 using namespace std;
 using namespace myeig;
@@ -105,7 +104,7 @@ namespace g {
   int batch_size_opt;
 
   // variation
-  int max_init_attempts = 0;
+  int max_init_attempts = 10000;
   bool no_linkage;
   float cmut_eps;
   float cmut_prob;
@@ -261,8 +260,6 @@ namespace g {
     }
   }
 
-
-
   void set_terminal_probabilities(string setting) {
     print("set_terminal_probabilities");
     if (setting == "auto") {
@@ -396,7 +393,7 @@ namespace g {
     parser.set_optional<int>("t", "time", -1, "Budget of time (-1 for disabled)");
     parser.set_optional<int>("e", "evaluations", -1, "Budget of evaluations (-1 for disabled)");
     parser.set_optional<long>("ne", "node_evaluations", -1, "Budget of node evaluations (-1 for disabled)");
-    parser.set_optional<bool>("disable_ims", "disable_ims", false, "Whether to disable the IMS (default is false)");
+    parser.set_optional<bool>("disable_ims", "disable_ims", true, "Whether to disable the IMS (default is false)");
     // initialization
     parser.set_optional<string>("is", "initialization_strategy", "hh", "Strategy to sample the initial population");
     parser.set_optional<int>("d", "depth", 4, "Maximum depth that the trees can have");
@@ -449,7 +446,7 @@ namespace g {
     parser.set_optional<bool>("equal_p_coeffs", "equal_p_coeffs", false, "Whether the leafs are sampled with equal probability");
     parser.set_optional<float>("random_accept_p", "random_accept_p", 0.0, "Whether GOM steps are randomly accepted");
 
-    parser.set_optional<bool>("MO_mode", "MO_mode", true, "Whether Multi objective mode is activated");
+    parser.set_optional<bool>("MO_mode", "MO_mode", false, "Whether Multi objective mode is activated");
   
     // set options
     parser.run_and_exit_if_error();
@@ -634,7 +631,8 @@ namespace g {
       + " opt_per_gen " +  std::to_string(opt_per_gen) +
       + " add_addition_multiplication " +  std::to_string(add_addition_multiplication)
       + " equal_p_coeffs " +  std::to_string(equal_p_coeffs)
-      + " nr multi trees" + std::to_string(nr_multi_trees)
+      + " nr multi trees " + std::to_string(nr_multi_trees)
+      + " MO mode " + std::to_string(MO_mode)
       );
   }
 

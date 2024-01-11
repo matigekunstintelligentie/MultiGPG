@@ -80,7 +80,12 @@ struct Evolution {
            continue;
          }
         already_generated.insert(str_tree);
-        g::fit_func->get_fitness_MO(individual);
+        if(g::MO_mode){
+            g::fit_func->get_fitness_MO(individual);
+        }
+        else{
+            g::fit_func->get_fitness_SO(individual);
+        };
         population.push_back(individual);
     }
   } 
@@ -122,6 +127,7 @@ struct Evolution {
       // keep track of possible leaders
       vector<int> range(pop_size);
       iota(range.begin(), range.end(), 0);
+
       // all solutions are still possible as leaders
       unordered_set<int> remaining_solutions(range.begin(), range.end());
 
@@ -133,6 +139,9 @@ struct Evolution {
               norm_data(j,i) = population[i]->fitness[j];
           }
       }
+
+
+
 
       for(int i=0; i<nr_objs; i++){
           float min;
@@ -146,9 +155,9 @@ struct Evolution {
                   min = value;
                   min_initialised = true;
               }
-              if (!min_initialised || value > max) {
+              if (!max_initialised || value > max) {
                   max = value;
-                  min_initialised = true;
+                  max_initialised = true;
               }
           }
           //normalize each value in population for that objective
@@ -209,7 +218,7 @@ struct Evolution {
       int iter = 0;
       while(cluster_change && iter<50){
           cluster_change = false;
-          Mat cluster_centers_temp = Vec::Zero(nr_objs, idx_leaders.size());
+          Mat cluster_centers_temp = Mat::Zero(nr_objs, idx_leaders.size());
           vector<int> counts = vector<int>(idx_leaders.size(), 0);
 
           for(int i = 0; i<pop_size; i++){
@@ -263,6 +272,10 @@ struct Evolution {
           }
           for(int times=0; times<((2*pop_size)/initialised_k); times++){
               clustered_population_equal[x].push_back(population[argmin(distances)]);
+              for(int z=0;z<distances.size(); z++){
+                  print(distances(z));
+              }
+
               clustertags_equal[argmin(distances)].push_back(x);
               distances[argmin(distances)] = std::numeric_limits<float>::infinity();
           }
@@ -282,59 +295,80 @@ struct Evolution {
           clusternr[am] = i;
       }
 
-      // if not jet assigned solution in equal size clustering, assign to closest. if multiple are assigned, assign to random of multiple center
-      for (size_t i = 0; i < pop_size; i++) {
-          
+      // if not yet assigned solution in equal size clustering, assign to closest. if multiple are assigned, assign to random of multiple center
+      for (int i = 0; i < pop_size; i++) {
+          if(!clustertags_equal[i].empty()){
+              int assign;
+              if(clustertags_equal[i].size()==1){
+                  assign = clustertags_equal[i][0];
+              }
+              else{
+                  assign = clustertags_equal[i][Rng::randu() * clustertags_equal[i].size()];
+              }
+              clustered_population[assign].push_back(population[i]);
+          }
+          else{
+              clustered_population[clustertags_kmeans[i]].push_back(population[i]);
+          }
       }
-
+      return make_pair(make_pair(clustered_population, clustered_population_equal), clusternr);
   }
 
-//  void gomea_MO_generation(int macro_generation){
-//      vector<Individual*> offspring_population;
-//
-//      int nr_objectives = 2;
-//      int NIS = 1 + log10(g::pop_size);
-//
-//      // Make clusters
-//      pair<pair<vector<vector<Individual*>>, vector<vector<Individual*>>>, vector<int>> output = K_leader_means(population);
-//      vector<vector<Individual *>> clustered_population = output.first.first;
-//      vector<vector<Individual *>> clustered_population_equal = output.first.second;
-//      vector<int> clusternr = output.second;
-//
-//      vector<vector<vector<vector<int>>>> FOSs;
-//      for(int i=0; i<clustered_population.size();i++){
-//          FOSs.push_back(fb->build_linkage_tree(clustered_population_equal[i]));
-//      }
-//
-//      vector<pair<int, int>> idx;
-//      for(int i=0;i<clustered_population.size();i++){
-//          for(int j=0;j<clustered_population.size();j++){
-//              idx.emplace_back(i, j);
-//          }
-//      }
-//
-////      for(int x=0; x<idx.size(); x++){
-////          int &i = idx[x].first;
-////          int &j = idx[x].second;
-////
-////          Individual *offspring;
-////          if(clustered_population.size()>1){
-////              offspring = GOMMO();
-////          }
-////          else{
-////              offspring = GOMMO();
-////          }
-////          offspring_population.push_back(offspring);
-////      }
-//
-//      assert(offspring_population.size()==population.size());
-//
-//      for(int i=0; i<population.size(); i++){
-//          population[i]->clear();
-//      }
-//
-//      population = offspring_population;
-//  }
+  void gomea_generation_MO(int macro_generation){
+      vector<Individual*> offspring_population;
+
+      int nr_objectives = 2;
+      //int NIS = 1 + log10(g::pop_size);
+
+      // Make clusters
+      pair<pair<vector<vector<Individual*>>, vector<vector<Individual*>>>, vector<int>> output = K_leader_means(population);
+      vector<vector<Individual *>> clustered_population = output.first.first;
+      vector<vector<Individual *>> clustered_population_equal = output.first.second;
+      vector<int> clusternr = output.second;
+
+      vector<vector<vector<vector<int>>>> FOSs;
+      for(int i = 0; i<7; i++){
+          vector<vector<vector<int>>> cluster_fbs;
+          for(int j = 0; j<g::nr_multi_trees; j++){
+              vector<Node *> fos_pop;
+              fos_pop.reserve(clustered_population.size());
+              for(int j =0; j<clustered_population.size();j++){
+                  fos_pop.push_back(clustered_population[i][j]->trees[i]);
+              }
+              cluster_fbs.push_back(fbs[i][j]->build_linkage_tree(fos_pop, j));
+          }
+          FOSs.push_back(cluster_fbs);
+      }
+
+      vector<pair<int, int>> idx;
+      for(int i=0;i<clustered_population.size();i++){
+          for(int j=0;j<clustered_population.size();j++){
+              idx.emplace_back(i, j);
+          }
+      }
+
+      for(int x=0; x<idx.size(); x++){
+          int &i = idx[x].first;
+          int &j = idx[x].second;
+
+          Individual *offspring;
+          if(clustered_population.size()>1){
+              offspring = efficient_gom_MO(clustered_population[i][j], population, FOSs[i], macro_generation);
+          }
+          else{
+              offspring = efficient_gom_MO(clustered_population[i][j], population, FOSs[i], macro_generation);
+          }
+          offspring_population.push_back(offspring);
+      }
+
+      assert(offspring_population.size()==population.size());
+
+      for(int i=0; i<population.size(); i++){
+          population[i]->clear();
+      }
+
+      population = offspring_population;
+  }
 
 
   void run() {

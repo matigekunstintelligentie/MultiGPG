@@ -163,7 +163,7 @@ struct IMS {
   void terminate_obsolete_evolutions() {
     int largest_obsolete_idx = -1;
     for(int i = evolutions.size() - 1; i >= 0; i--) {
-      auto fitnesses_i = g::fit_func->get_fitnesses(evolutions[i]->population, false);
+      auto fitnesses_i = g::fit_func->get_fitnesses_SO(evolutions[i]->population, false);
       convergence.push_back(highest_equal_fitness(fitnesses_i));
 
       float med_fit_i = median(fitnesses_i);
@@ -174,7 +174,7 @@ struct IMS {
       }
 
       for (int j = i-1; j >= 0; j--) {
-        auto fitnesses_j = g::fit_func->get_fitnesses(evolutions[j]->population, false);
+        auto fitnesses_j = g::fit_func->get_fitnesses_SO(evolutions[j]->population, false);
         float med_fit_j = median(fitnesses_j);
         if (med_fit_j > med_fit_i || approximately_converged(fitnesses_j)) {
           // will have to terminate j and previous
@@ -209,7 +209,7 @@ struct IMS {
 
   void reevaluate_elites() {
     for(auto it = elites_per_complexity.begin(); it != elites_per_complexity.end(); it++) {
-      g::fit_func->get_fitness(it->second);
+      g::fit_func->get_fitness_SO(it->second)[0];
     }
   }
 
@@ -319,7 +319,13 @@ struct IMS {
 
 
         // perform generation
-        evolutions[i]->gomea_MO_generation(macro_generations);
+        if(g::MO_mode){
+            evolutions[i]->gomea_generation_MO(macro_generations);
+        }
+        else{
+            evolutions[i]->gomea_generation_SO(macro_generations);
+        };
+
 
 
 
@@ -359,7 +365,7 @@ struct IMS {
       
       
       Individual * curr_elite = select_elite(0.0)->clone();
-      float curr_best_fit = g::fit_func->get_fitness(curr_elite, g::fit_func->X_train, g::fit_func->y_train);
+      float curr_best_fit = g::fit_func->get_fitness_SO(curr_elite, g::fit_func->X_train, g::fit_func->y_train)[0];
       
       
 // ============================================================================
@@ -419,15 +425,14 @@ struct IMS {
         best_fitnesses.push_back(1. - curr_best_fit/(g::fit_func->y_train - g::fit_func->y_train.mean()).square().mean());
         best_sizes.push_back(curr_elite->get_num_nodes(true));
         best_fitnesses_mse.push_back(curr_best_fit);
-        best_fitnesses_val_mse.push_back(g::fit_func->get_fitness(select_elite(0.0), g::mse_func->X_val, g::mse_func->y_val));
+        best_fitnesses_val_mse.push_back(g::fit_func->get_fitness_SO(select_elite(0.0), g::mse_func->X_val, g::mse_func->y_val)[0]);
 
         //print("nr improvements: ", g::nr_improvements, " ", g::amount_improvements);
 
         nr_improvements.push_back(g::nr_improvements);
-        amount_improvements.push_back(g::amount_improvements);
+
 
         g::nr_improvements = 0;
-        g::amount_improvements = 0.;
 
         times.push_back(tock(start_time));
 

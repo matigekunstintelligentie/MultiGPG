@@ -59,15 +59,15 @@ struct Op {
     throw runtime_error("Not implemented type");
   }
 
-  virtual Vec apply(Mat & X) {
+  virtual Vec apply(const Mat & X) {
     throw runtime_error("Not implemented apply");
   }
 
-  virtual pair<Vec, Vec> apply_der(Mat & X) {
+  virtual pair<Vec, Vec> apply_der(const Mat & X) {
     throw runtime_error("Not implemented apply der");
   }  
 
-  virtual pair<Vec, Vec> apply_der(Mat & X, Mat & D) {
+  virtual pair<Vec, Vec> apply_der(const Mat & X, Mat & D) {
     throw runtime_error("Not implemented apply der 2");
   }
 
@@ -128,11 +128,11 @@ struct Add : Fun {
     return "+";
   }
 
-  Vec apply(Mat & X) override {
+  Vec apply(const Mat & X) override {
     return X.col(0) + X.col(1);
   }
   
-  pair<Vec, Vec> apply_der(Mat & X, Mat & D) override {
+  pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
     return make_pair(apply(X), D.col(0) + D.col(1));
   }
 
@@ -164,11 +164,11 @@ struct Neg : Fun {
     return "¬";
   }
 
-  Vec apply(Mat & X) override {
+  Vec apply(const Mat & X) override {
     return -X.col(0);
   }
 
-  pair<Vec, Vec> apply_der(Mat & X, Mat & D) override {
+  pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
     return make_pair(apply(X), -D);
   }
 
@@ -199,11 +199,11 @@ struct Sub : Fun {
     return "-";
   }
 
-  Vec apply(Mat & X) override {
+  Vec apply(const Mat & X) override {
     return X.col(0)-X.col(1);
   }
 
-  pair<Vec, Vec> apply_der(Mat & X, Mat & D) override {
+  pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
     return make_pair(apply(X), D.col(0)-D.col(1));
   }
 
@@ -234,11 +234,11 @@ struct Mul : Fun {
     return "*";
   }
   
-  Vec apply(Mat & X) override {
+  Vec apply(const Mat & X) override {
     return X.col(0)*X.col(1);
   }
 
-   pair<Vec, Vec> apply_der(Mat & X, Mat & D) override {
+   pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
     return make_pair(apply(X), X.col(1)*D.col(0) + X.col(0)*D.col(1));
   }
 
@@ -270,14 +270,14 @@ struct Inv : Fun {
   }
 
   
-  Vec apply(Mat & X) override {
+  Vec apply(const Mat & X) override {
     // division by 0 is undefined thus conver to NAN
     Vec denom = X.col(0);
     replace(denom, 0, NAN);
     return 1./denom;
   }
 
-  pair<Vec, Vec> apply_der(Mat & X, Mat & D) override {
+  pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
     Vec denom = X.col(0).square();
     replace(denom, 0, NAN);
     return make_pair(apply(X), -D.col(0)/denom);
@@ -311,14 +311,14 @@ struct Div : Fun {
     return "/";
   }
 
-  Vec apply(Mat & X) override {
+  Vec apply(const Mat & X) override {
     // division by 0 is undefined thus convert to NAN
     Vec denom = X.col(1);
     replace(denom, 0, NAN);
     return X.col(0)/denom;
   }
 
-  pair<Vec, Vec> apply_der(Mat & X, Mat & D) override {
+  pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
     Vec denom = X.col(1);
     replace(denom, 0, NAN);
     return make_pair(apply(X), (X.col(1)*D.col(0) - X.col(0)*D.col(1))/denom.square());
@@ -351,11 +351,11 @@ struct Sin : Fun {
     return "sin";
   }
 
-  Vec apply(Mat & X) override {
+  Vec apply(const Mat & X) override {
     return X.sin();
   }
 
-  pair<Vec, Vec> apply_der(Mat & X, Mat & D) override {
+  pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
     return make_pair(apply(X), X.cos()*D.col(0));
   }
 
@@ -387,11 +387,11 @@ struct Abs : Fun {
     return "abs";
   }
 
-  Vec apply(Mat & X) override {
+  Vec apply(const Mat & X) override {
     return X.abs();
   }
 
-  pair<Vec, Vec> apply_der(Mat & X, Mat & D) override {
+  pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
     Vec applied = apply(X);
     Vec appliedzero = applied;
     replace(appliedzero, 0, NAN);
@@ -426,11 +426,11 @@ struct Exp : Fun {
     return "exp";
   }
 
-  Vec apply(Mat & X) override {
+  Vec apply(const Mat & X) override {
     return X.exp();
   }
 
-  pair<Vec, Vec> apply_der(Mat & X, Mat & D) override {
+  pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
     Vec applied = apply(X);
     return make_pair(applied, applied * D.col(0));
   }
@@ -463,11 +463,11 @@ struct Pow : Fun {
     return "pow";
   }
 
-  Vec apply(Mat & X) override {
+  Vec apply(const Mat & X) override {
     return X.col(0).pow(X.col(1));
   }
 
-  pair<Vec, Vec> apply_der(Mat & X, Mat & D) override {
+  pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
     return make_pair(apply(X), X.col(0).pow(X.col(1)-1.)*(X.col(0)*D.col(1)*X.col(0).log() + X.col(1)*D.col(0)));
   }
 
@@ -500,11 +500,11 @@ struct Max : Fun {
     return "max";
   }
 
-  Vec apply(Mat & X) override {
+  Vec apply(const Mat & X) override {
     return X.col(0).max(X.col(1));
   }
 
-  pair<Vec, Vec> apply_der(Mat & X, Mat & D) override {
+  pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
     Vec gt = (X.col(0)>=X.col(1)).cast<float>();
     return make_pair(apply(X), gt*D.col(0) + (1.-gt)*D.col(1));
   }
@@ -537,11 +537,11 @@ struct Min : Fun {
     return "min";
   }
 
-  Vec apply(Mat & X) override {
+  Vec apply(const Mat & X) override {
     return X.col(0).min(X.col(1));
   }
 
-  pair<Vec, Vec> apply_der(Mat & X, Mat & D) override {
+  pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
     Vec gt = (X.col(0)<=X.col(1)).cast<float>();
     return make_pair(apply(X), gt*D.col(0) + (1.-gt)*D.col(1));
   }
@@ -575,11 +575,11 @@ struct Cos : Fun {
     return "cos";
   }
 
-  Vec apply(Mat & X) override {
+  Vec apply(const Mat & X) override {
     return X.cos();
   }
 
-  pair<Vec, Vec> apply_der(Mat & X, Mat & D) override {
+  pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
     return make_pair(apply(X), D.col(0)*(-X.sin()));
   }
 
@@ -611,12 +611,12 @@ struct Log : Fun {
     return "log";
   }
 
-  Vec apply(Mat & X) override {
+  Vec apply(const Mat & X) override {
     // Log of x < 0 is undefined and log of 0 is -inf
     return X.col(0).log();
   }
 
-  pair<Vec, Vec> apply_der(Mat & X, Mat & D) override {
+  pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
     Vec denom = X.col(0);
     replace(denom, 0, NAN);
     return make_pair(apply(X), D.col(0)/denom);
@@ -650,12 +650,12 @@ struct Sqrt : Fun {
     return "sqrt";
   }
 
-  Vec apply(Mat & X) override {
+  Vec apply(const Mat & X) override {
     // Sqrt of x < 0 is undefined
     return X.col(0).sqrt();
   }
 
-  pair<Vec, Vec> apply_der(Mat & X, Mat & D) override {
+  pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
     Vec sqrt = apply(X);
     return make_pair(sqrt, D.col(0)/(2.*sqrt));
   }
@@ -692,12 +692,12 @@ struct Square : Fun {
   //   return _human_repr_unary_after(args);
   // }
 
-  Vec apply(Mat & X) override {
+  Vec apply(const Mat & X) override {
     Vec x = X.col(0);
     return x.square();
   }
 
-  pair<Vec, Vec> apply_der(Mat & X, Mat & D) override {
+  pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
     return make_pair(apply(X), 2.*X*D.col(0));
   }
 
@@ -733,12 +733,12 @@ struct Cube : Fun {
   //   return _human_repr_unary_after(args);
   // }
 
-  Vec apply(Mat & X) override {
+  Vec apply(const Mat & X) override {
     Vec x = X.col(0);
     return x.cube();
   }
 
-  pair<Vec, Vec> apply_der(Mat & X, Mat & D) override {
+  pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
     return make_pair(apply(X), 3.*X.square()*D.col(0));
   }
 
@@ -780,11 +780,11 @@ struct Feat : Term {
     return OpType::otFeat;
   }
 
-  Vec apply(Mat & X) override {
+  Vec apply(const Mat & X) override {
     return X.col(id);
   }
 
-  pair<Vec, Vec> apply_der(Mat & X) override {
+  pair<Vec, Vec> apply_der(const Mat & X) override {
     return make_pair(X.col(id), Vec::Constant(X.rows(), 0.));
   }
 
@@ -842,7 +842,7 @@ struct Const : Term {
     return OpType::otConst;
   }
 
-  Vec apply(Mat & X) override {
+  Vec apply(const Mat & X) override {
     if (isnan(c)){
       _sample();
       }
@@ -850,7 +850,7 @@ struct Const : Term {
     return c_vec;
   }
 
-  pair<Vec, Vec> apply_der(Mat & X) override {
+  pair<Vec, Vec> apply_der(const Mat & X) override {
     return make_pair(Vec::Constant(X.rows(), c), Vec::Constant(X.rows(), d));
   }
 
