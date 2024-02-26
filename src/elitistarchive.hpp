@@ -1,7 +1,8 @@
-#include "globals.hpp"
-#include "individual.hpp"
+#ifndef ELITISTARCHIVE_H
+#define ELITISTARCHIVE_H
 
-using namespace std;
+//#include "individual.hpp"
+#include "globals.hpp"
 
 struct ElitistArchive{
     vector<Individual*> SO_archive;
@@ -20,29 +21,29 @@ struct ElitistArchive{
         return strictly_better_somewhere;
     }
 
-    bool diversityAdded(Individual* individual, vector<Node*> & trees, int idx){
-        Vec diff = individual->get_output(g::fit_func->X_train, trees) - MO_archive[idx]->get_output(g::fit_func->X_train, trees);
-        if(diff.mean()==0){
-            return false;
-        }
-        else{
+    bool diversityAdded(Individual* individual, int idx){
+        Vec diff = individual->get_output(g::fit_func->X_train, individual->trees) - MO_archive[idx]->get_output(g::fit_func->X_train, individual->trees);
+//        if(diff.mean()==0){
+//            return false;
+//        }
+//        else{
             return true;
-        }
+//        }
     }
 
-    void initSOArchive(vector<Individual*> population, vector<Node*> & trees){
+    void initSOArchive(vector<Individual*> population){
         for(Individual *ind: population){
-            updateSOArchive(ind, trees);
+            updateSOArchive(ind);
         }
     }
 
-    void initMOArchive(vector<Individual*> population, vector<Node*> & trees){
+    void initMOArchive(vector<Individual*> population){
         for(Individual *ind: population){
-            updateSOArchive(ind, trees);
+            updateMOArchive(ind);
         }
     }
 
-    void updateSOArchive(Individual * individual, vector<Node*> & trees){
+    void updateSOArchive(Individual * individual){
         for(int i=0; i<2; i++){
             if(SO_archive[i] == nullptr){
                 Individual *new_individual = individual->clone();
@@ -57,7 +58,7 @@ struct ElitistArchive{
         }
     }
 
-    void updateMOArchive(Individual * individual, vector<Node*> & trees){
+    void updateMOArchive(Individual * individual){
         bool solution_is_dominated = false;
         bool diversity_added = false;
         bool identical_objectives_already_exist;
@@ -76,7 +77,7 @@ struct ElitistArchive{
                 }
             }
             if(identical_objectives_already_exist){
-                if (diversityAdded(individual, trees, i)) {
+                if (diversityAdded(individual, i)) {
                     diversity_added = true;
                     MO_archive[i]->clear();
                     MO_archive[i] = nullptr;
@@ -93,8 +94,10 @@ struct ElitistArchive{
 
         if ((!solution_is_dominated && !identical_objectives_already_exist) || (diversity_added)) {
             Individual *new_individual = individual->clone();
-            g::fit_func->get_fitness_MO(new_individual);
+            //g::fit_func->get_fitness_MO(new_individual);
             MO_archive.push_back(new_individual);
         }
     }
 };
+
+#endif
