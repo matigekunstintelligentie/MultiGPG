@@ -780,6 +780,8 @@ check_changes_MO(Individual *offspring, bool FI, vector<float> back_obj){
 }
 
 Node * efficient_gom_MO_FI(Individual * parent, int mt, vector<Node*> & population, vector<vector<int>> & fos, int macro_generations, int objective, bool extrema, int NIS_const) {
+    vector<float> pt_bf = parent->fitness;
+
     Node * offspring = parent->trees[mt];
 
     vector<float> backup_fitness = parent->fitness;
@@ -827,6 +829,7 @@ Node * efficient_gom_MO_FI(Individual * parent, int mt, vector<Node*> & populati
         if (change_is_meaningful) {
             g::fit_func->get_fitness_MO(parent);
 
+            // TODO: comments here, what does this do?
             std::pair<bool, bool> check_changes = extrema ? check_changes_SO(offspring, backup_fitness,  true, objective):check_changes_MO(parent, true, backup_fitness);
 
 
@@ -969,7 +972,9 @@ Node * efficient_gom_MO_FI(Individual * parent, int mt, vector<Node*> & populati
 //        }
 //    }
 
+    vector<float> pt_af = parent->fitness;
 
+    print(pt_bf[0], " ", pt_bf[1], ";", pt_af[0], " ", pt_af[1]);
 
     if ((!changed) && !g::ea->MO_archive.empty()) {
         offspring->clear();
@@ -1033,6 +1038,7 @@ Node * efficient_gom_MO(Individual * parent, int mt, vector<Node*> & population,
         if (change_is_meaningful) {
             g::fit_func->get_fitness_MO(parent);
 
+            // TODO check all below
             std::pair<bool, bool> check_changes = extrema ? check_changes_SO(offspring, backup_fitness,  false, objective):check_changes_MO(parent, false, backup_fitness);
 
             if(check_changes.second){
@@ -1170,10 +1176,6 @@ Node * efficient_gom_MO(Individual * parent, int mt, vector<Node*> & population,
         }
     }
 
-    if(parent->NIS>0){
-        print("ff");
-    }
-
     parent->NIS = ever_improved ? 0 : parent->NIS + 1;
 
     if ((!changed || parent->NIS > NIS_const) && !g::ea->MO_archive.empty()) {
@@ -1205,6 +1207,13 @@ Individual * efficient_gom_SO(Individual * og_parent, vector<Individual *> & ind
 Individual * efficient_gom_MO(Individual * og_parent, vector<Individual *> & indpopulation, vector<vector<vector<int>>> & multi_fos, int macro_generations, int objective, bool extrema, int NIS_const){
     Individual * parent = og_parent->clone();
 
+    // TODO delete
+    if(objective==0 && extrema){
+        print("extrema");
+    }
+    float fitness_bf = parent->fitness[0];
+    string stri_bf = parent->human_repr();
+
     for(int mt=0;mt<g::nr_multi_trees;mt++){
         vector<Node*> population;
         population.reserve(indpopulation.size());
@@ -1216,6 +1225,18 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<Individual *> & ind
 
         parent->trees[mt] = new_tree;
     }
+
+    // TODO delete
+    float fitness_af = parent->fitness[0];
+    string stri_af = parent->human_repr();
+
+    if(objective==0 && extrema && (fitness_bf < fitness_af)){
+        print(stri_bf, fitness_bf);
+        print(stri_af, fitness_af);
+        print("SOMETHING WRONG");
+    }
+
+
     return parent;
 }
 

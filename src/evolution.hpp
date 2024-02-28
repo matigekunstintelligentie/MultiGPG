@@ -183,6 +183,27 @@ struct Evolution {
               norm_data(i, j) = (norm_data(i, j) - min) / ((max - min)+0.0000000001);
           }
       }
+
+//      // TODO remove
+//      for(int y=0;y<norm_data.cols();y++){
+//          if(!isfinite(norm_data(0,y)) || isnan(norm_data(0,y)) || norm_data(0,y)<0. || norm_data(0,y)>1.){
+//              print(norm_data(0,y));
+//          }
+//          if(norm_data(0,y)==0.){
+//              print("MATCH ", y);
+//              print(population[y]->human_repr());
+//          }
+//
+//          if(!isfinite(norm_data(1,y)) || isnan(norm_data(1,y)) || norm_data(1,y)<0. || norm_data(1,y)>1.){
+//              print(norm_data(1,y));
+//          }
+//          if(norm_data(1,y)==0.){
+//              print("MATCH 2 ", y);
+//          }
+//      }
+
+
+
       // get first leaders based on smallest objective value
       int initialised_k = 0;
       vector<int> idx_leaders;
@@ -195,6 +216,10 @@ struct Evolution {
               idx_min = x;
           }
       }
+
+//      //TODO remove
+//      print("First leader ", population[idx_min]->human_repr(), " ", population[idx_min]->fitness[0], " ", population[idx_min]->fitness[1], " ", random_obj);
+
       int first_leader = idx_min;
       idx_leaders.push_back(first_leader);
       remaining_solutions.erase(first_leader);
@@ -209,6 +234,7 @@ struct Evolution {
 
       while(initialised_k<k && !remaining_solutions.empty()){
           // select leader with longest distance to other leaders
+          //TODO check argmax
           int new_leader = argmax(dists);
           idx_leaders.push_back(new_leader);
           initialised_k++;
@@ -282,7 +308,7 @@ struct Evolution {
       vector<vector<Individual *>> clustered_population = vector<vector<Individual *>>(initialised_k,vector<Individual *>());
       vector<vector<Individual *>> clustered_population_equal = vector<vector<Individual *>>(initialised_k,vector<Individual *>());
 
-      // assign to each cluster the closests 2*pop_size/cluster solutions
+      // assign to each cluster the closest 2*pop_size/cluster solutions
       for(int x=0; x<initialised_k; x++){
           Vec distances = Vec(pop_size);
           for(int i = 0; i<pop_size; i++){
@@ -298,6 +324,9 @@ struct Evolution {
 
       vector<int> clusternr = vector<int>(initialised_k, nr_objs + 1);
 
+//      //TODO remove
+//      int cluster_mse;
+
       for(int i=0; i<nr_objs; i++){
           int am = 0;
           float min_val = std::numeric_limits<float>::infinity();
@@ -308,7 +337,42 @@ struct Evolution {
               }
           }
           clusternr[am] = i;
+
+//          //TODO remove
+//          if(i==0){
+//              cluster_mse = am;
+//          }
       }
+
+//      //TODO remove
+//      for(int x=0;x<clusternr.size();x++){
+//          print(to_string(x), " ", clusternr[x]);
+//      }
+//
+//      //TODO remove
+//      string best_mse_stri = "";
+//      float best_mse = 999999999999.;
+//      for(auto ind:population){
+//          if(ind->fitness[0]<best_mse){
+//              best_mse = ind->fitness[0];
+//              best_mse_stri = ind->human_repr();
+//          }
+//      }
+//
+//      int count = 0;
+//      for(auto ind:population) {
+//        if(ind->human_repr()==best_mse_stri){
+//            count++;
+//        }
+//      }
+//      if(count>1){
+//          print("NOT UNIQUE");
+//      }
+//      else{
+//        print("UNIQUE");
+//      }
+
+
 
       // if not yet assigned solution in equal size clustering, assign to closest. if multiple are assigned, assign to random of multiple center
       for (int i = 0; i < pop_size; i++) {
@@ -320,12 +384,43 @@ struct Evolution {
               else{
                   assign = clustertags_equal[i][Rng::randu() * clustertags_equal[i].size()];
               }
+//              //TODO remove:
+//              if(population[i]->human_repr()==best_mse_stri){
+//                  print("Added in if");
+//              }
+
               clustered_population[assign].push_back(population[i]);
           }
           else{
               clustered_population[clustertags_kmeans[i]].push_back(population[i]);
           }
       }
+
+
+
+//      string best_mse_stri_c = "";
+//      float best_mse_c = 999999999999.;
+//      for(auto ind: clustered_population[cluster_mse]){
+//          if(ind->fitness[0]<best_mse_c){
+//              best_mse_c = ind->fitness[0];
+//              best_mse_stri_c = ind->human_repr();
+//          }
+//      }
+//
+//      print(best_mse_stri);
+//      print(best_mse_stri_c);
+//
+//      for(int x=0;x<clustered_population.size();x++) {
+//          for (auto ind: clustered_population[x]) {
+//              if(ind->human_repr()==best_mse_stri && x!=cluster_mse){
+//                  print("Duplicate in other cluster ", x);
+//              }
+//          }
+//      }
+
+      // clusterpopulation population split into clusters
+      // clusterpopulation equals use for donors
+
       return make_pair(make_pair(clustered_population, clustered_population_equal), clusternr);
   }
 
@@ -337,6 +432,7 @@ struct Evolution {
       int NIS_const = 1;
 
       // Make clusters
+      // ((Clustered Population, clustered population equal), cluster number)
       pair<pair<vector<vector<Individual*>>, vector<vector<Individual*>>>, vector<int>> output = K_leader_means(population);
       vector<vector<Individual *>> clustered_population = output.first.first;
       vector<vector<Individual *>> clustered_population_equal = output.first.second;
@@ -388,7 +484,6 @@ struct Evolution {
               offspring = efficient_gom_MO(clustered_population[i][j], population, FOSs[i], macro_generation, clusternr[i], clusternr[i] < nr_objectives,  NIS_const);
           }
           else{
-
               offspring = efficient_gom_MO(clustered_population[i][j], population, FOSs[i], macro_generation,clusternr[i], clusternr[i] < nr_objectives, NIS_const);
           }
           offspring->clusterid = i;

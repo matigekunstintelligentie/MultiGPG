@@ -116,8 +116,8 @@ struct IMS {
       // update macro gen
       macro_generations += 1;
 
-      float best = 100;
-      float best_2 = 100;
+      float best = 9999999.;
+      float best_2 = 9999999.;
       string best_stri = "";
 
 
@@ -129,7 +129,21 @@ struct IMS {
           }
       }
 
-      print(" ~ macro generation: ", macro_generations, ", curr. best fit: ", best, " ", best_2, "", best_stri);
+      float best_pop = 9999999.;
+      float best_2_pop = 9999999.;
+      string best_stri_pop = "";
+      int nis = 9999;
+
+      for(auto ind: evolution->population){
+          if(best_pop>ind->fitness[0]){
+              best_pop = ind->fitness[0];
+              best_2_pop = ind->fitness[1];
+              best_stri_pop = ind->human_repr();
+              nis = ind->NIS;
+          }
+      }
+
+      print(" ~ macro generation: ", macro_generations, ", curr. best fit: ", best, " ", best_2, " ", best_stri, " ", best_pop, " ", best_2_pop, " ", best_stri_pop, " ", nis);
 
     }
     // finished
