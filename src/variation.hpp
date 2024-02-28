@@ -517,27 +517,6 @@ Node * crossover(Node * parent, Node * donor) {
   return offspring;
 }
 
-Node * mutation(Node * parent, vector<Op*> & functions, vector<Op*> & terminals, float prob_fun = 0.75) {
-  Node * offspring = parent->clone();
-// ============================================================================
-//   auto nodes = offspring->subtree();
-// 
-//   // sample a crossover mask
-//   auto crossover_mask = _sample_crossover_mask(nodes.size());
-//   for(int i : crossover_mask) {
-//     delete nodes[i]->op;
-//     if (nodes[i]->children.size() > 0 && Rng::randu() < prob_fun) {
-//       nodes[i]->op = _sample_function();
-//     }
-//     else {
-//       nodes[i]->op = _sample_terminal();
-//     }
-//   }
-// ============================================================================
-
-  return offspring;
-}
- 
 bool weakly_dominates(vector<float> fitness1, vector<float> fitness2){
     bool weakly_dominates = false;
     // TODO: more than 2 objectives
@@ -555,17 +534,19 @@ bool weakly_dominates(vector<float> fitness1, vector<float> fitness2){
 }
 
 Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, vector<vector<int>> & fos, int macro_generations) {
-//  Node * offspring = parent->trees[mt]->clone();
   Node * offspring = parent->trees[mt];
 
   vector<float> backup_fitness = parent->fitness;
   vector<Node*> offspring_nodes = offspring->subtree();
 
-
-
   auto random_fos_order = Rng::rand_perm(fos.size());
 
   bool ever_improved = false;
+
+  // TODO remove
+  float fitness_bf = offspring->fitness[0];
+  g::fit_func->get_fitness_MO(parent);
+  float fitness_ra = offspring->fitness[0];
 
   for(int fos_idx = 0; fos_idx < fos.size(); fos_idx++) {
     
@@ -592,8 +573,6 @@ Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, ve
       effectively_changed_indices.push_back(idx);
     }
 
-
-
     // check if at least one change was meaningful
     for(int i : effectively_changed_indices) {
       Node * n = offspring_nodes[i];
@@ -613,7 +592,7 @@ Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, ve
     }
 
     // check is not worse
-    if (weakly_dominates(backup_fitness, new_fitness)) {
+    if (backup_fitness<new_fitness) {
       // undo
       for(int i = 0; i < effectively_changed_indices.size(); i++) {
         int changed_idx = effectively_changed_indices[i];
@@ -625,7 +604,7 @@ Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, ve
       }
       //parent->trees[mt] = offspring;
       parent->fitness = backup_fitness;
-    } else if (weakly_dominates(new_fitness, backup_fitness)) {
+    } else {
       // it improved
 
       backup_fitness = new_fitness;
@@ -666,11 +645,6 @@ Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, ve
 
        // check is not worse
        if (new_fitness > backup_fitness) {
-         if(Rng::randu()<g::random_accept_p){
-           // it didn't improve, but got accepted
-           backup_fitness = new_fitness;
-         }
-         else{
            // undo
            for(int i = 0; i < effectively_changed_indices.size(); i++) {
              int changed_idx = effectively_changed_indices[i];
@@ -680,8 +654,7 @@ Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, ve
              off_n->op = back_op->clone();
              offspring->fitness = backup_fitness;
            }
-         }
-       } else if (weakly_dominates(new_fitness, backup_fitness)) {
+       } else{
          // it improved
          backup_fitness = new_fitness;
 
@@ -732,7 +705,7 @@ Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, ve
         }
      }
    }
-  
+
 
    // variant of forced improvement that is potentially less aggressive, & less expensive to carry out
     if(g::tournament_size > 1 && !ever_improved) {
@@ -748,23 +721,281 @@ Node * efficient_gom(Individual * parent, int mt, vector<Node*> & population, ve
        offspring = winner;
     }
 
+
+
   return offspring;
 }
+std::pair<bool, bool>
+check_changes_SO(Node *offspring, vector<float> back_obj, bool FI, int obj) {
+    if (offspring->fitness[obj] < back_obj[obj] ) {
+        return std::make_pair(true,true);
+    }
+    if (offspring->fitness[obj] == back_obj[obj] ) {
+        if (FI) {
+            return std::make_pair(false,false);
+        } else {
+            return std::make_pair(true,false);
+        }
+    }
 
-Node * efficient_gom_MO(Individual * parent, int mt, vector<Node*> & population, vector<vector<int>> & fos, int macro_generations) {
-//  Node * offspring = parent->trees[mt]->clone();
+    return std::make_pair(false, false);
+}
+
+pair<bool, bool>
+check_changes_MO(Individual *offspring, bool FI, vector<float> back_obj){
+    bool dominates = false;
+
+    for (size_t j = 0; j < offspring->fitness.size(); j++) {
+        if (offspring->fitness[j] < back_obj[j])
+            dominates = true;
+        else if (offspring->fitness[j] > back_obj[j]) {
+            dominates = false;
+            break;
+        }
+    }
+    if (dominates) {
+        return make_pair(true, true);
+    }
+
+    if(!FI) {
+        bool same = true;
+        for (size_t j = 0; j < offspring->fitness.size(); j++) {
+            if (offspring->fitness[j] != back_obj[j]) {
+                same = false;
+                break;
+            }
+        }
+        if (same) {
+            return std::make_pair(true, false);
+        }
+    }
+
+
+    // or is not dominated by mo_archive
+    if (g::ea->nondominated(offspring)) {
+        g::ea->updateMOArchive(offspring);
+        return std::make_pair(true,true);
+    }
+    return std::make_pair(false,false);
+}
+
+Node * efficient_gom_MO_FI(Individual * parent, int mt, vector<Node*> & population, vector<vector<int>> & fos, int macro_generations, int objective, bool extrema, int NIS_const) {
     Node * offspring = parent->trees[mt];
 
     vector<float> backup_fitness = parent->fitness;
     vector<Node*> offspring_nodes = offspring->subtree();
 
+    auto random_fos_order = Rng::rand_perm(fos.size());
 
+    bool changed = false;
+
+    for(int fos_idx = 0; fos_idx < fos.size(); fos_idx++){
+
+        auto crossover_mask = fos[random_fos_order[fos_idx]];
+        bool change_is_meaningful = false;
+        vector<Op*> backup_ops; backup_ops.reserve(crossover_mask.size());
+        vector<int> effectively_changed_indices; effectively_changed_indices.reserve(crossover_mask.size());
+
+        auto donor = extrema ? g::ea->ReturnCopySOMember(objective) : g::ea->ReturnCopyRandomMOMember();
+        vector<Node*> donor_nodes = donor->trees[mt]->subtree();
+
+        for(int & idx : crossover_mask) {
+            // check if swap is not necessary
+            if (offspring_nodes[idx]->op->sym() == donor_nodes[idx]->op->sym()) {
+                // might need to swap if the node is a constant that might be optimized
+                if (g::cmut_prob <= 0 || g::cmut_temp <= 0 || donor_nodes[idx]->op->type() != OpType::otConst)
+                    continue;
+            }
+
+            // then execute the swap
+            Op * replaced_op = offspring_nodes[idx]->op;
+            offspring_nodes[idx]->op = donor_nodes[idx]->op->clone();
+            backup_ops.push_back(replaced_op);
+            effectively_changed_indices.push_back(idx);
+        }
+
+        // check if at least one change was meaningful
+        for(int i : effectively_changed_indices) {
+            Node * n = offspring_nodes[i];
+            if (!n->is_intron()) {
+                change_is_meaningful = true;
+                break;
+            }
+        }
+
+        // assume nothing changed
+        if (change_is_meaningful) {
+            g::fit_func->get_fitness_MO(parent);
+
+            std::pair<bool, bool> check_changes = extrema ? check_changes_SO(offspring, backup_fitness,  true, objective):check_changes_MO(parent, true, backup_fitness);
+
+
+            if (check_changes.first) {
+                // keep changes
+                changed = true;
+                backup_fitness = parent->fitness;
+                g::ea->updateMOArchive(parent);
+                g::ea->updateSOArchive(parent);
+            }
+            else{
+                for(int i = 0; i < effectively_changed_indices.size(); i++) {
+                    int changed_idx = effectively_changed_indices[i];
+                    Node * off_n = offspring_nodes[changed_idx];
+                    Op * back_op = backup_ops[i];
+                    delete off_n->op;
+                    off_n->op = back_op->clone();
+                    offspring->fitness = backup_fitness;
+                }
+
+                parent->fitness = backup_fitness;
+            }
+
+        }
+        else{
+            for(int i = 0; i < effectively_changed_indices.size(); i++) {
+                int changed_idx = effectively_changed_indices[i];
+                Node * off_n = offspring_nodes[changed_idx];
+                Op * back_op = backup_ops[i];
+                delete off_n->op;
+                off_n->op = back_op->clone();
+                offspring->fitness = backup_fitness;
+            }
+
+            parent->fitness = backup_fitness;
+        }
+
+        // discard backup
+        for(Op * op : backup_ops) {
+            delete op;
+        }
+
+        if (changed) {
+            break;
+        }
+
+
+        if(g::cmut_prob>0.){
+
+            effectively_changed_indices.clear();
+            backup_ops.clear();
+
+            // apply coeff mut
+            coeff_mut(offspring, false, &effectively_changed_indices, &backup_ops);
+
+            // check if at least one change was meaningful
+            for(int i : effectively_changed_indices) {
+                Node * n = offspring_nodes[i];
+                if (!n->is_intron()) {
+                    change_is_meaningful = true;
+                    break;
+                }
+            }
+
+            // assume nothing changed
+            if (change_is_meaningful) {
+                // gotta recompute
+                g::fit_func->get_fitness_MO(parent);
+            }
+
+            // check is not worse
+            // Only checking mse because coeffmut cannot alter the number of nodes
+            if (parent->fitness[0] > backup_fitness[0]) {
+                // undo
+                for(int i = 0; i < effectively_changed_indices.size(); i++) {
+                    int changed_idx = effectively_changed_indices[i];
+                    Node *off_n = offspring_nodes[changed_idx];
+                    Op *back_op = backup_ops[i];
+                    delete off_n->op;
+                    off_n->op = back_op->clone();
+                    offspring->fitness = backup_fitness;
+                }
+            }else{
+                // it improved
+                changed = true;
+                backup_fitness = parent->fitness;
+                g::ea->updateMOArchive(parent);
+                g::ea->updateSOArchive(parent);
+            }
+
+            // discard backup ops
+            for(Op * op : backup_ops) {
+                delete op;
+            }
+
+
+        }
+
+        if (changed) {
+            break;
+        }
+    }
+
+//    // TODO optimisation without weak dominance
+//    if((macro_generations%g::opt_per_gen)==0 && g::use_optimiser && mt==(g::nr_multi_trees - 1)){
+//        offspring_nodes = offspring->subtree(parent->trees);
+//
+//        // Check for coefficients
+//        bool coeff_found = false;
+//        for(int i = 0; i < offspring_nodes.size(); i++) {
+//            if(offspring_nodes[i]->op->type()==OpType::otConst && !offspring_nodes[i]->is_intron()){
+//                coeff_found = true;
+//                break;
+//            }
+//        }
+//
+//        if(coeff_found){
+//            vector<float> fitness_before = offspring->fitness;
+//
+//            Node * offspring_opt = offspring->clone();
+//            if(g::optimiser_choice=="lm"){
+//                coeff_opt_lm(offspring_opt, parent->trees, true);
+//            }
+//
+//            //Possibly redundant
+//            parent->trees[mt] = offspring_opt;
+//            vector<float> fitness_after = g::fit_func->get_fitness_MO(parent);
+//
+//            if(fitness_after[0]<=fitness_before[0]){
+//                offspring->clear();
+//                offspring = offspring_opt;
+//                changed = true;
+//                g::ea->updateMOArchive(parent);
+//                g::ea->updateSOArchive(parent);
+//            }
+//            else{
+//                bool bf_f = isfinite(parent->fitness[0]);
+//                offspring_opt->clear();
+//            }
+//        }
+//    }
+
+
+
+    if ((!changed) && !g::ea->MO_archive.empty()) {
+        offspring->clear();
+        if(extrema){
+            return g::ea->ReturnCopySOMember(objective)->trees[mt];
+        }
+        else {
+            return g::ea->ReturnCopyRandomMOMember()->trees[mt];
+        }
+    }
+
+    return offspring;
+}
+
+Node * efficient_gom_MO(Individual * parent, int mt, vector<Node*> & population, vector<vector<int>> & fos, int macro_generations, int objective, bool extrema, int NIS_const) {
+    Node * offspring = parent->trees[mt];
+
+    vector<float> backup_fitness = parent->fitness;
+    vector<Node*> offspring_nodes = offspring->subtree();
 
     auto random_fos_order = Rng::rand_perm(fos.size());
 
+    bool changed = false;
     bool ever_improved = false;
 
-    for(int fos_idx = 0; fos_idx < fos.size(); fos_idx++) {
+    for(int fos_idx = 0; fos_idx < fos.size(); fos_idx++){
 
         auto crossover_mask = fos[random_fos_order[fos_idx]];
         bool change_is_meaningful = false;
@@ -789,8 +1020,6 @@ Node * efficient_gom_MO(Individual * parent, int mt, vector<Node*> & population,
             effectively_changed_indices.push_back(idx);
         }
 
-
-
         // check if at least one change was meaningful
         for(int i : effectively_changed_indices) {
             Node * n = offspring_nodes[i];
@@ -801,17 +1030,36 @@ Node * efficient_gom_MO(Individual * parent, int mt, vector<Node*> & population,
         }
 
         // assume nothing changed
-        vector<float> new_fitness = backup_fitness;
         if (change_is_meaningful) {
-            // gotta recompute
+            g::fit_func->get_fitness_MO(parent);
 
-            //parent->trees[mt] = offspring;
-            new_fitness = g::fit_func->get_fitness_MO(parent);
+            std::pair<bool, bool> check_changes = extrema ? check_changes_SO(offspring, backup_fitness,  false, objective):check_changes_MO(parent, false, backup_fitness);
+
+            if(check_changes.second){
+                ever_improved = true;
+            }
+            if (check_changes.first) {
+                // keep changes
+                changed = true;
+                backup_fitness = parent->fitness;
+                g::ea->updateMOArchive(parent);
+                g::ea->updateSOArchive(parent);
+            }
+            else{
+                for(int i = 0; i < effectively_changed_indices.size(); i++) {
+                    int changed_idx = effectively_changed_indices[i];
+                    Node * off_n = offspring_nodes[changed_idx];
+                    Op * back_op = backup_ops[i];
+                    delete off_n->op;
+                    off_n->op = back_op->clone();
+                    offspring->fitness = backup_fitness;
+                }
+
+                parent->fitness = backup_fitness;
+            }
+
         }
-
-        // check is not worse
-        if (weakly_dominates(backup_fitness, new_fitness)) {
-            // undo
+        else{
             for(int i = 0; i < effectively_changed_indices.size(); i++) {
                 int changed_idx = effectively_changed_indices[i];
                 Node * off_n = offspring_nodes[changed_idx];
@@ -820,14 +1068,8 @@ Node * efficient_gom_MO(Individual * parent, int mt, vector<Node*> & population,
                 off_n->op = back_op->clone();
                 offspring->fitness = backup_fitness;
             }
-            //parent->trees[mt] = offspring;
+
             parent->fitness = backup_fitness;
-        } else if (weakly_dominates(new_fitness, backup_fitness)) {
-            // it improved
-
-            backup_fitness = new_fitness;
-
-            ever_improved = true;
         }
 
         // discard backup
@@ -835,13 +1077,14 @@ Node * efficient_gom_MO(Individual * parent, int mt, vector<Node*> & population,
             delete op;
         }
 
+
+
         if(g::cmut_prob>0.){
 
             effectively_changed_indices.clear();
             backup_ops.clear();
 
             // apply coeff mut
-
             coeff_mut(offspring, false, &effectively_changed_indices, &backup_ops);
 
             // check if at least one change was meaningful
@@ -852,52 +1095,46 @@ Node * efficient_gom_MO(Individual * parent, int mt, vector<Node*> & population,
                     break;
                 }
             }
+
             // assume nothing changed
-            new_fitness = offspring->fitness;
             if (change_is_meaningful) {
                 // gotta recompute
-                new_fitness = g::fit_func->get_fitness_MO(parent);
+                g::fit_func->get_fitness_MO(parent);
             }
 
-
-
             // check is not worse
-            if (new_fitness > backup_fitness) {
-                if(Rng::randu()<g::random_accept_p){
-                    // it didn't improve, but got accepted
-                    backup_fitness = new_fitness;
-                }
-                else{
+            // Only checking mse because coeffmut cannot alter the number of nodes
+            if (parent->fitness[0] > backup_fitness[0]) {
                     // undo
                     for(int i = 0; i < effectively_changed_indices.size(); i++) {
                         int changed_idx = effectively_changed_indices[i];
-                        Node * off_n = offspring_nodes[changed_idx];
-                        Op * back_op = backup_ops[i];
+                        Node *off_n = offspring_nodes[changed_idx];
+                        Op *back_op = backup_ops[i];
                         delete off_n->op;
                         off_n->op = back_op->clone();
                         offspring->fitness = backup_fitness;
                     }
-                }
-            } else if (weakly_dominates(new_fitness, backup_fitness)) {
+            }else{
                 // it improved
-                backup_fitness = new_fitness;
-
                 ever_improved = true;
+                changed = true;
+                backup_fitness = parent->fitness;
+                g::ea->updateMOArchive(parent);
+                g::ea->updateSOArchive(parent);
             }
 
-            // discard backup
+            // discard backup ops
             for(Op * op : backup_ops) {
                 delete op;
             }
         }
     }
 
-
-
-
+      // TODO optimisation without weak dominance
     if((macro_generations%g::opt_per_gen)==0 && g::use_optimiser && mt==(g::nr_multi_trees - 1)){
-
         offspring_nodes = offspring->subtree(parent->trees);
+
+        // Check for coefficients
         bool coeff_found = false;
         for(int i = 0; i < offspring_nodes.size(); i++) {
             if(offspring_nodes[i]->op->type()==OpType::otConst && !offspring_nodes[i]->is_intron()){
@@ -909,40 +1146,39 @@ Node * efficient_gom_MO(Individual * parent, int mt, vector<Node*> & population,
         if(coeff_found){
             vector<float> fitness_before = offspring->fitness;
 
-            Node * offspring_opt;
+            Node * offspring_opt = offspring->clone();
             if(g::optimiser_choice=="lm"){
-                offspring_opt = coeff_opt_lm(offspring, parent->trees, true);
+                coeff_opt_lm(offspring_opt, parent->trees, true);
             }
 
-//       //Possibly redundant
+       //Possibly redundant
             parent->trees[mt] = offspring_opt;
             vector<float> fitness_after = g::fit_func->get_fitness_MO(parent);
 
-//
-            if(weakly_dominates(fitness_after, fitness_before)){
+            if(fitness_after[0]<=fitness_before[0]){
                 offspring->clear();
                 offspring = offspring_opt;
                 ever_improved = true;
+                changed = true;
+                g::ea->updateMOArchive(parent);
+                g::ea->updateSOArchive(parent);
             }
             else{
+                bool bf_f = isfinite(parent->fitness[0]);
                 offspring_opt->clear();
             }
         }
     }
 
+    if(parent->NIS>0){
+        print("ff");
+    }
 
-    // variant of forced improvement that is potentially less aggressive, & less expensive to carry out
-    if(g::tournament_size > 1 && !ever_improved) {
-        // make a tournament between tournament size - 1 candidates + offspring
-        vector<Node*> tournament_candidates; tournament_candidates.reserve(g::tournament_size - 1);
-        for(int i = 0; i < g::tournament_size - 1; i++) {
-            tournament_candidates.push_back(population[Rng::randi(population.size())]);
-        }
-        tournament_candidates.push_back(offspring);
+    parent->NIS = ever_improved ? 0 : parent->NIS + 1;
 
-        Node * winner = tournament(tournament_candidates, g::tournament_size);
-        offspring->clear();
-        offspring = winner;
+    if ((!changed || parent->NIS > NIS_const) && !g::ea->MO_archive.empty()) {
+        parent->NIS = 0;
+        return efficient_gom_MO_FI(parent, mt, population, fos, macro_generations, objective, extrema, NIS_const);
     }
 
     return offspring;
@@ -957,16 +1193,16 @@ Individual * efficient_gom_SO(Individual * og_parent, vector<Individual *> & ind
         for(int i =0; i<indpopulation.size();i++){
             population.push_back(indpopulation[i]->trees[mt]);
         }
-//
 
         Node * new_tree = efficient_gom(parent, mt, population, multi_fos[mt], macro_generations);
-//
+
         parent->trees[mt] = new_tree;
     }
+
     return parent;
 }
 
-Individual * efficient_gom_MO(Individual * og_parent, vector<Individual *> & indpopulation, vector<vector<vector<int>>> & multi_fos, int macro_generations){
+Individual * efficient_gom_MO(Individual * og_parent, vector<Individual *> & indpopulation, vector<vector<vector<int>>> & multi_fos, int macro_generations, int objective, bool extrema, int NIS_const){
     Individual * parent = og_parent->clone();
 
     for(int mt=0;mt<g::nr_multi_trees;mt++){
@@ -975,10 +1211,9 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<Individual *> & ind
         for(int i =0; i<indpopulation.size();i++){
             population.push_back(indpopulation[i]->trees[mt]);
         }
-//
 
-        Node * new_tree = efficient_gom_MO(parent, mt, population, multi_fos[mt], macro_generations);
-//
+        Node * new_tree = efficient_gom_MO(parent, mt, population, multi_fos[mt], macro_generations, objective, extrema, NIS_const);
+
         parent->trees[mt] = new_tree;
     }
     return parent;

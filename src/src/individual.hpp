@@ -9,15 +9,11 @@ using namespace std;
 
 struct Individual {
   vector<Node*> trees;
-  vector<float> fitness = {9999999,9999999};
-  int clusterid;
-  int NIS = 0;
+  float fitness;
 
   //Node() {};
 
-  
-  
-  Individual(){
+  Individual() {
   }
 
   virtual ~Individual() noexcept(false) {
@@ -30,7 +26,6 @@ struct Individual {
           ind->trees.push_back(tree->clone());
       }
       ind->fitness = this->fitness;
-      ind->NIS = this->NIS;
       return ind;
   }
 

@@ -1,12 +1,62 @@
 #ifndef ELITISTARCHIVE_H
 #define ELITISTARCHIVE_H
 
-//#include "individual.hpp"
-#include "globals.hpp"
+#include "util.hpp"
+#include "rng.hpp"
 
 struct ElitistArchive{
     vector<Individual*> SO_archive;
     vector<Individual*> MO_archive;
+    Fitness * fit_func;
+
+    Mat X_train;
+
+    void set_X(Mat & X){
+        X_train = X;
+    }
+
+    Individual * ReturnCopyRandomMOMember() {
+        int index = Rng::randu() * MO_archive.size();
+        Individual *copy = MO_archive[index]->clone();
+        return copy;
+    }
+
+    Individual * ReturnCopySOMember(int idx) {
+        Individual *copy = SO_archive[idx]->clone();
+        return copy;
+    }
+
+    bool nondominated(Individual* ind){
+        bool solution_is_dominated = false;
+        bool identical_objectives_already_exist;
+        bool diversity_added = false;
+
+        if (MO_archive.empty()) {
+            return true;
+        }
+        for (size_t i = 0; i < MO_archive.size(); i++) {
+            // check domination
+            solution_is_dominated = dominates(MO_archive[i], ind);
+            if (solution_is_dominated) {
+                break;
+            }
+
+            identical_objectives_already_exist = true;
+            for (size_t j = 0; j < 2; j++) {
+                if (ind->fitness[j] != MO_archive[i]->fitness[j]) {
+                    identical_objectives_already_exist = false;
+                    break;
+                }
+            }
+            if (identical_objectives_already_exist) {
+                if (diversityAdded(ind, i)) {
+                    diversity_added = true;
+                }
+                break;
+            }
+        }
+        return (!solution_is_dominated && !identical_objectives_already_exist) || (diversity_added);
+    }
 
     bool dominates(Individual * ind1, Individual * ind2){
         bool strictly_better_somewhere = false;
@@ -22,16 +72,17 @@ struct ElitistArchive{
     }
 
     bool diversityAdded(Individual* individual, int idx){
-        Vec diff = individual->get_output(g::fit_func->X_train, individual->trees) - MO_archive[idx]->get_output(g::fit_func->X_train, individual->trees);
-//        if(diff.mean()==0){
-//            return false;
-//        }
-//        else{
+        Vec diff = individual->get_output(X_train, individual->trees) - MO_archive[idx]->get_output(X_train, individual->trees);
+        if(diff.mean()==0){
+            return false;
+        }
+        else{
             return true;
-//        }
+        }
     }
 
     void initSOArchive(vector<Individual*> population){
+        SO_archive = vector<Individual*>(2, nullptr);
         for(Individual *ind: population){
             updateSOArchive(ind);
         }
@@ -64,7 +115,9 @@ struct ElitistArchive{
         bool identical_objectives_already_exist;
 
         for(int i = 0; i<MO_archive.size(); i++){
+            // Check domination
             solution_is_dominated = dominates(MO_archive[i], individual);
+            // If solution is dominated then do not add
             if(solution_is_dominated){
                 break;
             }
@@ -94,7 +147,8 @@ struct ElitistArchive{
 
         if ((!solution_is_dominated && !identical_objectives_already_exist) || (diversity_added)) {
             Individual *new_individual = individual->clone();
-            //g::fit_func->get_fitness_MO(new_individual);
+            // TODO: does this matter?
+            //fit_func->get_fitness_MO(new_individual);
             MO_archive.push_back(new_individual);
         }
     }

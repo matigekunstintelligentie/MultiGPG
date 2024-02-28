@@ -14,6 +14,11 @@
 #include "rng.hpp"
 #include <limits>
 
+#include <iostream>
+#include <fstream>
+
+using namespace std;
+
 struct Evolution {
   
   vector<Individual*> population;
@@ -86,8 +91,16 @@ struct Evolution {
         else{
             g::fit_func->get_fitness_SO(individual);
         };
+
+
         population.push_back(individual);
     }
+
+    if(g::MO_mode){
+        g::ea->initMOArchive(population);
+    }
+    g::ea->initSOArchive(population);
+
   } 
 
   void gomea_generation_SO(int macro_generation) {
@@ -108,9 +121,11 @@ struct Evolution {
 
     for(int i = 0; i < pop_size; i++) {
       Individual * offspring = efficient_gom_SO(population[i], population, foses, macro_generation);
-      //check_n_set_elite(offspring);
+
       offspring_population.push_back(offspring);
+      g::ea->updateSOArchive(offspring);
     }
+
     // replace parent with offspring population
     clear_population(population);
 
@@ -140,9 +155,6 @@ struct Evolution {
           }
       }
 
-
-
-
       for(int i=0; i<nr_objs; i++){
           float min;
           bool min_initialised = false;
@@ -151,17 +163,23 @@ struct Evolution {
           // get min and max for objective
           for(int x: remaining_solutions){
               float value = norm_data(i, x);
-              if (!min_initialised || value < min) {
+              if ((!min_initialised || value < min) && !isinf(value)) {
                   min = value;
                   min_initialised = true;
               }
-              if (!max_initialised || value > max) {
+              if ((!max_initialised || value > max) && !isinf(value)) {
                   max = value;
                   max_initialised = true;
               }
           }
           //normalize each value in population for that objective
           for (int j = 0; j < pop_size; j++) {
+              if(isinf(norm_data(i, j)) && norm_data(i, j)<0){
+                  norm_data(i, j) = min;
+              }
+              if(isinf(norm_data(i, j))){
+                  norm_data(i, j) = max;
+              }
               norm_data(i, j) = (norm_data(i, j) - min) / ((max - min)+0.0000000001);
           }
       }
@@ -272,9 +290,6 @@ struct Evolution {
           }
           for(int times=0; times<((2*pop_size)/initialised_k); times++){
               clustered_population_equal[x].push_back(population[argmin(distances)]);
-              for(int z=0;z<distances.size(); z++){
-                  print(distances(z));
-              }
 
               clustertags_equal[argmin(distances)].push_back(x);
               distances[argmin(distances)] = std::numeric_limits<float>::infinity();
@@ -318,7 +333,8 @@ struct Evolution {
       vector<Individual*> offspring_population;
 
       int nr_objectives = 2;
-      //int NIS = 1 + log10(g::pop_size);
+      //int NIS_const = 1 + log10(g::pop_size);
+      int NIS_const = 1;
 
       // Make clusters
       pair<pair<vector<vector<Individual*>>, vector<vector<Individual*>>>, vector<int>> output = K_leader_means(population);
@@ -326,15 +342,29 @@ struct Evolution {
       vector<vector<Individual *>> clustered_population_equal = output.first.second;
       vector<int> clusternr = output.second;
 
+//      int count = 0;
+//      int c = 0;
+//      for(auto cluster: clustered_population){
+//          for(auto ind: cluster){
+//              ind->clusterid = c;
+//              count++;
+//          }
+//          c++;
+//      }
+//      print("COUNT ",to_string(count));
+
+
+      // Per cluster, per Objective, per MT one FOS
       vector<vector<vector<vector<int>>>> FOSs;
       for(int i = 0; i<7; i++){
           vector<vector<vector<int>>> cluster_fbs;
           for(int j = 0; j<g::nr_multi_trees; j++){
               vector<Node *> fos_pop;
               fos_pop.reserve(clustered_population.size());
-              for(int j =0; j<clustered_population.size();j++){
-                  fos_pop.push_back(clustered_population[i][j]->trees[i]);
+              for(int x =0; x<clustered_population.size();x++){
+                  fos_pop.push_back(clustered_population[i][x]->trees[j]);
               }
+
               cluster_fbs.push_back(fbs[i][j]->build_linkage_tree(fos_pop, j));
           }
           FOSs.push_back(cluster_fbs);
@@ -342,10 +372,12 @@ struct Evolution {
 
       vector<pair<int, int>> idx;
       for(int i=0;i<clustered_population.size();i++){
-          for(int j=0;j<clustered_population.size();j++){
+          for(int j=0;j<clustered_population[i].size();j++){
               idx.emplace_back(i, j);
           }
       }
+
+
 
       for(int x=0; x<idx.size(); x++){
           int &i = idx[x].first;
@@ -353,12 +385,15 @@ struct Evolution {
 
           Individual *offspring;
           if(clustered_population.size()>1){
-              offspring = efficient_gom_MO(clustered_population[i][j], population, FOSs[i], macro_generation);
+              offspring = efficient_gom_MO(clustered_population[i][j], population, FOSs[i], macro_generation, clusternr[i], clusternr[i] < nr_objectives,  NIS_const);
           }
           else{
-              offspring = efficient_gom_MO(clustered_population[i][j], population, FOSs[i], macro_generation);
+
+              offspring = efficient_gom_MO(clustered_population[i][j], population, FOSs[i], macro_generation,clusternr[i], clusternr[i] < nr_objectives, NIS_const);
           }
+          offspring->clusterid = i;
           offspring_population.push_back(offspring);
+          g::ea->updateMOArchive(offspring);
       }
 
       assert(offspring_population.size()==population.size());
@@ -368,12 +403,30 @@ struct Evolution {
       }
 
       population = offspring_population;
-  }
 
 
-  void run() {
-    throw runtime_error("Not implemented, please use IMS (with max runs 1 if you want a single population)");
+//      ofstream csv_file;
+//      csv_file.open("MOMT.csv", ios::app);
+//
+//      string str = "";
+//
+////      int i;
+////      for(i =0; i<pop_size-2;i++){
+////          str += to_string(population[i]->fitness[0]) + "," + to_string(population[i]->fitness[1]) + "," + to_string(population[i]->clusterid) + ";";
+////      }
+////      i++;
+////      str += to_string(population[i]->fitness[0]) + "," + to_string(population[i]->fitness[1]) + "," + to_string(population[i]->clusterid) + "\n";
+//
+//      int i;
+//      for(i =0; i<g::ea->MO_archive.size()-1;i++){
+//          str += to_string(g::ea->MO_archive[i]->fitness[0]) + "," + to_string(g::ea->MO_archive[i]->fitness[1]) + "," + to_string(g::ea->MO_archive[i]->clusterid) + ";";
+//      }
+//      str += to_string(g::ea->MO_archive[i]->fitness[0]) + "," + to_string(g::ea->MO_archive[i]->fitness[1]) + "," + to_string(g::ea->MO_archive[i]->clusterid) + "\n";
+//
+//      csv_file << str;
+//      csv_file.close();
   }
+
 
 };
 
