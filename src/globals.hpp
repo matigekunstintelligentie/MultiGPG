@@ -397,7 +397,7 @@ namespace g {
     parser.set_optional<int>("d", "depth", 4, "Maximum depth that the trees can have");
     parser.set_optional<int>("nr_multi_trees", "nr_multi_trees", 2, "Nr of multi trees in individual");
     // problem & representation
-    parser.set_optional<string>("ff", "fitness_function", "ac", "Fitness function");
+    parser.set_optional<string>("ff", "fitness_function", "lsmse", "Fitness function");
     parser.set_optional<string>("fset", "function_set", "+,-,*,/,sin,cos,log", "Function set");
     parser.set_optional<string>("fset_probs", "function_set_probabilities", "auto", "Probabilities of sampling each element of the function set (same order as fset)");
     parser.set_optional<string>("tset", "terminal_set", "auto", "Terminal set");
@@ -407,7 +407,7 @@ namespace g {
     parser.set_optional<string>("bs", "batch_size", "auto", "Batch size (default is 'auto', i.e., the entire training set)");
     parser.set_optional<string>("compl", "complexity_type", "node_count", "Measure to score the complexity of candidate sotluions (default is node_count)");
     parser.set_optional<float>("rci", "rel_compl_imp", 0.0, "Relative importance of complexity over accuracy to select the final elite (default is 0.0)");
-    parser.set_optional<int>("feat_sel", "feature_selection", 10, "Max. number of feature to consider (if -1, all features are considered)");
+    parser.set_optional<int>("feat_sel", "feature_selection", -1, "Max. number of feature to consider (if -1, all features are considered)");
     // variation
     parser.set_optional<float>("cmp", "coefficient_mutation_probability", 1., "Probability of applying coefficient mutation to a coefficient node");
     parser.set_optional<float>("cmt", "coefficient_mutation_temperature", 0.1, "Temperature of coefficient mutation");

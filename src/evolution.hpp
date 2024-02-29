@@ -184,26 +184,6 @@ struct Evolution {
           }
       }
 
-//      // TODO remove
-//      for(int y=0;y<norm_data.cols();y++){
-//          if(!isfinite(norm_data(0,y)) || isnan(norm_data(0,y)) || norm_data(0,y)<0. || norm_data(0,y)>1.){
-//              print(norm_data(0,y));
-//          }
-//          if(norm_data(0,y)==0.){
-//              print("MATCH ", y);
-//              print(population[y]->human_repr());
-//          }
-//
-//          if(!isfinite(norm_data(1,y)) || isnan(norm_data(1,y)) || norm_data(1,y)<0. || norm_data(1,y)>1.){
-//              print(norm_data(1,y));
-//          }
-//          if(norm_data(1,y)==0.){
-//              print("MATCH 2 ", y);
-//          }
-//      }
-
-
-
       // get first leaders based on smallest objective value
       int initialised_k = 0;
       vector<int> idx_leaders;
@@ -216,9 +196,6 @@ struct Evolution {
               idx_min = x;
           }
       }
-
-//      //TODO remove
-//      print("First leader ", population[idx_min]->human_repr(), " ", population[idx_min]->fitness[0], " ", population[idx_min]->fitness[1], " ", random_obj);
 
       int first_leader = idx_min;
       idx_leaders.push_back(first_leader);
@@ -234,7 +211,6 @@ struct Evolution {
 
       while(initialised_k<k && !remaining_solutions.empty()){
           // select leader with longest distance to other leaders
-          //TODO check argmax
           int new_leader = argmax(dists);
           idx_leaders.push_back(new_leader);
           initialised_k++;
@@ -324,9 +300,6 @@ struct Evolution {
 
       vector<int> clusternr = vector<int>(initialised_k, nr_objs + 1);
 
-//      //TODO remove
-//      int cluster_mse;
-
       for(int i=0; i<nr_objs; i++){
           int am = 0;
           float min_val = std::numeric_limits<float>::infinity();
@@ -338,41 +311,7 @@ struct Evolution {
           }
           clusternr[am] = i;
 
-//          //TODO remove
-//          if(i==0){
-//              cluster_mse = am;
-//          }
       }
-
-//      //TODO remove
-//      for(int x=0;x<clusternr.size();x++){
-//          print(to_string(x), " ", clusternr[x]);
-//      }
-//
-//      //TODO remove
-//      string best_mse_stri = "";
-//      float best_mse = 999999999999.;
-//      for(auto ind:population){
-//          if(ind->fitness[0]<best_mse){
-//              best_mse = ind->fitness[0];
-//              best_mse_stri = ind->human_repr();
-//          }
-//      }
-//
-//      int count = 0;
-//      for(auto ind:population) {
-//        if(ind->human_repr()==best_mse_stri){
-//            count++;
-//        }
-//      }
-//      if(count>1){
-//          print("NOT UNIQUE");
-//      }
-//      else{
-//        print("UNIQUE");
-//      }
-
-
 
       // if not yet assigned solution in equal size clustering, assign to closest. if multiple are assigned, assign to random of multiple center
       for (int i = 0; i < pop_size; i++) {
@@ -384,11 +323,6 @@ struct Evolution {
               else{
                   assign = clustertags_equal[i][Rng::randu() * clustertags_equal[i].size()];
               }
-//              //TODO remove:
-//              if(population[i]->human_repr()==best_mse_stri){
-//                  print("Added in if");
-//              }
-
               clustered_population[assign].push_back(population[i]);
           }
           else{
@@ -397,26 +331,28 @@ struct Evolution {
       }
 
 
-
-//      string best_mse_stri_c = "";
-//      float best_mse_c = 999999999999.;
-//      for(auto ind: clustered_population[cluster_mse]){
-//          if(ind->fitness[0]<best_mse_c){
-//              best_mse_c = ind->fitness[0];
-//              best_mse_stri_c = ind->human_repr();
-//          }
-//      }
-//
-//      print(best_mse_stri);
-//      print(best_mse_stri_c);
-//
+//      /// FOrcing best mse into right cluster
 //      for(int x=0;x<clustered_population.size();x++) {
+//          int idx = 0;
 //          for (auto ind: clustered_population[x]) {
 //              if(ind->human_repr()==best_mse_stri && x!=cluster_mse){
-//                  print("Duplicate in other cluster ", x);
+//
+//                  clustered_population[cluster_mse].push_back(ind);
+//                  clustered_population[x].erase(clustered_population[x].begin() + idx);
+//                  break;
 //              }
+//              idx++;
 //          }
+//
 //      }
+
+      float max_size = 0.;
+      for(auto ind:population){
+          if(ind->fitness[1]>max_size){
+              max_size = ind->fitness[1];
+          }
+      }
+      print("MAX SIZE ", max_size);
 
       // clusterpopulation population split into clusters
       // clusterpopulation equals use for donors
@@ -437,18 +373,6 @@ struct Evolution {
       vector<vector<Individual *>> clustered_population = output.first.first;
       vector<vector<Individual *>> clustered_population_equal = output.first.second;
       vector<int> clusternr = output.second;
-
-//      int count = 0;
-//      int c = 0;
-//      for(auto cluster: clustered_population){
-//          for(auto ind: cluster){
-//              ind->clusterid = c;
-//              count++;
-//          }
-//          c++;
-//      }
-//      print("COUNT ",to_string(count));
-
 
       // Per cluster, per Objective, per MT one FOS
       vector<vector<vector<vector<int>>>> FOSs;
