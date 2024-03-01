@@ -68,7 +68,6 @@ Node * _grow_tree_recursive(int max_arity, int max_depth_left, int actual_depth_
     n = new Node(_sample_terminal(mt, trees));
   }
   assert(n != NULL);
-
   return n;
 }
 
@@ -90,8 +89,9 @@ Node * generate_tree(int max_depth, int mt, vector<Node *> &trees, string init_t
     
     bool is_full = Rng::randu() < .5;
 
-    if (is_full)
-      tree = _grow_tree_recursive(max_arity, max_depth, actual_depth, -1, mt, trees, 0.0);
+    if (is_full) {
+        tree = _grow_tree_recursive(max_arity, max_depth, actual_depth, -1, mt, trees, 0.0);
+    }
     else{
       tree = _grow_tree_recursive(max_arity, max_depth, actual_depth, -1, mt, trees);
     }
@@ -145,7 +145,14 @@ Individual * generate_individuals(int max_depth, string init_strategy, int nr_mu
     for(int mt=0;mt<nr_multi_trees;mt++){
         individual->trees.push_back(generate_tree(max_depth, mt, individual->trees, init_strategy));
     }
-    print(individual->human_repr(), " ", nr_multi_trees);
+//    for(auto tree:individual->trees){
+//        print(tree->human_repr());
+//    }
+
+//    Individual * joe = new Individual();
+//    individual->trees.reserve(2);
+//
+//
     return individual;
 }
 
@@ -974,8 +981,6 @@ Node * efficient_gom_MO_FI(Individual * parent, int mt, vector<Node*> & populati
     }
 
     vector<float> pt_af = parent->fitness;
-
-//    print(pt_bf[0], " ", pt_bf[1], ";", pt_af[0], " ", pt_af[1]);
 
     if ((!changed) && !g::ea->MO_archive.empty()) {
         offspring->clear();
