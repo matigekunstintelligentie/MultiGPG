@@ -808,9 +808,14 @@ struct Const : Term {
   float d;
   float range;
   Const(float c=NAN, float range=10.) {
+
     this->c=c;
+
     this->range=range;
     this->d= static_cast<float>(0);
+      if (isnan(c)){
+          _sample();
+      }
     /*
     if (abs(this->c) < 1e-6) {
       this->c = 0;
@@ -855,54 +860,17 @@ struct Const : Term {
   }
 
   string human_repr(vector<string> & args) override {
-    return to_string_with_precision(c, NUM_PRECISION);
+    return sym();
   }
 
   string np_repr(vector<string> & args) override {
-    return to_string_with_precision(c, NUM_PRECISION);
+    return sym();
   }
 
   string torch_repr(vector<string> & args) override {
-    return to_string_with_precision(c, NUM_PRECISION);
+    return sym();
   }
 };
-
-// struct FunTree : Fun {
-
-//     int id;
-//     OutputTree(int id) {
-//         this->id = id;
-//     }
-
-//     Op * clone() override {
-//         return new OutputTree(this->id);
-//     }
-
-//     int arity() override {
-//         return 0;
-//     }
-
-//     string sym() override {
-//         return "p_"+to_string(id);
-//     }
-
-//     OpType type() override {
-//         return OpType::otFun;
-//     }
-
-//     string human_repr(vector<string> & args) override {
-
-//         return "Placeholder_"+to_string(id);
-//     }
-
-//     string np_repr(vector<string> & args) override {
-//         return "Placeholder_"+to_string(id);
-//     }
-
-//     string torch_repr(vector<string> & args) override {
-//         return "Placeholder_"+to_string(id);
-//     }
-// };
 
 struct OutputTree : Term {
 
@@ -938,6 +906,43 @@ struct OutputTree : Term {
 
     string torch_repr(vector<string> & args) override {
         return "Placeholder_"+to_string(id);
+    }
+};
+
+struct FunctionTree : Term {
+
+    int id;
+    FunctionTree(int id) {
+        this->id = id;
+    }
+
+    Op * clone() override {
+        return new FunctionTree(this->id);
+    }
+
+    int arity() override {
+        return 0;
+    }
+
+    string sym() override {
+        return "f_"+to_string(id);
+    }
+
+    OpType type() override {
+        return OpType::otFunction;
+    }
+
+    string human_repr(vector<string> & args) override {
+
+        return "Func_"+to_string(id);
+    }
+
+    string np_repr(vector<string> & args) override {
+        return "Func_"+to_string(id);
+    }
+
+    string torch_repr(vector<string> & args) override {
+        return "Func_"+to_string(id);
     }
 };
 

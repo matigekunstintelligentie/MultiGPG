@@ -17,9 +17,6 @@ struct Node {
   Op * op = NULL;
   vector<float> fitness = {9999999,9999999};
 
-
-  //Node() {};
-
   Node(Op * op) {
     this->op = op;
   }
@@ -36,15 +33,6 @@ struct Node {
         }
         delete this;
     }
-
-//  void clear(vector<Node*> &trees) {
-//    auto nodes = subtree(trees);
-//    print("clear", to_string(nodes.size()));
-//    for (int i = 1; i < nodes.size(); i++) {
-//      delete nodes[i];
-//    }
-//    delete this;
-//  }
 
   Node * clone() {
     Node * new_node = new Node(this->op->clone());
@@ -154,15 +142,15 @@ struct Node {
     }
 
   void _subtree_recursive(vector<Node*> &subtree, vector<Node*> &trees) {
-//      if(op->type()==OpType::otPlaceholder){
-//          return trees[((OutputTree*) op)->id]->_subtree_recursive(subtree, trees);
-//      }
-//      else {
+      if(op->type()==OpType::otPlaceholder){
+          return trees[((OutputTree*) op)->id]->_subtree_recursive(subtree, trees);
+      }
+      else {
           subtree.push_back(this);
           for (Node *child: children) {
               child->_subtree_recursive(subtree, trees);
           }
-//      }
+      }
   }
 
     vector<Node*> subtree(bool check_introns) {
@@ -200,10 +188,10 @@ struct Node {
     }
 
   void _subtree_recursive(vector<Node*> &subtree, vector<Node*> &trees, bool check_introns) {
-//      if(op->type()==OpType::otPlaceholder){
-//          return trees[((OutputTree*) op)->id]->_subtree_recursive(subtree, trees, check_introns);
-//      }
-//      else {
+      if(op->type()==OpType::otPlaceholder){
+          return trees[((OutputTree*) op)->id]->_subtree_recursive(subtree, trees, check_introns);
+      }
+      else {
           if (check_introns) {
               if (!this->is_intron()) {
                   subtree.push_back(this);
@@ -217,7 +205,7 @@ struct Node {
                   child->_subtree_recursive(subtree, trees, check_introns);
               }
           }
-//      }
+      }
   }
 
   int position_among_siblings() {
@@ -266,7 +254,10 @@ struct Node {
   }
 
 
-  pair<Vec, Vec> get_output_der(const Mat & X) {
+  pair<Vec, Vec> get_output_der(const Mat & X, const vector<Node*> & trees) {
+    if(op->type()==OpType::otPlaceholder){
+        return trees[((OutputTree*) op)->id]->get_output_der(X, trees);
+    }
     int a = op->arity();
     if (a == 0){
         return op->apply_der(X);
@@ -274,7 +265,7 @@ struct Node {
     Mat C(X.rows(), a);
     Mat D(X.rows(), a);
     for(int i = 0; i < a; i++){
-         pair<Vec, Vec> O = children[i]->get_output_der(X);
+         pair<Vec, Vec> O = children[i]->get_output_der(X, trees);
          C.col(i) = O.first;
          D.col(i) = O.second;
     }
@@ -308,15 +299,15 @@ struct Node {
                 children[i]->_human_repr_recursive(expr);
                 args.push_back(expr);
             }
+            //print(op->sym());
             expr = op->human_repr(args);
-
     }
 
   void _human_repr_recursive(vector<Node*> & trees, string & expr) {
-//      if(op->type()==OpType::otPlaceholder){
-//          return trees[((OutputTree*) op)->id]->_human_repr_recursive(trees, expr);
-//      }
-//      else {
+      if(op->type()==OpType::otPlaceholder){
+          return trees[((OutputTree*) op)->id]->_human_repr_recursive(trees, expr);
+      }
+      else {
           int arity = op->arity();
           vector<string> args;
           args.reserve(arity);
@@ -325,7 +316,7 @@ struct Node {
               args.push_back(expr);
           }
           expr = op->human_repr(args);
-//      }
+      }
   }
 
     string human_repr(vector<Node*> & trees) {

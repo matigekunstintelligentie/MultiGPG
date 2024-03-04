@@ -46,6 +46,7 @@ Op * _sample_terminal(int mt, vector<Node *> &trees) {
      for(int i = 1; i<AB.size(); i++){
          cumul_tset_probs[i] = cumul_tset_probs[i-1] + 1./float(AB.size());
      }
+
      return _sample_operator(AB, cumul_tset_probs);
 }
 
@@ -145,14 +146,20 @@ Individual * generate_individuals(int max_depth, string init_strategy, int nr_mu
     for(int mt=0;mt<nr_multi_trees;mt++){
         individual->trees.push_back(generate_tree(max_depth, mt, individual->trees, init_strategy));
     }
-//    for(auto tree:individual->trees){
-//        print(tree->human_repr());
-//    }
 
+//    print(individual->human_repr(true));
+//
+//
 //    Individual * joe = new Individual();
-//    individual->trees.reserve(2);
-//
-//
+//    joe->trees.reserve(2);
+//    Node * tree1 = new Node(new Const(420.));
+//    joe->trees.push_back(tree1);
+//    Node * tree2 = new Node(new OutputTree(0));
+//    joe->trees.push_back(tree2);
+//    print(joe->human_repr(true));
+//    print(joe->human_repr(false));
+////
+////
     return individual;
 }
 
@@ -180,7 +187,7 @@ Node * append_linear_scaling(Node * tree, vector<Node*> & trees) {
     mul_n->append(tree);
     add_n->append(interc_n);
     add_n->append(mul_n);
-  
+
     // bring fitness info to new root
     add_n->fitness = tree->fitness;
       
@@ -270,7 +277,7 @@ Node * coeff_opt_lm(Node * parent, vector<Node*> & trees, bool return_copy=true)
                // Mark the operator as being differentiable
                ((Const*)coeff_ptrs[i]->op)->d = static_cast<float>(1);
 
-               pair<Vec,Vec> output = tree->get_output_der(X_train);
+               pair<Vec,Vec> output = tree->get_output_der(X_train, trees);
                g::mse_func->opt_evaluations += 1;
                if(g::use_clip){
                    Jacobian.col(i) = (-output.second * x(coeff_ptrs.size()+1)).cwiseMax(-1).cwiseMin(1);
@@ -415,7 +422,7 @@ Node * coeff_opt_bfgs(Node * parent, vector<Node*> & trees, bool return_copy=tru
 
             ((Const*)coeff_ptrs[i]->op)->d = static_cast<float>(1);
 
-            output = tree->get_output_der(g::mse_func->X_batch);
+            output = tree->get_output_der(g::mse_func->X_batch, trees);
 
             g[i] = (float) x[coeff_ptrs.size() + 1] * -1./g::mse_func->y_batch.rows() * ((g::mse_func->y_batch-(x[coeff_ptrs.size()] + x[coeff_ptrs.size() + 1] * output.first))*output.second).sum();
 

@@ -229,11 +229,11 @@ namespace g {
       }
       if(equal_p_coeffs){
         for(int i = 0; i < fit_func->X_train.cols(); i++) {
-          terminals.push_back(new Const());
+          terminals.push_back(new Const(NAN,range));
         }
       }
       else{
-        terminals.push_back(new Const());
+        terminals.push_back(new Const(NAN,range));
       }
     }
     else {
@@ -249,7 +249,7 @@ namespace g {
           } else {
             // constant
             float c = stof(sym);
-            terminals.push_back(new Const(c));
+            terminals.push_back(new Const(c, range));
           }
         } catch(std::invalid_argument const& ex) {
           throw runtime_error("Unrecognized terminal: "+sym);

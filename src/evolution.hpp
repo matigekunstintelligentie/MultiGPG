@@ -72,6 +72,11 @@ struct Evolution {
     unordered_set<string> already_generated;
     population.reserve(pop_size);
     int init_attempts = 0;
+
+    for(int i = 0; i<g::nr_multi_trees - 1;i++){
+        g::terminals.push_back(new OutputTree(i));
+    }
+
     while (population.size() < pop_size) {
       auto * individual = generate_individuals(g::max_depth, g::init_strategy, g::nr_multi_trees);
 
@@ -346,12 +351,19 @@ struct Evolution {
 //      }
 
       float max_size = 0.;
+      float max_size2 = 0;
       for(auto ind:population){
           if(ind->fitness[1]>max_size){
               max_size = ind->fitness[1];
+
+          }
+          if(ind->get_num_nodes(true)>max_size2){
+              max_size2 = ind->get_num_nodes(true);
           }
       }
-      print("MAX SIZE ", max_size);
+
+
+      print("MAX SIZE ", max_size, " ", max_size2);
 
       // clusterpopulation population split into clusters
       // clusterpopulation equals use for donors
@@ -425,26 +437,25 @@ struct Evolution {
       population = offspring_population;
 
 
-//      ofstream csv_file;
-//      csv_file.open("MOMT.csv", ios::app);
-//
-//      string str = "";
-//
-////      int i;
-////      for(i =0; i<pop_size-2;i++){
-////          str += to_string(population[i]->fitness[0]) + "," + to_string(population[i]->fitness[1]) + "," + to_string(population[i]->clusterid) + ";";
-////      }
-////      i++;
-////      str += to_string(population[i]->fitness[0]) + "," + to_string(population[i]->fitness[1]) + "," + to_string(population[i]->clusterid) + "\n";
-//
+      ofstream csv_file;
+      csv_file.open("MOMT.csv", ios::app);
+
+      string str = "";
+
 //      int i;
-//      for(i =0; i<g::ea->MO_archive.size()-1;i++){
-//          str += to_string(g::ea->MO_archive[i]->fitness[0]) + "," + to_string(g::ea->MO_archive[i]->fitness[1]) + "," + to_string(g::ea->MO_archive[i]->clusterid) + ";";
+//      for(i =0; i<pop_size-2;i++){
+//          str += to_string(population[i]->fitness[0]) + "," + to_string(population[i]->fitness[1]) + "," + to_string(population[i]->clusterid) + ";";
 //      }
-//      str += to_string(g::ea->MO_archive[i]->fitness[0]) + "," + to_string(g::ea->MO_archive[i]->fitness[1]) + "," + to_string(g::ea->MO_archive[i]->clusterid) + "\n";
-//
-//      csv_file << str;
-//      csv_file.close();
+//      i++;
+//      str += to_string(population[i]->fitness[0]) + "," + to_string(population[i]->fitness[1]) + "," + to_string(population[i]->clusterid) + "\n";
+      int i;
+      for(i =0; i<g::ea->MO_archive.size()-1;i++){
+          str += to_string(g::ea->MO_archive[i]->fitness[0]) + "," + to_string(g::ea->MO_archive[i]->fitness[1]) + "," + to_string(g::ea->MO_archive[i]->clusterid) + ";";
+      }
+      str += to_string(g::ea->MO_archive[i]->fitness[0]) + "," + to_string(g::ea->MO_archive[i]->fitness[1]) + "," + to_string(g::ea->MO_archive[i]->clusterid) + "\n";
+
+      csv_file << str;
+      csv_file.close();
   }
 
 

@@ -15,7 +15,10 @@ def read_tsv_file(file_path):
     except Exception as e:
         print(f"An error occurred: {str(e)}")
 
+
 def process_rows(df):
+    max_len = 0
+    max_mse =0
     processed_data = []
     for index, row in df.iterrows():
         coordinates = []
@@ -25,8 +28,12 @@ def process_rows(df):
             # Split each coordinate string by ',' to get x, y, z values
             x, y, z = coord_str.split(',')
             coordinates.append((float(x), float(y), int(z)))
+            if float(x)>max_mse:
+            	max_mse = float(x)
+            if float(y)>max_len:
+            	max_len = float(y)
         processed_data.append(coordinates)
-    return processed_data
+    return processed_data, max_len, max_mse
 
 
 
@@ -52,8 +59,8 @@ def process_rows(df):
 
 def update(frame):
     ax.clear()
-    ax.set_xlim(15, 50)  # Set fixed x-axis limits
-    ax.set_ylim(0, 32)
+    ax.set_xlim(0, max_len*1.1)  # Set fixed x-axis limits
+    ax.set_ylim(0, max_mse*1.5)
 
     row = processed_data[frame]
 
@@ -82,7 +89,8 @@ def update(frame):
 
 tsv_file_path = "MOMT.csv"
 df = read_tsv_file(tsv_file_path)
-processed_data = process_rows(df)
+processed_data, max_len, max_mse = process_rows(df)
+print(max_len, max_mse)
 fig, ax = plt.subplots()
 ani = FuncAnimation(fig, update, frames=len(processed_data), interval=1000)
 
