@@ -108,9 +108,8 @@ struct Evolution {
   }
 
     void gomea_generation_SO(int macro_generation) {
-        vector<vector<vector<int>>> foses;
+        vector<pair<vector<int>,int>> foses;
         vector<vector<Node*>> foses_pop;
-        foses.reserve(g::nr_multi_trees);
         foses_pop.reserve(g::nr_multi_trees);
 
         for(int i =0; i<g::nr_multi_trees;i++){
@@ -119,7 +118,10 @@ struct Evolution {
             for(int j =0; j<population.size();j++){
                 fos_pop.push_back(population[j]->trees[i]);
             }
-            foses.push_back(fbs[0][i]->build_linkage_tree(fos_pop, i));
+            vector<vector<int>> fos = fbs[0][i]->build_linkage_tree(fos_pop, i);
+            for(auto fos_el: fos){
+                foses.push_back(make_pair(fos_el,i));
+            }
             foses_pop.push_back(fos_pop);
         }
 
@@ -128,7 +130,7 @@ struct Evolution {
         offspring_population.reserve(pop_size);
 
         for(int i = 0; i < pop_size; i++) {
-            Individual * offspring = efficient_gom_SO(population[i], foses_pop, foses, macro_generation);
+            Individual * offspring = efficient_gom(population[i], foses_pop, foses, macro_generation);
 
             offspring_population.push_back(offspring);
             g::ea->updateSOArchive(offspring);
