@@ -391,11 +391,11 @@ struct Evolution {
       vector<vector<Individual *>> clustered_population_equal = output.first.second;
       vector<int> clusternr = output.second;
 
-      // Per cluster, per Objective, per MT one FOS
-      vector<vector<vector<vector<int>>>> FOSs;
+      // Per cluster, one FOS
+      vector<vector<pair<vector<int>,int>>> FOSs;
       vector<vector<vector<Node *>>> clustered_FOSes_pop;
       for(int i = 0; i<7; i++){
-          vector<vector<vector<int>>> cluster_fbs;
+          vector<pair<vector<int>,int>> cluster_fbs;
           vector<vector<Node*>> FOSes_pop;
           for(int j = 0; j<g::nr_multi_trees; j++){
               vector<Node *> fos_pop;
@@ -404,7 +404,10 @@ struct Evolution {
                   fos_pop.push_back(clustered_population[i][x]->trees[j]);
               }
               FOSes_pop.push_back(fos_pop);
-              cluster_fbs.push_back(fbs[i][j]->build_linkage_tree(fos_pop, j));
+              vector<vector<int>> fos = fbs[i][j]->build_linkage_tree(fos_pop, j);
+              for(auto fos_el: fos){
+                  cluster_fbs.push_back(make_pair(fos_el, j));
+              }
           }
           clustered_FOSes_pop.push_back(FOSes_pop);
           FOSs.push_back(cluster_fbs);
