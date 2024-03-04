@@ -1195,25 +1195,20 @@ Node * efficient_gom_MO(Individual * parent, int mt, vector<Node*> & population,
 
     parent->NIS = ever_improved ? 0 : parent->NIS + 1;
 
-    if ((!changed || parent->NIS > NIS_const) && !g::ea->MO_archive.empty()) {
-        parent->NIS = 0;
-        return efficient_gom_MO_FI(parent, mt, population, fos, macro_generations, objective, extrema, NIS_const);
-    }
+//    if ((!changed || parent->NIS > NIS_const) && !g::ea->MO_archive.empty()) {
+//        parent->NIS = 0;
+//        return efficient_gom_MO_FI(parent, mt, population, fos, macro_generations, objective, extrema, NIS_const);
+//    }
 
     return offspring;
 }
 
-Individual * efficient_gom_SO(Individual * og_parent, vector<Individual *> & indpopulation, vector<vector<vector<int>>> & multi_fos, int macro_generations){
+Individual * efficient_gom_SO(Individual * og_parent, vector<vector<Node *>> & foses_pop, vector<vector<vector<int>>> & multi_fos, int macro_generations){
     Individual * parent = og_parent->clone();
 
     for(int mt=0;mt<g::nr_multi_trees;mt++){
-        vector<Node*> population;
-        population.reserve(indpopulation.size());
-        for(int i =0; i<indpopulation.size();i++){
-            population.push_back(indpopulation[i]->trees[mt]);
-        }
 
-        Node * new_tree = efficient_gom(parent, mt, population, multi_fos[mt], macro_generations);
+        Node * new_tree = efficient_gom(parent, mt, foses_pop[mt], multi_fos[mt], macro_generations);
 
         parent->trees[mt] = new_tree;
     }
@@ -1221,19 +1216,13 @@ Individual * efficient_gom_SO(Individual * og_parent, vector<Individual *> & ind
     return parent;
 }
 
-Individual * efficient_gom_MO(Individual * og_parent, vector<Individual *> & indpopulation, vector<vector<vector<int>>> & multi_fos, int macro_generations, int objective, bool extrema, int NIS_const){
+Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node *>> & foses_pop, vector<vector<vector<int>>> & multi_fos, int macro_generations, int objective, bool extrema, int NIS_const){
     Individual * parent = og_parent->clone();
 
     for(int mt=0;mt<g::nr_multi_trees;mt++){
-        vector<Node*> population;
-        population.reserve(indpopulation.size());
-        for(int i =0; i<indpopulation.size();i++){
-            population.push_back(indpopulation[i]->trees[mt]);
-        }
+        Node * new_tree = efficient_gom_MO(parent, mt, foses_pop[mt], multi_fos[mt], macro_generations, objective, extrema, NIS_const);
 
-        Node * new_tree = efficient_gom_MO(parent, mt, population, multi_fos[mt], macro_generations, objective, extrema, NIS_const);
-
-        parent->trees[mt] = new_tree;
+        //parent->trees[mt] = new_tree;
     }
 
     return parent;

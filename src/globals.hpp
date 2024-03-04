@@ -409,7 +409,7 @@ namespace g {
     parser.set_optional<float>("rci", "rel_compl_imp", 0.0, "Relative importance of complexity over accuracy to select the final elite (default is 0.0)");
     parser.set_optional<int>("feat_sel", "feature_selection", -1, "Max. number of feature to consider (if -1, all features are considered)");
     // variation
-    parser.set_optional<float>("cmp", "coefficient_mutation_probability", 1., "Probability of applying coefficient mutation to a coefficient node");
+    parser.set_optional<float>("cmp", "coefficient_mutation_probability", 0., "Probability of applying coefficient mutation to a coefficient node");
     parser.set_optional<float>("cmt", "coefficient_mutation_temperature", 0.1, "Temperature of coefficient mutation");
     parser.set_optional<int>("tour", "tournament_size", 2, "Tournament size (if tournament selection is active)");
     parser.set_optional<bool>("nolink", "no_linkage", false, "Disables computing linkage when building the linkage tree FOS, essentially making it random");
