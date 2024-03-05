@@ -13,9 +13,6 @@ struct Individual {
   int clusterid;
   int NIS = 0;
 
-  //Node() {};
-
-  
   
   Individual(){
   }
@@ -41,13 +38,21 @@ struct Individual {
     delete this;
 
   }
+
+  vector<Node*> subtree(bool check_introns){
+      return  trees[trees.size()-1]->subtree(this->trees, check_introns);
+  }
   
   int get_num_nodes(bool excl_introns){
       return trees[trees.size()-1]-> get_num_nodes(this->trees, excl_introns);
   }
 
-  Vec get_output(Mat & X, vector<Node *> & trees){
-      return trees[trees.size()-1]->get_output(X, trees);
+  Vec get_output(const Mat & X){
+      return trees[trees.size()-1]->get_output(X, this->trees);
+  }
+
+  pair<Vec, Vec> get_output_der(const Mat & X){
+    return trees[trees.size()-1]->get_output_der(X, this->trees);
   }
 
   string human_repr(bool full_tree=false) {

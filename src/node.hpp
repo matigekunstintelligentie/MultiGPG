@@ -122,14 +122,12 @@ struct Node {
 
     vector<Node*> subtree() {
         vector<Node*> subtree;
-        subtree.reserve(64);
         _subtree_recursive(subtree);
         return subtree;
     }
 
   vector<Node*> subtree(vector<Node*> &trees) {
     vector<Node*> subtree;
-    subtree.reserve(512);
     _subtree_recursive(subtree, trees);
     return subtree;
   }
@@ -155,15 +153,13 @@ struct Node {
 
     vector<Node*> subtree(bool check_introns) {
         vector<Node*> subtree;
-        subtree.reserve(256);
         _subtree_recursive(subtree, check_introns);
         return subtree;
     }
 
+  //Here
   vector<Node*> subtree(vector<Node*> &trees, bool check_introns) {
     vector<Node*> subtree;
-    print("WARNING: set manually");
-    subtree.reserve(256);
     _subtree_recursive(subtree, trees, check_introns);
     return subtree;
   }

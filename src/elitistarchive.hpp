@@ -72,7 +72,7 @@ struct ElitistArchive{
     }
 
     bool diversityAdded(Individual* individual, int idx){
-        Vec diff = individual->get_output(X_train, individual->trees) - MO_archive[idx]->get_output(X_train, individual->trees);
+        Vec diff = individual->get_output(X_train) - MO_archive[idx]->get_output(X_train);
         if(diff.mean()==0){
             return false;
         }

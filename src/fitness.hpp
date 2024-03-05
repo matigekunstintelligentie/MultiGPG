@@ -174,7 +174,7 @@ struct MSEFitness : Fitness {
   vector<float> get_fitness_SO(Individual * n, Mat & X, Vec & y, bool change_fitness=true) override {
     vector<float> fitnessses;
     fitnessses.reserve(1);
-    Vec out = n->get_output(X, n->trees);
+    Vec out = n->get_output(X);
     
     float fitness = (y-out).square().mean();
 
@@ -190,7 +190,7 @@ struct MSEFitness : Fitness {
 
   vector<float> get_fitness_MO(Individual * n, Mat & X, Vec & y, bool change_fitness=true) override {
 
-    Vec out = n->get_output(X, n->trees);
+    Vec out = n->get_output(X);
 
     float fitness = (y-out).square().mean();
 
@@ -221,7 +221,7 @@ struct LSMSEFitness : Fitness {
   }
 
   vector<float> get_fitness_SO(Individual * n, Mat & X, Vec & y, bool change_fitness) override {
-    Vec out = n->get_output(X, n->trees);
+    Vec out = n->get_output(X);
     pair<float,float> intc_slope = linear_scaling_coeffs(y, out);
 
 
@@ -244,7 +244,7 @@ struct LSMSEFitness : Fitness {
   }
 
   vector<float> get_fitness_MO(Individual * n, Mat & X, Vec & y,bool change_fitness) override {
-        Vec out = n->get_output(X, n->trees);
+        Vec out = n->get_output(X);
         pair<float,float> intc_slope = linear_scaling_coeffs(y, out);
 
 

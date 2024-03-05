@@ -96,7 +96,7 @@ struct Evolution {
         else{
             g::fit_func->get_fitness_SO(individual);
         };
-
+        individual = coeff_opt_lm(individual);
         population.push_back(individual);
     }
 

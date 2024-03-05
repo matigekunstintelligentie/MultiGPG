@@ -194,14 +194,35 @@ Node * append_linear_scaling(Node * tree, vector<Node*> & trees) {
     return add_n;
 }
 
-Node * coeff_opt_lm(Node * parent, vector<Node*> & trees, bool return_copy=true){
-    Node * tree = parent;
+Individual * coeff_opt_lm(Individual * parent, bool return_copy=true){
+    Node * mult_o = new Node(new Mul());
+    Node * const_o = new Node(new Const(5.));
+    Node * feat_o = new Node(new Feat(0));
+    mult_o->append(const_o);
+    mult_o->append(feat_o);
+
+    Node * mult_main = new Node(new Mul());
+    Node * output_main = new Node(new OutputTree(0));
+    mult_main->append(output_main);
+    mult_main->append(output_main);
+
+    //print(mult_main->subtree(true).size());
+
+    Individual * joe = new Individual();
+    joe->trees.push_back(mult_o);
+    joe->trees.push_back(mult_main);
+
+    print(joe->human_repr(true));
+
+    Individual * tree = joe->clone();
+    //Individual * tree = parent;
 
     if(return_copy){
         tree = parent->clone();
     }
 
     vector<Node*> nodes = tree->subtree(true);
+    print("NODES SIZE ",nodes.size());
 
     // Get list of pointers to coeffs and their values
     vector<float> coeffsf;
@@ -223,7 +244,7 @@ Node * coeff_opt_lm(Node * parent, vector<Node*> & trees, bool return_copy=true)
    if(coeff_ptrs.size()>0){
      pair<float,float> intc_slope = make_pair(0.,1.);
      if(!g::use_mse_opt){
-       Vec p = tree->get_output(g::fit_func->X_train, trees);
+       Vec p = tree->get_output(g::fit_func->X_train);
        intc_slope = linear_scaling_coeffs(g::fit_func->y_train, p);
      }
 
@@ -234,10 +255,9 @@ Node * coeff_opt_lm(Node * parent, vector<Node*> & trees, bool return_copy=true)
 
      struct LMFunctor{
        // 'm' pairs of (x, f(x))
-       vector<Node*> trees;
        Mat X_train;
        Vec y_train;
-       Node* tree;
+       Individual* tree;
        std::vector<Node*> coeff_ptrs;
        pair<float,float> intc_slope;
 
@@ -247,7 +267,7 @@ Node * coeff_opt_lm(Node * parent, vector<Node*> & trees, bool return_copy=true)
                ((Const*)coeff_ptrs[i]->op)->c = (float) x(i);
            }
 
-           fvec = y_train - (x(coeff_ptrs.size()) + x(coeff_ptrs.size()+1) * tree->get_output(X_train, trees));
+           fvec = y_train - (x(coeff_ptrs.size()) + x(coeff_ptrs.size()+1) * tree->get_output(X_train));
            g::mse_func->opt_evaluations += 1;
 
            return 0;
@@ -277,7 +297,7 @@ Node * coeff_opt_lm(Node * parent, vector<Node*> & trees, bool return_copy=true)
                // Mark the operator as being differentiable
                ((Const*)coeff_ptrs[i]->op)->d = static_cast<float>(1);
 
-               pair<Vec,Vec> output = tree->get_output_der(X_train, trees);
+               pair<Vec,Vec> output = tree->get_output_der(X_train);
                g::mse_func->opt_evaluations += 1;
                if(g::use_clip){
                    Jacobian.col(i) = (-output.second * x(coeff_ptrs.size()+1)).cwiseMax(-1).cwiseMin(1);
@@ -288,8 +308,7 @@ Node * coeff_opt_lm(Node * parent, vector<Node*> & trees, bool return_copy=true)
                ((Const*)coeff_ptrs[i]->op)->d = static_cast<float>(0);
            }
 
-           vector<Node*> trees_tmp = trees;
-           Vec output = tree->get_output(g::mse_func->X_batch_opt, trees_tmp);
+           Vec output = tree->get_output(g::mse_func->X_batch_opt);
            g::mse_func->opt_evaluations += 1;
 
            if(!g::use_mse_opt){
@@ -325,7 +344,6 @@ Node * coeff_opt_lm(Node * parent, vector<Node*> & trees, bool return_copy=true)
 
      LMFunctor functor;
 
-     functor.trees = trees;
      functor.X_train = g::mse_func->X_batch_opt;
      functor.y_train = g::mse_func->y_batch_opt;
      functor.m = g::mse_func->X_batch_opt.rows();
