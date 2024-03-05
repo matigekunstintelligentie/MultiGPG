@@ -160,6 +160,7 @@ struct Node {
   //Here
   vector<Node*> subtree(vector<Node*> &trees, bool check_introns) {
     vector<Node*> subtree;
+    subtree.reserve(64);
     _subtree_recursive(subtree, trees, check_introns);
     return subtree;
   }
@@ -182,7 +183,7 @@ struct Node {
         }
 
     }
-
+  // here
   void _subtree_recursive(vector<Node*> &subtree, vector<Node*> &trees, bool check_introns) {
       if(op->type()==OpType::otPlaceholder){
           return trees[((OutputTree*) op)->id]->_subtree_recursive(subtree, trees, check_introns);

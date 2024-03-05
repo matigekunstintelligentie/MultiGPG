@@ -96,7 +96,10 @@ struct Evolution {
         else{
             g::fit_func->get_fitness_SO(individual);
         };
-        individual = coeff_opt_lm(individual);
+
+        // TODO remove
+        //individual = coeff_opt_lm(individual, true);
+
         population.push_back(individual);
     }
 
@@ -130,7 +133,7 @@ struct Evolution {
         offspring_population.reserve(pop_size);
 
         for(int i = 0; i < pop_size; i++) {
-            Individual * offspring = efficient_gom(population[i], foses_pop, foses, macro_generation);
+            Individual * offspring = efficient_gom(population[i], foses_pop, population, foses, macro_generation);
 
             offspring_population.push_back(offspring);
             g::ea->updateSOArchive(offspring);

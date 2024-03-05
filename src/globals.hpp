@@ -411,7 +411,7 @@ namespace g {
     // variation
     parser.set_optional<float>("cmp", "coefficient_mutation_probability", 0., "Probability of applying coefficient mutation to a coefficient node");
     parser.set_optional<float>("cmt", "coefficient_mutation_temperature", 0.1, "Temperature of coefficient mutation");
-    parser.set_optional<int>("tour", "tournament_size", 2, "Tournament size (if tournament selection is active)");
+    parser.set_optional<int>("tour", "tournament_size", 4, "Tournament size (if tournament selection is active)");
     parser.set_optional<bool>("nolink", "no_linkage", false, "Disables computing linkage when building the linkage tree FOS, essentially making it random");
     parser.set_optional<bool>("no_large_fos", "no_large_fos", false, "Whether to discard subsets in the FOS with size > half the size of the genotype (default is false)");
     parser.set_optional<bool>("no_univ_fos", "no_univ_fos", false, "Whether to discard univariate subsets in the FOS (default is false)");
@@ -423,7 +423,7 @@ namespace g {
     // optimisation
     parser.set_optional<bool>("use_optim", "use_optimiser", false, "Whether optimisation is used");
     parser.set_optional<bool>("use_ftol", "use_ftol", false, "Whether ftol is used");
-    parser.set_optional<bool>("use_mse_opt", "use_mse_opt", false, "Whether ftol is used");
+    parser.set_optional<bool>("use_mse_opt", "use_mse_opt", false, "Whether the mse is optimised is used");
     parser.set_optional<float>("tol", "tol", 1e-9, "Set tolerance");
     parser.set_optional<bool>("use_clip", "use_clip", false, "Whether gradients are clipped between -1 and 1");
     parser.set_optional<string>("optimiser_choice", "optimiser_choice", "none", "Selection of optimiser");
