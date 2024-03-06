@@ -843,6 +843,8 @@ Individual * efficient_gom(Individual * og_parent, vector<vector<Node*>> & mt_po
             // it improved
 
             backup_fitness = new_fitness;
+            g::ea->updateMOArchive(parent);
+            g::ea->updateSOArchive(parent);
 
             ever_improved = true;
         }
@@ -852,93 +854,97 @@ Individual * efficient_gom(Individual * og_parent, vector<vector<Node*>> & mt_po
             delete op;
         }
 
-//        if(g::cmut_prob>0.){
-//
-//            effectively_changed_indices.clear();
-//            backup_ops.clear();
-//
-//            // apply coeff mut
-//
-//            coeff_mut(offspring, false, &effectively_changed_indices, &backup_ops);
-//
-//            // check if at least one change was meaningful
-//            for(int i : effectively_changed_indices) {
-//                Node * n = offspring_nodes[i];
-//                if (!n->is_intron()) {
-//                    change_is_meaningful = true;
-//                    break;
-//                }
-//            }
-//            // assume nothing changed
-//            new_fitness = offspring->fitness;
-//            if (change_is_meaningful) {
-//                // gotta recompute
-//                new_fitness = g::fit_func->get_fitness_MO(parent);
-//            }
-//
-//
-//
-//            // check is not worse
-//            if (new_fitness[0] > backup_fitness[0]) {
-//                // undo
-//                for(int i = 0; i < effectively_changed_indices.size(); i++) {
-//                    int changed_idx = effectively_changed_indices[i];
-//                    Node * off_n = offspring_nodes[changed_idx];
-//                    Op * back_op = backup_ops[i];
-//                    delete off_n->op;
-//                    off_n->op = back_op->clone();
-//                    offspring->fitness = backup_fitness;
-//                }
-//            } else{
-//                // it improved
-//                backup_fitness = new_fitness;
-//
-//                ever_improved = true;
-//            }
-//
-//            // discard backup
-//            for(Op * op : backup_ops) {
-//                delete op;
-//            }
-//        }
+        if(g::cmut_prob>0.){
+
+            effectively_changed_indices.clear();
+            backup_ops.clear();
+
+            // apply coeff mut
+
+            coeff_mut(offspring, false, &effectively_changed_indices, &backup_ops);
+
+            // check if at least one change was meaningful
+            for(int i : effectively_changed_indices) {
+                Node * n = offspring_nodes[i];
+                if (!n->is_intron()) {
+                    change_is_meaningful = true;
+                    break;
+                }
+            }
+            // assume nothing changed
+            new_fitness = offspring->fitness;
+            if (change_is_meaningful) {
+                // gotta recompute
+                new_fitness = g::fit_func->get_fitness_MO(parent);
+            }
+
+
+
+            // check is not worse
+            if (new_fitness[0] > backup_fitness[0]) {
+                // undo
+                for(int i = 0; i < effectively_changed_indices.size(); i++) {
+                    int changed_idx = effectively_changed_indices[i];
+                    Node * off_n = offspring_nodes[changed_idx];
+                    Op * back_op = backup_ops[i];
+                    delete off_n->op;
+                    off_n->op = back_op->clone();
+                    offspring->fitness = backup_fitness;
+                }
+            } else{
+                // it improved
+                backup_fitness = new_fitness;
+                g::ea->updateMOArchive(parent);
+                g::ea->updateSOArchive(parent);
+
+                ever_improved = true;
+            }
+
+            // discard backup
+            for(Op * op : backup_ops) {
+                delete op;
+            }
+        }
     }
 
-//    if((macro_generations%g::opt_per_gen)==0 && g::use_optimiser){
-//        vector<float> fitness_before = parent->fitness;
-//
-//        Individual * offspring;
-//        if(g::optimiser_choice=="lm"){
-//            offspring = coeff_opt_lm(parent, true);
-//        }
-//
-//        vector<float> fitness_after = g::fit_func->get_fitness_MO(offspring);
-//
-//        if(fitness_before[0]>fitness_after[0]){
-//            parent->clear();
-//            parent = offspring;
-//            parent->fitness = fitness_after;
-//
-//            ever_improved = true;
-//        }
-//        else{
-//            offspring->clear();
-//        }
-//    }
+    if((macro_generations%g::opt_per_gen)==0 && g::use_optimiser){
+        vector<float> fitness_before = parent->fitness;
+
+        Individual * offspring;
+        if(g::optimiser_choice=="lm"){
+            offspring = coeff_opt_lm(parent, true);
+        }
+
+        vector<float> fitness_after = g::fit_func->get_fitness_MO(offspring);
+
+        if(fitness_before[0]>fitness_after[0]){
+            parent->clear();
+            parent = offspring;
+            parent->fitness = fitness_after;
+            g::ea->updateMOArchive(parent);
+            g::ea->updateSOArchive(parent);
+
+            ever_improved = true;
+        }
+        else{
+            offspring->clear();
+        }
+    }
 
     // variant of forced improvement that is potentially less aggressive, & less expensive to carry out
     if(g::tournament_size > 1 && !ever_improved){
-        print("");
-//        // make a tournament between tournament size - 1 candidates + offspring
-//        vector<Individual*> tournament_candidates;
-//        tournament_candidates.reserve(g::tournament_size - 1);
-//        for(int i = 0; i < g::tournament_size - 1; i++) {
-//            tournament_candidates.push_back(population[Rng::randi(population.size())]);
-//        }
-//        tournament_candidates.push_back(parent);
-//
-//        Individual * winner = tournament(tournament_candidates, g::tournament_size);
-//        parent->clear();
-//        parent = winner;
+        print("tournament invoked");
+        // make a tournament between tournament size - 1 candidates + offspring
+        vector<Individual*> tournament_candidates;
+        tournament_candidates.reserve(g::tournament_size - 1);
+        for(int i = 0; i < g::tournament_size - 1; i++) {
+            tournament_candidates.push_back(population[Rng::randi(population.size())]);
+        }
+        tournament_candidates.push_back(parent);
+
+        Individual * winner = tournament(tournament_candidates, g::tournament_size);
+        parent->clear();
+        parent = winner;
     }
 
     return parent;
@@ -1357,49 +1363,32 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & po
     }
 
 
-    // GOM ended
+      if((macro_generations%g::opt_per_gen)==0 && g::use_optimiser){
 
+          vector<float> fitness_before = parent->fitness;
 
-//    if((macro_generations%g::opt_per_gen)==0 && g::use_optimiser && mt==(g::nr_multi_trees - 1)){
-//        offspring_nodes = offspring->subtree(parent->trees);
-//
-//        // Check for coefficients
-//        bool coeff_found = false;
-//        for(int i = 0; i < offspring_nodes.size(); i++) {
-//            if(offspring_nodes[i]->op->type()==OpType::otConst && !offspring_nodes[i]->is_intron()){
-//                coeff_found = true;
-//                break;
-//            }
-//        }
-//
-//        if(coeff_found){
-//            vector<float> fitness_before = parent->fitness;
-//
-//            Node * offspring_opt = offspring->clone();
-//            if(g::optimiser_choice=="lm"){
-//                coeff_opt_lm(offspring_opt, parent->trees, true);
-//            }
-//
-//            parent->trees[mt] = offspring_opt;
-//            vector<float> fitness_after = g::fit_func->get_fitness_MO(parent);
-//
-//            if(fitness_after[0]<=fitness_before[0]){
-//                offspring->clear();
-//                offspring = offspring_opt;
-//                ever_improved = true;
-//                changed = true;
-//                g::ea->updateMOArchive(parent);
-//                g::ea->updateSOArchive(parent);
-//
-//            }
-//            else{
-//                offspring_opt->clear();
-//                parent->trees[mt] = offspring;
-//            }
-//        }
-//    }
-//
-//    parent->NIS = ever_improved ? 0 : parent->NIS + 1;
+          Individual * offspring;
+          if(g::optimiser_choice=="lm"){
+              offspring = coeff_opt_lm(parent, true);
+          }
+
+          vector<float> fitness_after = g::fit_func->get_fitness_MO(offspring);
+
+          if(fitness_before[0]>fitness_after[0]){
+              parent->clear();
+              parent = offspring;
+              parent->fitness = fitness_after;
+              g::ea->updateMOArchive(parent);
+              g::ea->updateSOArchive(parent);
+              ever_improved = true;
+          }
+          else{
+              offspring->clear();
+          }
+
+    }
+
+    parent->NIS = ever_improved ? 0 : parent->NIS + 1;
 
     if ((!changed || parent->NIS > NIS_const) && !g::ea->MO_archive.empty()) {
         parent->NIS = 0;

@@ -436,6 +436,7 @@ struct Evolution {
               offspring = efficient_gom_MO(clustered_population[i][j], clustered_FOSes_pop[i], FOSs[i], macro_generation, clusternr[i], clusternr[i] < nr_objectives,  NIS_const);
           }
           else{
+              print("SIZE 1");
               offspring = efficient_gom_MO(clustered_population[i][j], clustered_FOSes_pop[i], FOSs[i], macro_generation,clusternr[i], clusternr[i] < nr_objectives, NIS_const);
           }
           offspring->clusterid = i;

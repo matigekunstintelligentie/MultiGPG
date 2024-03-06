@@ -121,11 +121,22 @@ struct IMS {
       string best_stri = "";
 
 
-      for(auto ind: g::ea->MO_archive){
-          if(best>ind->fitness[0]){
-              best = ind->fitness[0];
-              best_2 = ind->fitness[1];
-              best_stri = ind->human_repr();
+      if(g::MO_mode) {
+          for (auto ind: g::ea->MO_archive) {
+              if (best > ind->fitness[0]) {
+                  best = ind->fitness[0];
+                  best_2 = ind->fitness[1];
+                  best_stri = ind->human_repr();
+              }
+          }
+      }
+      else{
+          for (auto ind: g::ea->SO_archive) {
+              if (best > ind->fitness[0]) {
+                  best = ind->fitness[0];
+                  best_2 = ind->fitness[1];
+                  best_stri = ind->human_repr();
+              }
           }
       }
 
