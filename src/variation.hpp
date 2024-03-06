@@ -824,6 +824,17 @@ Individual * efficient_gom(Individual * og_parent, vector<vector<Node*>> & mt_po
 
             //parent->trees[mt] = offspring;
             new_fitness = g::fit_func->get_fitness_MO(parent);
+
+
+        }
+
+        if(parent->get_num_nodes(true)!=parent->fitness[1]){
+            print(parent->human_repr(false));
+            print(parent->human_repr(true));
+            print("GOM ", parent->get_num_nodes(false) , " ", parent->get_num_nodes(true), " ", parent->trees[1]->get_num_nodes(parent->trees, true), " ", parent->trees[0]->get_num_nodes(parent->trees, true)," ", parent->fitness[1], parent->human_repr(), " ", change_is_meaningful);
+            parent->get_num_nodes(true);
+
+
         }
 
         // check is not worse
@@ -842,9 +853,20 @@ Individual * efficient_gom(Individual * og_parent, vector<vector<Node*>> & mt_po
         } else {
             // it improved
 
+            if(parent->get_num_nodes(true)!=parent->fitness[1]){
+                print("GOM ", parent->get_num_nodes(true), " ",parent->fitness[1], parent->human_repr());
+                print("");
+            }
+
             backup_fitness = new_fitness;
             g::ea->updateMOArchive(parent);
             g::ea->updateSOArchive(parent);
+
+            if(parent->get_num_nodes(true)!=parent->fitness[1]){
+                print("GOM ", parent->get_num_nodes(true), " ",parent->fitness[1], parent->human_repr());
+                print("");
+            }
+
 
             ever_improved = true;
         }
@@ -897,6 +919,10 @@ Individual * efficient_gom(Individual * og_parent, vector<vector<Node*>> & mt_po
                 g::ea->updateMOArchive(parent);
                 g::ea->updateSOArchive(parent);
 
+                if(parent->get_num_nodes(true)!=parent->fitness[1]){
+                    print("COEFFMUT ", parent->get_num_nodes(true), " ",parent->fitness[1], parent->human_repr());
+                }
+
                 ever_improved = true;
             }
 
@@ -924,6 +950,10 @@ Individual * efficient_gom(Individual * og_parent, vector<vector<Node*>> & mt_po
             g::ea->updateMOArchive(parent);
             g::ea->updateSOArchive(parent);
 
+            if(parent->get_num_nodes(true)!=parent->fitness[1]){
+                print("OPT ", parent->get_num_nodes(true), " ",parent->fitness[1], parent->human_repr());
+            }
+
             ever_improved = true;
         }
         else{
@@ -946,6 +976,8 @@ Individual * efficient_gom(Individual * og_parent, vector<vector<Node*>> & mt_po
         parent->clear();
         parent = winner;
     }
+
+
 
     return parent;
 }
@@ -1102,101 +1134,7 @@ Individual * efficient_gom_MO_FI(Individual * og_parent,  vector<vector<Node*>> 
         if (changed) {
             break;
         }
-
-        if(g::cmut_prob>0.){
-            effectively_changed_indices.clear();
-            backup_ops.clear();
-
-            // apply coeff mut
-            coeff_mut(offspring, false, &effectively_changed_indices, &backup_ops);
-
-            // check if at least one change was meaningful
-            for(int i : effectively_changed_indices) {
-                Node * n = offspring_nodes[i];
-                if (!n->is_intron()) {
-                    change_is_meaningful = true;
-                    break;
-                }
-            }
-
-            // assume nothing changed
-            if (change_is_meaningful) {
-                // gotta recompute
-                g::fit_func->get_fitness_MO(parent);
-            }
-
-            // check is not worse
-            // Only checking mse because coeffmut cannot alter the number of nodes
-            if (parent->fitness[0] > backup_fitness[0]) {
-                // undo
-                for(int i = 0; i < effectively_changed_indices.size(); i++) {
-                    int changed_idx = effectively_changed_indices[i];
-                    Node *off_n = offspring_nodes[changed_idx];
-                    Op *back_op = backup_ops[i];
-                    delete off_n->op;
-                    off_n->op = back_op->clone();
-
-                }
-                parent->trees[mt] = offspring;
-                parent->fitness = backup_fitness;
-            }else{
-                // it improved
-                changed = true;
-                backup_fitness = parent->fitness;
-                g::ea->updateMOArchive(parent);
-                g::ea->updateSOArchive(parent);
-            }
-
-            // discard backup ops
-            for(Op * op : backup_ops) {
-                delete op;
-            }
-        }
-
-        if (changed) {
-            break;
-        }
     }
-
-//    if((macro_generations%g::opt_per_gen)==0 && g::use_optimiser && mt==(g::nr_multi_trees - 1)){
-//        offspring_nodes = offspring->subtree(parent->trees);
-//
-//        // Check for coefficients
-//        bool coeff_found = false;
-//        for(int i = 0; i < offspring_nodes.size(); i++) {
-//            if(offspring_nodes[i]->op->type()==OpType::otConst && !offspring_nodes[i]->is_intron()){
-//                coeff_found = true;
-//                break;
-//            }
-//        }
-//
-//        if(coeff_found){
-//            vector<float> fitness_before = parent->fitness;
-//
-//            Node * offspring_opt = offspring->clone();
-//            if(g::optimiser_choice=="lm"){
-//                coeff_opt_lm(offspring_opt, parent->trees, true);
-//            }
-//
-//            parent->trees[mt] = offspring_opt;
-//            vector<float> fitness_after = g::fit_func->get_fitness_MO(parent);
-//
-//            if(fitness_after[0]<=fitness_before[0]){
-//                offspring->clear();
-//                offspring = offspring_opt;
-//                changed = true;
-//                g::ea->updateMOArchive(parent);
-//                g::ea->updateSOArchive(parent);
-//
-//            }
-//            else{
-//                offspring_opt->clear();
-//                parent->trees[mt] = offspring;
-//            }
-//        }
-//    }
-//
-//    vector<float> pt_af = parent->fitness;
 
     if ((!changed) && !g::ea->MO_archive.empty()) {
         parent->clear();

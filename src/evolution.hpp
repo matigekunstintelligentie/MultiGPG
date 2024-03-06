@@ -359,20 +359,6 @@ struct Evolution {
 //
 //      }
 
-      float max_size = 0.;
-      float max_size2 = 0;
-      for(auto ind:population){
-          if(ind->fitness[1]>max_size){
-              max_size = ind->fitness[1];
-
-          }
-          if(ind->get_num_nodes(true)>max_size2){
-              max_size2 = ind->get_num_nodes(true);
-          }
-      }
-
-
-      print("MAX SIZE ", max_size, " ", max_size2);
 
       // clusterpopulation population split into clusters
       // clusterpopulation equals use for donors
@@ -401,15 +387,17 @@ struct Evolution {
           vector<pair<vector<int>,int>> cluster_fbs;
           vector<vector<Node*>> FOSes_pop;
           for(int j = 0; j<g::nr_multi_trees; j++){
-              vector<Node *> fos_pop;
-              fos_pop.reserve(clustered_population[i].size());
-              for(int x =0; x<clustered_population[i].size();x++){
-                  fos_pop.push_back(clustered_population[i][x]->trees[j]);
-              }
-              FOSes_pop.push_back(fos_pop);
-              vector<vector<int>> fos = fbs[i][j]->build_linkage_tree(fos_pop, j);
-              for(auto fos_el: fos){
-                  cluster_fbs.push_back(make_pair(fos_el, j));
+              if(clustered_population[i].size()>0) {
+                  vector<Node *> fos_pop;
+                  fos_pop.reserve(clustered_population[i].size());
+                  for (int x = 0; x < clustered_population[i].size(); x++) {
+                      fos_pop.push_back(clustered_population[i][x]->trees[j]);
+                  }
+                  FOSes_pop.push_back(fos_pop);
+                  vector<vector<int>> fos = fbs[i][j]->build_linkage_tree(fos_pop, j);
+                  for (auto fos_el: fos) {
+                      cluster_fbs.push_back(make_pair(fos_el, j));
+                  }
               }
           }
           clustered_FOSes_pop.push_back(FOSes_pop);

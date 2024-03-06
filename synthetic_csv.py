@@ -24,17 +24,23 @@ def generate_primes(n):
 def generate_dataset(num_rows, num_cols, primes):
     dataset = np.zeros((num_rows, num_cols + 1))  # +1 for the target column
     for i in range(num_rows):
+        stri = ""
         for j in range(num_cols):
             prime_idx = j % len(primes)  # Wrap around primes list if necessary
             prime = primes[prime_idx]
             dataset[i, j] = prime * np.random.rand()  # Sample from distribution
+            stri = stri + "np.sin(" +  str(dataset[i, j])
+            if(j!=num_cols-1):
+                stri += "+"
+
+        stri += ")"*num_cols
         # Target column calculation (example: sum of x variables)
-        dataset[i, -1] = np.sum(dataset[i, :-1])
+        dataset[i, -1] = eval(stri)
     return dataset
 
 # Define parameters
 num_rows = 1000
-num_cols = 5  # Change this to the desired number of columns
+num_cols = 6  # Change this to the desired number of columns
 
 # Generate prime numbers
 primes = generate_primes(num_cols)
@@ -43,12 +49,12 @@ primes = generate_primes(num_cols)
 dataset = generate_dataset(num_rows, num_cols, primes)
 
 # Write dataset to CSV file
-with open('./dataset/syntetic_dataset.csv', 'w', newline='') as csvfile:
+with open('./dataset/synthetic_dataset.csv', 'w', newline='') as csvfile:
     writer = csv.writer(csvfile)
     
     # Write header
     header = ['x_' + str(i) for i in range(num_cols)] + ['target']
-    writer.writerow(header)
+    #writer.writerow(header)
     
     # Write data
     for row in dataset:

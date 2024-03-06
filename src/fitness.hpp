@@ -260,6 +260,7 @@ struct LSMSEFitness : Fitness {
         if (isnan(fitness) || fitness < 0 || isinf(fitness)) {
             fitness = INF;
         }
+
        if(change_fitness) {
         n->fitness[0] = fitness;
         n->fitness[1] = n->get_num_nodes(true);

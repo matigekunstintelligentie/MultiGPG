@@ -74,6 +74,7 @@ namespace g {
   float range = 10.;
   bool use_max_range=false;
   bool equal_p_coeffs=false;
+  int max_coeffs;
 
   // representation
   int max_depth;
@@ -228,12 +229,18 @@ namespace g {
         terminals.push_back(new Feat(i));
       }
       if(equal_p_coeffs){
-        for(int i = 0; i < fit_func->X_train.cols(); i++) {
+          int n_coeffs=fit_func->X_train.cols();
+          if(g::max_coeffs>-1){
+              n_coeffs = g::max_coeffs;
+          }
+        for(int i = 0; i < n_coeffs; i++) {
           terminals.push_back(new Const(NAN,range));
         }
       }
       else{
-        terminals.push_back(new Const(NAN,range));
+          if(g::max_coeffs!=0) {
+              terminals.push_back(new Const(NAN, range));
+          }
       }
     }
     else {
@@ -442,6 +449,7 @@ namespace g {
     // coefficients and rangge
     parser.set_optional<bool>("use_max_range", "use_max_range", false, "Whether the max or 10 is used as initalisation range");
     parser.set_optional<bool>("equal_p_coeffs", "equal_p_coeffs", false, "Whether the leafs are sampled with equal probability");
+    parser.set_optional<int>("max_coeffs", "max_coeffs", -1, "Maximum number of Coefficients");
 
     parser.set_optional<bool>("MO_mode", "MO_mode", false, "Whether Multi objective mode is activated");
   
@@ -576,6 +584,7 @@ namespace g {
     MO_mode = parser.get<bool>("MO_mode");
     use_max_range = parser.get<bool>("use_max_range");
     equal_p_coeffs = parser.get<bool>("equal_p_coeffs");
+    max_coeffs = parser.get<int>("max_coeffs");
     //joe
     optimise_after = parser.get<bool>("optimise_after");
     use_clip = parser.get<bool>("use_clip");
@@ -621,6 +630,7 @@ namespace g {
 
     print("use_max_range " +  std::to_string(use_max_range) 
       + " equal_p_coeffs " +  std::to_string(equal_p_coeffs) +
+      + " max_coeffs " +  std::to_string(max_coeffs) +
       + " optimise_after " +  std::to_string(optimise_after) +
       + " use_clip " +  std::to_string(use_clip) +
       + " use_optim " +  std::to_string(use_optimiser) +

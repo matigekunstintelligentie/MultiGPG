@@ -97,8 +97,9 @@ struct Node {
   int get_num_nodes(vector<Node*> &trees, bool excl_introns=false) {
     auto nodes = this->subtree(trees);
     int n = nodes.size();
-    if (!excl_introns) 
-      return n;
+    if (!excl_introns) {
+        return n;
+    }
 
     int num_introns = 0;
     for(Node * n : nodes) {
@@ -127,6 +128,7 @@ struct Node {
     }
 
   vector<Node*> subtree(vector<Node*> &trees) {
+      print("-----");
     vector<Node*> subtree;
     _subtree_recursive(subtree, trees);
     return subtree;
@@ -141,10 +143,11 @@ struct Node {
 
   void _subtree_recursive(vector<Node*> &subtree, vector<Node*> &trees) {
       if(op->type()==OpType::otPlaceholder){
-          return trees[((OutputTree*) op)->id]->_subtree_recursive(subtree, trees);
+          trees[((OutputTree*) op)->id]->_subtree_recursive(subtree, trees);
       }
       else {
           subtree.push_back(this);
+          print(this->op->sym());
           for (Node *child: children) {
               child->_subtree_recursive(subtree, trees);
           }
