@@ -821,19 +821,15 @@ Individual * efficient_gom(Individual * og_parent, vector<vector<Node*>> & mt_po
         vector<float> new_fitness = backup_fitness;
         if (change_is_meaningful) {
             // gotta recompute
-
-            //parent->trees[mt] = offspring;
             new_fitness = g::fit_func->get_fitness_MO(parent);
-
-
         }
 
-//        if(parent->get_num_nodes(true)!=parent->fitness[1]){
-//            print(parent->human_repr(false));
-//            print(parent->human_repr(true));
-//            print(parent->get_num_nodes(true), " ", parent->fitness[1], " ", ever_improved);
-//            parent->get_num_nodes(true);
-//        }
+        if(parent->get_num_nodes(true)!=parent->fitness[1]){
+            print(parent->human_repr(false));
+            print(parent->human_repr(true));
+            print(parent->get_num_nodes(true), " ", parent->fitness[1], " ", ever_improved);
+            parent->get_num_nodes(true);
+        }
 
         // check is not worse
         if (backup_fitness[0]<new_fitness[0]) {
@@ -851,20 +847,9 @@ Individual * efficient_gom(Individual * og_parent, vector<vector<Node*>> & mt_po
         } else {
             // it improved
 
-//            if(parent->get_num_nodes(true)!=parent->fitness[1]){
-//                print("GOM ", parent->get_num_nodes(true), " ",parent->fitness[1], parent->human_repr());
-//                print("");
-//            }
-
             backup_fitness = new_fitness;
             g::ea->updateMOArchive(parent);
             g::ea->updateSOArchive(parent);
-
-//            if(parent->get_num_nodes(true)!=parent->fitness[1]){
-//                print("GOM ", parent->get_num_nodes(true), " ",parent->fitness[1], parent->human_repr());
-//                print("");
-//            }
-
 
             ever_improved = true;
         }

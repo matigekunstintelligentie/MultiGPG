@@ -467,7 +467,6 @@ namespace g {
     // random_state
     random_state = parser.get<int>("random_state");
     if (random_state >= 0){
-        print("zaad");
       Rng::set_seed(random_state);
       std::srand(random_state);
 

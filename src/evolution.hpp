@@ -436,7 +436,7 @@ struct Evolution {
 
 
       ofstream csv_file;
-      csv_file.open("MOMT.csv", ios::app);
+      csv_file.open("../MOMT.csv", ios::app);
 
       string str = "";
 
