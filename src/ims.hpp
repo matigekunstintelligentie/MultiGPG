@@ -80,8 +80,6 @@ struct IMS {
 //        reevaluate_elites();
 //      }
 
-
-
       if ((g::max_generations > 0 && macro_generations == g::max_generations) ||
           (g::max_time > 0 && tock(start_time) >= g::max_time) ||
           (g::max_evaluations > 0 && g::fit_func->evaluations >= g::max_evaluations) ||
@@ -126,7 +124,7 @@ struct IMS {
               if (best > ind->fitness[0]) {
                   best = ind->fitness[0];
                   best_2 = ind->fitness[1];
-                  best_stri = ind->human_repr();
+                  best_stri = ind->human_repr(true);
               }
           }
       }
@@ -135,7 +133,7 @@ struct IMS {
               if (best > ind->fitness[0]) {
                   best = ind->fitness[0];
                   best_2 = ind->fitness[1];
-                  best_stri = ind->human_repr();
+                  best_stri = ind->human_repr(true);
               }
           }
       }
@@ -149,12 +147,12 @@ struct IMS {
           if(best_pop>ind->fitness[0]){
               best_pop = ind->fitness[0];
               best_2_pop = ind->fitness[1];
-              best_stri_pop = ind->human_repr();
+              best_stri_pop = ind->human_repr(true);
               nis = ind->NIS;
           }
       }
 
-      print(" ~ macro generation: ", macro_generations, ", curr. best fit: ", best, " ", best_2, " ", best_stri, " ", best_pop, " ", best_2_pop, " ", best_stri_pop, " ", nis);
+      print(" ~ generation: ", macro_generations, " ", to_string(tock(start_time)), ", curr. best fit: ", best, " ", best_2, " ", best_stri, " ", best_pop, " ", best_2_pop, " ", best_stri_pop, " ", nis);
 
     }
     // finished

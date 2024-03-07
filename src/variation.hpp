@@ -828,14 +828,12 @@ Individual * efficient_gom(Individual * og_parent, vector<vector<Node*>> & mt_po
 
         }
 
-        if(parent->get_num_nodes(true)!=parent->fitness[1]){
-            print(parent->human_repr(false));
-            print(parent->human_repr(true));
-            print("GOM ", parent->get_num_nodes(false) , " ", parent->get_num_nodes(true), " ", parent->trees[1]->get_num_nodes(parent->trees, true), " ", parent->trees[0]->get_num_nodes(parent->trees, true)," ", parent->fitness[1], parent->human_repr(), " ", change_is_meaningful);
-            parent->get_num_nodes(true);
-
-
-        }
+//        if(parent->get_num_nodes(true)!=parent->fitness[1]){
+//            print(parent->human_repr(false));
+//            print(parent->human_repr(true));
+//            print(parent->get_num_nodes(true), " ", parent->fitness[1], " ", ever_improved);
+//            parent->get_num_nodes(true);
+//        }
 
         // check is not worse
         if (backup_fitness[0]<new_fitness[0]) {
@@ -853,19 +851,19 @@ Individual * efficient_gom(Individual * og_parent, vector<vector<Node*>> & mt_po
         } else {
             // it improved
 
-            if(parent->get_num_nodes(true)!=parent->fitness[1]){
-                print("GOM ", parent->get_num_nodes(true), " ",parent->fitness[1], parent->human_repr());
-                print("");
-            }
+//            if(parent->get_num_nodes(true)!=parent->fitness[1]){
+//                print("GOM ", parent->get_num_nodes(true), " ",parent->fitness[1], parent->human_repr());
+//                print("");
+//            }
 
             backup_fitness = new_fitness;
             g::ea->updateMOArchive(parent);
             g::ea->updateSOArchive(parent);
 
-            if(parent->get_num_nodes(true)!=parent->fitness[1]){
-                print("GOM ", parent->get_num_nodes(true), " ",parent->fitness[1], parent->human_repr());
-                print("");
-            }
+//            if(parent->get_num_nodes(true)!=parent->fitness[1]){
+//                print("GOM ", parent->get_num_nodes(true), " ",parent->fitness[1], parent->human_repr());
+//                print("");
+//            }
 
 
             ever_improved = true;

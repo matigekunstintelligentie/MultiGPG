@@ -14,6 +14,7 @@ using namespace myeig;
 struct Test {
 
   void run_all() {
+      //num_nodes();
 // ============================================================================
 //     depth();
 //     subtree();
@@ -24,6 +25,18 @@ struct Test {
 //     converge();
 //     math();
 // ============================================================================
+  }
+
+  void num_nodes(){
+      Node * x = new Node(new OutputTree(0));
+      Node * y = new Node(new Feat(0));
+
+      Individual * ind = new Individual();
+      ind->trees.push_back(y);
+      ind->trees.push_back(x);
+
+      print(ind->get_num_nodes(true));
+      assert(1==2);
   }
 
 // ============================================================================

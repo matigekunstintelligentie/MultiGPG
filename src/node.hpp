@@ -95,19 +95,17 @@ struct Node {
   }
 
   int get_num_nodes(vector<Node*> &trees, bool excl_introns=false) {
-    auto nodes = this->subtree(trees);
-    int n = nodes.size();
-    if (!excl_introns) {
-        return n;
-    }
-
-    int num_introns = 0;
-    for(Node * n : nodes) {
-      if (n->is_intron()) {
-        num_introns++;
+      int n_nodes = 1;
+      if(op->type()==OpType::otPlaceholder){
+          n_nodes += trees[((OutputTree*) op)->id]->get_num_nodes(trees, excl_introns);
       }
-    }
-    return n - num_introns;
+      else {
+          int arity = op->arity();
+          for (int i = 0; i < arity; i++) {
+              n_nodes += children[i]->get_num_nodes(trees, excl_introns);
+          }
+      }
+      return n_nodes;
   }
 
   void _height_recursive(int & max_child_depth) {
@@ -161,7 +159,6 @@ struct Node {
   //Here
   vector<Node*> subtree(vector<Node*> &trees, bool check_introns) {
     vector<Node*> subtree;
-    subtree.reserve(64);
     _subtree_recursive(subtree, trees, check_introns);
     return subtree;
   }
@@ -297,13 +294,13 @@ struct Node {
                 children[i]->_human_repr_recursive(expr);
                 args.push_back(expr);
             }
-            //print(op->sym());
+
             expr = op->human_repr(args);
     }
 
   void _human_repr_recursive(vector<Node*> & trees, string & expr) {
       if(op->type()==OpType::otPlaceholder){
-          return trees[((OutputTree*) op)->id]->_human_repr_recursive(trees, expr);
+          trees[((OutputTree*) op)->id]->_human_repr_recursive(trees, expr);
       }
       else {
           int arity = op->arity();

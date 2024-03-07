@@ -90,15 +90,9 @@ struct Evolution {
            continue;
          }
         already_generated.insert(str_tree);
-        if(g::MO_mode){
-            g::fit_func->get_fitness_MO(individual);
-        }
-        else{
-            g::fit_func->get_fitness_SO(individual);
-        };
 
-        // TODO remove
-        //individual = coeff_opt_lm(individual, true);
+        g::fit_func->get_fitness_MO(individual);
+        g::fit_func->get_fitness_SO(individual);
 
         population.push_back(individual);
     }
