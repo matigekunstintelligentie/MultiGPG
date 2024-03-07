@@ -128,7 +128,6 @@ struct Node {
     }
 
   vector<Node*> subtree(vector<Node*> &trees) {
-      print("-----");
     vector<Node*> subtree;
     _subtree_recursive(subtree, trees);
     return subtree;
@@ -147,7 +146,6 @@ struct Node {
       }
       else {
           subtree.push_back(this);
-          print(this->op->sym());
           for (Node *child: children) {
               child->_subtree_recursive(subtree, trees);
           }
