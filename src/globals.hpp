@@ -42,6 +42,10 @@ namespace g {
   long long max_node_evaluations;
   bool disable_ims = false;
   bool MO_mode = false;
+  bool use_adf = false;
+  bool use_aro = false;
+
+  int n_clusters = 7;
 
   // logging
   string csv_file;
@@ -448,13 +452,16 @@ namespace g {
     // logging
     parser.set_optional<bool>("log", "log", false, "Whether to log");
     parser.set_optional<string>("csv_file", "csv_file", "required.csv", "CSV file that is written to.");
-    // coefficients and rangge
+    // coefficients and range
     parser.set_optional<bool>("use_max_range", "use_max_range", false, "Whether the max or 10 is used as initalisation range");
     parser.set_optional<bool>("equal_p_coeffs", "equal_p_coeffs", false, "Whether the leafs are sampled with equal probability");
     parser.set_optional<int>("max_coeffs", "max_coeffs", -1, "Maximum number of Coefficients");
 
     parser.set_optional<bool>("MO_mode", "MO_mode", false, "Whether Multi objective mode is activated");
-  
+    parser.set_optional<bool>("use_adf", "use_adf", false, "Whether Automatically Defined Functions are used");
+      parser.set_optional<bool>("use_aro", "use_aro", false, "Whether Automatically Defined Functions are used");
+    parser.set_optional<int>("n_clusters", "n_clusters", 7, "Number of clusters");
+
     // set options
     parser.run_and_exit_if_error();
 
@@ -586,6 +593,7 @@ namespace g {
 
 
     MO_mode = parser.get<bool>("MO_mode");
+    n_clusters = parser.get<int>("n_clusters");
     use_max_range = parser.get<bool>("use_max_range");
     equal_p_coeffs = parser.get<bool>("equal_p_coeffs");
     max_coeffs = parser.get<int>("max_coeffs");
@@ -648,6 +656,7 @@ namespace g {
       + " equal_p_coeffs " +  std::to_string(equal_p_coeffs)
       + " nr multi trees " + std::to_string(nr_multi_trees)
       + " MO mode " + std::to_string(MO_mode)
+      + " n clusters" + std::to_string(n_clusters)
       );
   }
 

@@ -20,19 +20,11 @@ using namespace myeig;
 
 struct IMS {
   //vectors for storing csv outputs
-  vector<float> best_fitnesses;
   vector<int> best_sizes;
   vector<float> best_fitnesses_mse;
   vector<float> best_fitnesses_val_mse;
   vector<float> times;
-  vector<float> gom_improvements;
-  vector<float> coeff_improvements;
-  vector<float> opt_improvements;
-  vector<int> nr_improvements;
-  vector<float> amount_improvements;
-  vector<int> nr_unique_coeffs;
-  vector<float> convergence;
-  vector<int> reinject;
+
 
   Evolution* evolution = new Evolution(g::pop_size);
   int macro_generations = 0;

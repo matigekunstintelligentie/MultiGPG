@@ -30,8 +30,8 @@ struct Evolution {
     this->pop_size = pop_size;
     // For each MO cluster make for each multi-tree a fosbuilder. Fosbuilder cannot be shared due to initial bias
     if(g::MO_mode){
-        fbs.reserve(7);
-        for(int i = 0; i<7; i++){
+        fbs.reserve(g::n_clusters);
+        for(int i = 0; i<g::n_clusters; i++){
             vector<FOSBuilder *> cluster_fbs;
             for(int j = 0; j<g::nr_multi_trees; j++){
                 cluster_fbs.push_back(new FOSBuilder());
@@ -73,12 +73,18 @@ struct Evolution {
     population.reserve(pop_size);
     int init_attempts = 0;
 
-    g::terminals.push_back(new AnyOp(0));
-    g::terminals.push_back(new AnyOp(1));
+    if(g::use_adf) {
+        g::terminals.push_back(new AnyOp(0));
+        g::terminals.push_back(new AnyOp(1));
+    }
 
     for(int i = 0; i<g::nr_multi_trees - 1;i++){
-        g::terminals.push_back(new OutputTree(i));
-        g::functions.push_back(new FunctionTree(i));
+        if(g::use_aro) {
+            g::terminals.push_back(new OutputTree(i));
+        }
+        if(g::use_adf) {
+            g::functions.push_back(new FunctionTree(i));
+        }
     }
 
     while (population.size() < pop_size) {
@@ -146,9 +152,21 @@ struct Evolution {
         ++gen_number;
     }
 
+    pair<pair<vector<vector<Individual *>>, vector<vector<Individual *>>>, vector<int>> single_cluster(vector<Individual *> &population){
+        vector<vector<Individual *>> clustered_population = vector<vector<Individual *>>(1,vector<Individual *>());
+        clustered_population[0] = population;
+        vector<int> clusternr = vector<int>(1, 3);
+
+        return make_pair(make_pair(clustered_population, clustered_population), clusternr);
+  }
+
   pair<pair<vector<vector<Individual *>>, vector<vector<Individual *>>>, vector<int>>
   K_leader_means(vector<Individual *> &population) {
-      int k = 7;
+      int k = g::n_clusters;
+      if(k<2){
+          return single_cluster(population);
+      }
+
       int pop_size = population.size();
 
       // keep track of possible leaders
@@ -301,11 +319,13 @@ struct Evolution {
           Vec distances = Vec(pop_size);
           for(int i = 0; i<pop_size; i++){
               distances[i] = (norm_data.col(i) - cluster_centers.col(x)).square().mean();
+
           }
           for(int times=0; times<((2*pop_size)/initialised_k); times++){
               clustered_population_equal[x].push_back(population[argmin(distances)]);
 
               clustertags_equal[argmin(distances)].push_back(x);
+
               distances[argmin(distances)] = std::numeric_limits<float>::infinity();
           }
       }
@@ -379,10 +399,11 @@ struct Evolution {
       vector<vector<Individual *>> clustered_population_equal = output.first.second;
       vector<int> clusternr = output.second;
 
+
       // Per cluster, one FOS
       vector<vector<pair<vector<int>,int>>> FOSs;
       vector<vector<vector<Node *>>> clustered_FOSes_pop;
-      for(int i = 0; i<7; i++){
+      for(int i = 0; i<g::n_clusters; i++){
           vector<pair<vector<int>,int>> cluster_fbs;
           vector<vector<Node*>> FOSes_pop;
           for(int j = 0; j<g::nr_multi_trees; j++){
@@ -403,6 +424,7 @@ struct Evolution {
           FOSs.push_back(cluster_fbs);
       }
 
+
       vector<pair<int, int>> idx;
       for(int i=0;i<clustered_population.size();i++){
           for(int j=0;j<clustered_population[i].size();j++){
@@ -419,7 +441,7 @@ struct Evolution {
           int &j = idx[x].second;
 
           Individual *offspring;
-          if(clustered_population.size()>1){
+          if(clustered_population[i].size()>1){
               offspring = efficient_gom_MO(clustered_population[i][j], clustered_FOSes_pop[i], FOSs[i], macro_generation, clusternr[i], clusternr[i] < nr_objectives,  NIS_const);
           }
           else{
