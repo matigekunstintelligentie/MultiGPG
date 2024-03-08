@@ -31,7 +31,6 @@ parser.add_argument('--dir')
 parser.add_argument('--csv_name')
 parser.add_argument('--batch_size')
 parser.add_argument('--seed', type=int)
-parser.add_argument('--optimizer')
 parser.add_argument('--every_n_steps')
 parser.add_argument('--clip', type=str2bool)
 parser.add_argument('--coeff_p')
@@ -40,25 +39,24 @@ parser.add_argument('--log', type=str2bool)
 parser.add_argument('--contains_train', type=str2bool)
 parser.add_argument('--t', type=int)
 parser.add_argument('--g', type=int)
-parser.add_argument("--reinject_elite", type=str2bool)
 parser.add_argument("--use_mse_opt", type=str2bool)
 parser.add_argument("--ff", type=str)
-parser.add_argument("--use_local_search", type=str2bool)
-parser.add_argument("--optimise_after", type=str2bool)
 parser.add_argument('--depth', type=int)
 parser.add_argument("--ss", type=str2bool)
-parser.add_argument("--add_addition_multiplication", type=str2bool)
-parser.add_argument("--add_any", type=str2bool)
 parser.add_argument("--use_ftol", type=str2bool)
 parser.add_argument("--use_max_range", type=str2bool)
 parser.add_argument("--equal_p_coeffs", type=str2bool)
-parser.add_argument("--random_accept_p")
 parser.add_argument("--tour", type=int)
 parser.add_argument("--fset", type=str)
 parser.add_argument('--popsize', type=int)
 
 parser.add_argument('--nr_multi_trees', type=int)
+parser.add_argument('--n_clusters', type=int)
+parser.add_argument('--max_coeffs', type=int)
 parser.add_argument('--MO_mode', type=str2bool)
+parser.add_argument('--use_adf', type=str2bool)
+parser.add_argument('--use_aro', type=str2bool)
+parser.add_argument('--verbose', type=str2bool)
 
 args = parser.parse_args()
 
@@ -81,15 +79,14 @@ def inject_string(b):
     else:
         return "noinject_elite"
 
-g = GPGRegressor(t=args.t, g=args.g, e=-1, tour=args.tour, d=args.depth,  use_optim=args.optimize, optimiser_choice=args.optimizer,
-        disable_ims=True, pop=args.popsize, nolink=False, feat_sel=-1,
-        no_large_fos=False, no_univ_exc_leaves_fos=False,
-        finetune=False, bs_opt=args.batch_size,
-        bs=2048, random_accept_p=args.random_accept_p,
-        verbose=False, csv_file="{}/{}_{}_{}.csv".format(args.dir, args.seed, args.csv_name, args.dataset), opt_per_gen=args.every_n_steps, use_clip=args.clip,
-        fset=args.fset, cmp=args.coeff_p, rci=0.0, use_ftol=args.use_ftol, tol=1e-9, use_mse_opt=args.use_mse_opt, log=args.log, reinject_elite=args.reinject_elite, ff=args.ff, use_local_search=args.use_local_search,
-        optimise_after=args.optimise_after, add_addition_multiplication=args.add_addition_multiplication, add_any=args.add_any, use_max_range=args.use_max_range, equal_p_coeffs=args.equal_p_coeffs,
-
+g = GPGRegressor(t=args.t, g=args.g, tour=args.tour, d=args.depth,  use_optim=args.optimize,
+        pop=args.popsize,
+        bs_opt=args.batch_size,
+        bs=2048,
+        verbose=args.verbose, csv_file="{}/{}_{}_{}.csv".format(args.dir, args.seed, args.csv_name, args.dataset), opt_per_gen=args.every_n_steps, use_clip=args.clip,
+        fset=args.fset, cmp=args.coeff_p, use_ftol=args.use_ftol, tol=1e-9, use_mse_opt=args.use_mse_opt, log=args.log, ff=args.ff,
+         use_max_range=args.use_max_range, equal_p_coeffs=args.equal_p_coeffs,
+        MO_mode=args.MO_mode, use_adf=args.use_adf, use_aro=args.use_aro, n_clusters=args.n_clusters, max_coeffs=args.max_coeffs,
         random_state=args.seed)  
 
 #+,-,*,/,¬,log,pow,max,min,abs,exp,sqrt,sin,cos

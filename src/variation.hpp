@@ -115,44 +115,11 @@ Node * generate_tree(int max_depth, int mt, vector<Node *> &trees, string init_t
     throw runtime_error("Unrecognized init_type "+init_type);
   }
   
-  if(g::add_addition_multiplication){
-      Node * add_n, * mul_n, * slope_n, * interc_n;
-      // mul_n = new Node(_sample_function());
-      mul_n = new Node(new Mul());
-      slope_n = new Node(new Const());
-      // add_n = new Node(_sample_function());
-      add_n = new Node(new Add());
-      interc_n = new Node(new Const());
-      mul_n->append(slope_n);
-      mul_n->append(tree);
-      add_n->append(interc_n);
-      add_n->append(mul_n);
-    
-      // bring fitness info to new root
-      add_n->fitness = tree->fitness;
-      assert(add_n);
-      return add_n;
-  }
-  else if(g::add_any){
-      Node * add_n, * mul_n, * slope_n, * interc_n;
-      mul_n = new Node(_sample_function(mt, trees));
-      slope_n = new Node(new Const());
-      add_n = new Node(_sample_function(mt, trees));
-      interc_n = new Node(new Const());
-      mul_n->append(slope_n);
-      mul_n->append(tree);
-      add_n->append(interc_n);
-      add_n->append(mul_n);
-    
-      // bring fitness info to new root
-      add_n->fitness = tree->fitness;
-      assert(add_n);
-      return add_n;
-  }
-  else{
+
+
     assert(tree);
     return tree;
-  }
+
 }
 
 Individual * generate_individuals(int max_depth, string init_strategy, int nr_multi_trees){
@@ -303,7 +270,6 @@ Individual * coeff_opt_lm(Individual * parent, bool return_copy=true){
 
        // Compute the jacobian of the errors
        int df(const Eigen::VectorXf &x, Eigen::MatrixXf &fjac) const{
-           g::jacobian_evals += 1;
            // 'x' has dimensions n x 1
            // It contains the current estimates for the parameters.
 
@@ -405,116 +371,6 @@ Individual * coeff_opt_lm(Individual * parent, bool return_copy=true){
 
 
   return tree;
-}
-
-Node * coeff_opt_bfgs(Node * parent, vector<Node*> & trees, bool return_copy=true){
-    Node * tree = parent;
-
-    if(return_copy){
-        tree = parent->clone();
-    }
-
-    vector<Node*> nodes = tree->subtree(true);
-
-    vector<double> coeffsd;
-    vector<float> coeffsf;
-    vector<Node*> coeff_ptrs;
-    for(int i = 0; i < nodes.size(); i++) {
-        if(nodes[i]->op->type()==OpType::otConst){
-            coeffsd.push_back((double) ((Const*)nodes[i]->op)->c);
-            coeffsf.push_back((float) ((Const*)nodes[i]->op)->c);
-            coeff_ptrs.push_back(nodes[i]);
-        }
-    }
-
-    pair<float,float> intc_slope = make_pair(0.,1.);
-
-    if(!g::use_mse_opt){
-        Vec p = tree->get_output(g::fit_func->X_train, trees);
-        intc_slope = linear_scaling_coeffs(g::fit_func->y_train, p);
-    }
-
-    g::mse_func->update_batch_opt(g::batch_size_opt);
-
-    const int n = coeff_ptrs.size()+2;
-    float x[n];
-
-
-    for(int i=0; i<coeffsf.size(); i++){
-        ((Const*)coeff_ptrs[i]->op)->c = coeffsf[i];
-        x[i] = coeffsf[i];
-    }
-    x[coeffsd.size()] = intc_slope.first;
-    x[coeffsd.size() + 1] = intc_slope.second;
-
-    BFGS bfgs;
-    bfgs.set_grad_eps(g::tol*0.1);
-    if(g::use_ftol){
-        bfgs.set_stop_grad_eps(0.);
-        bfgs.set_stop_step_eps(g::tol);
-    }
-    else{
-        bfgs.set_stop_grad_eps(g::tol);
-        bfgs.set_stop_step_eps(0.);
-    }
-    bfgs.set_max_iter(g::bfgs_max_iter);
-
-    auto f = [&](float* const x, float* const g, int n) -> float{
-        for(int i=0; i<coeff_ptrs.size(); i++){
-            ((Const*)coeff_ptrs[i]->op)->c = (float) x[i];
-        }
-
-        pair<Vec,Vec> output;
-        g::jacobian_evals += 1;
-        for(int i=0; i<coeff_ptrs.size(); i++){
-
-            ((Const*)coeff_ptrs[i]->op)->d = static_cast<float>(1);
-
-            output = tree->get_output_der(g::mse_func->X_batch, trees);
-
-            g[i] = (float) x[coeff_ptrs.size() + 1] * -1./g::mse_func->y_batch.rows() * ((g::mse_func->y_batch-(x[coeff_ptrs.size()] + x[coeff_ptrs.size() + 1] * output.first))*output.second).sum();
-
-            if(g::use_clip){
-                g[i] = min(max(g[i],-1.f),1.f);
-            }
-
-            ((Const*)coeff_ptrs[i]->op)->d = static_cast<float>(0);
-
-        }
-
-        if(!g::use_mse_opt){
-            g[coeff_ptrs.size()] = -1./g::mse_func->y_batch.rows() * ((g::mse_func->y_batch-(x[coeff_ptrs.size()] + x[coeff_ptrs.size() + 1] * output.first))).sum();
-            g[coeff_ptrs.size() + 1] = -1./g::mse_func->y_batch.rows() * ((g::mse_func->y_batch-(x[coeff_ptrs.size()] + x[coeff_ptrs.size() + 1] * output.first))*output.first).sum();
-        }
-        else{
-            g[coeff_ptrs.size()] = 0.;
-            g[coeff_ptrs.size() + 1] = 1.;
-        }
-
-        if(g::use_clip){
-            g[coeff_ptrs.size()] = max(min(g[coeff_ptrs.size()],-1.f),1.f);
-            g[coeff_ptrs.size() + 1] = max(min(g[coeff_ptrs.size() + 1],-1.f),1.f);
-        }
-
-        g::mse_func->opt_evaluations += 1;
-
-        Vec out = x[coeff_ptrs.size()] + x[coeff_ptrs.size() + 1] * tree->get_output(g::mse_func->X_batch, trees);
-        return (g::mse_func->y_batch-out).square().mean();
-    };
-
-    bfgs.set_grad_eps(g::tol*0.1);
-    if(g::use_ftol){
-        bfgs.set_stop_step_eps(g::tol);
-    }
-    else{
-        bfgs.set_stop_grad_eps(g::tol);
-    }
-
-    bfgs.set_max_iter(g::bfgs_max_iter);
-
-    bfgs.find_min(f, x, n);
-
-    return tree;
 }
 
 Node * coeff_mut(Node * parent, bool return_copy=true, vector<int> * changed_indices = NULL, vector<Op*> * backup_ops = NULL) {

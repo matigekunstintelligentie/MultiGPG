@@ -76,9 +76,7 @@ struct IMS {
 //      }
 
       if ((g::max_generations > 0 && macro_generations == g::max_generations) ||
-          (g::max_time > 0 && tock(start_time) >= g::max_time) ||
-          (g::max_evaluations > 0 && g::fit_func->evaluations >= g::max_evaluations) ||
-          (g::max_node_evaluations > 0 && g::fit_func->node_evaluations >= g::max_node_evaluations)) {
+          (g::max_time > 0 && tock(start_time) >= g::max_time)) {
           stop = true;
 
           if(g::max_generations > 0 && macro_generations == g::max_generations){
@@ -86,9 +84,6 @@ struct IMS {
           }
           if(g::max_time > 0 && tock(start_time) >= g::max_time){
               print("Stopping due to max time");
-          }
-          if(g::max_evaluations > 0 && g::fit_func->evaluations >= g::max_evaluations){
-              print("Stopping due to max evals");
           }
 
           break;
@@ -127,6 +122,7 @@ struct IMS {
                   for(int y=0; y<g::nr_multi_trees; y++){
                       best_substrings_tmp.push_back(ind->trees[y]->human_repr());
                   }
+                  best_substrings = best_substrings_tmp;
               }
               if(add_comma){
                   MO_archive_string = MO_archive_string + ",";

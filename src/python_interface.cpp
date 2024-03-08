@@ -37,8 +37,8 @@ py::list evolve_val(string options, myeig::Mat &X, myeig::Vec &y, myeig::Mat &X_
   }
   // set terminals
   g::set_terminals(g::lib_tset);
-  g::apply_feature_selection(g::lib_feat_sel_number);
-  g::set_terminal_probabilities(g::lib_tset_probs);
+  //g::apply_feature_selection(g::lib_feat_sel_number);
+  //g::set_terminal_probabilities(g::lib_tset_probs);
   // print("terminal set: ",g::str_terminal_set()," (probs: ",g::lib_tset_probs,")");
   // set batch size
   g::set_batch_size(g::lib_batch_size);
@@ -50,12 +50,12 @@ py::list evolve_val(string options, myeig::Mat &X, myeig::Vec &y, myeig::Mat &X_
   ims->run();
 
   // 3. OUTPUT
-  if (ims->elites_per_complexity.empty()) {
+  if (g::ea->MO_archive.empty()) {
     throw runtime_error("Not models found, something went wrong");
   }
   py::list models;
-  for (auto it = ims->elites_per_complexity.begin(); it != ims->elites_per_complexity.end(); it++) {
-    string model_repr = it->second->human_repr();
+  for (auto model: g::ea->MO_archive) {
+    string model_repr = model->human_repr(true);
     models.append(model_repr);
   }
 
