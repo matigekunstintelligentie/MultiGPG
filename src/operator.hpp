@@ -11,7 +11,7 @@
 using namespace std;
 
 enum OpType {
-  otFun, otFeat, otConst, otPlaceholder, otFunction
+  otFun, otFeat, otConst, otPlaceholder, otFunction, otAny
 };
 
 
@@ -872,6 +872,48 @@ struct Const : Term {
   }
 };
 
+struct AnyOp : Term {
+
+    int id;
+    AnyOp(int id) {
+        this->id = id;
+    }
+
+    Op * clone() override {
+        return new AnyOp(this->id);
+    }
+
+    int arity() override {
+        return 0;
+    }
+
+    string sym() override {
+        return "a_"+to_string(id);
+    }
+
+    OpType type() override {
+        return OpType::otAny;
+    }
+
+    Vec apply(const Mat & X) override {
+        Vec c_vec = Vec::Constant(X.rows(), NAN);
+        return c_vec;
+    }
+
+    string human_repr(vector<string> & args) override {
+
+        return "Any_"+to_string(id);
+    }
+
+    string np_repr(vector<string> & args) override {
+        return "Any_"+to_string(id);
+    }
+
+    string torch_repr(vector<string> & args) override {
+        return "Any_"+to_string(id);
+    }
+};
+
 struct OutputTree : Term {
 
     int id;
@@ -909,7 +951,7 @@ struct OutputTree : Term {
     }
 };
 
-struct FunctionTree : Term {
+struct FunctionTree : Fun {
 
     int id;
     FunctionTree(int id) {
@@ -925,7 +967,7 @@ struct FunctionTree : Term {
     }
 
     string sym() override {
-        return "f_"+to_string(id);
+        return "f_" + to_string(id);
     }
 
     OpType type() override {
@@ -934,15 +976,15 @@ struct FunctionTree : Term {
 
     string human_repr(vector<string> & args) override {
 
-        return "Func_"+to_string(id);
+        return "Func_" + to_string(id);
     }
 
     string np_repr(vector<string> & args) override {
-        return "Func_"+to_string(id);
+        return "Func_" + to_string(id);
     }
 
     string torch_repr(vector<string> & args) override {
-        return "Func_"+to_string(id);
+        return "Func_" + to_string(id);
     }
 };
 

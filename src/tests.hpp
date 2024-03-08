@@ -14,7 +14,7 @@ using namespace myeig;
 struct Test {
 
   void run_all() {
-      //num_nodes();
+      // num_nodes();
 // ============================================================================
 //     depth();
 //     subtree();
@@ -28,14 +28,30 @@ struct Test {
   }
 
   void num_nodes(){
-      Node * x = new Node(new OutputTree(0));
-      Node * y = new Node(new Feat(0));
+      Node * first_tree = new Node(new Sin());
+      Node * z = new Node(new Cos());
+      first_tree->append(z);
+      Node * any = new Node(new AnyOp(0));
+      z->append(any);
+
+      Node * x = new Node(new FunctionTree(0));
+      Node * y = new Node(new Const(0.5));
+      x->append(y);
 
       Individual * ind = new Individual();
-      ind->trees.push_back(y);
+      ind->trees.push_back(first_tree);
       ind->trees.push_back(x);
 
+      Mat matA(2, 2);
+      matA << 1, 2, 3, 4;
+
+      Vec output = ind->get_output(matA);
+
+      print(output(0));
+
+      print(ind->human_repr(true));
       print(ind->get_num_nodes(true));
+
       assert(1==2);
   }
 

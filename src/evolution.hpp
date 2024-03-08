@@ -73,8 +73,12 @@ struct Evolution {
     population.reserve(pop_size);
     int init_attempts = 0;
 
+    g::terminals.push_back(new AnyOp(0));
+    g::terminals.push_back(new AnyOp(1));
+
     for(int i = 0; i<g::nr_multi_trees - 1;i++){
         g::terminals.push_back(new OutputTree(i));
+        g::functions.push_back(new FunctionTree(i));
     }
 
     while (population.size() < pop_size) {
@@ -93,6 +97,7 @@ struct Evolution {
 
         g::fit_func->get_fitness_MO(individual);
         g::fit_func->get_fitness_SO(individual);
+
 
         population.push_back(individual);
     }

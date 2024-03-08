@@ -31,8 +31,19 @@ Op * _sample_operator(vector<Op *> & operators, Vec & cumul_probs) {
     return operators[operators.size() - 1]->clone();
 }
 
-Op * _sample_function() {
-    return _sample_operator(g::functions, g::cumul_fset_probs);
+Op * _sample_function(int mt, vector<Node *> &trees) {
+    auto first = g::functions.begin();
+    auto last = g::functions.end()-(g::nr_multi_trees-mt-1);
+    vector<Op *> AB(first, last);
+
+    Vec cumul_fset_probs(AB.size());
+
+    cumul_fset_probs[0] = 1./float(AB.size());
+    for(int i = 1; i<AB.size(); i++){
+        cumul_fset_probs[i] = cumul_fset_probs[i-1] + 1./float(AB.size());
+    }
+
+    return _sample_operator(AB, cumul_fset_probs);
 }
 
 Op * _sample_terminal(int mt, vector<Node *> &trees) {
@@ -54,7 +65,7 @@ Node * _grow_tree_recursive(int max_arity, int max_depth_left, int actual_depth_
   Node * n = NULL;
   if (max_depth_left > 0) {
     if (actual_depth_left > 0 && Rng::randu() < 1.0-terminal_prob) {
-      n = new Node(_sample_function());
+      n = new Node(_sample_function(mt, trees));
     } else {
     
       n = new Node(_sample_terminal(mt, trees));
@@ -120,9 +131,9 @@ Node * generate_tree(int max_depth, int mt, vector<Node *> &trees, string init_t
   }
   else if(g::add_any){
       Node * add_n, * mul_n, * slope_n, * interc_n;
-      mul_n = new Node(_sample_function());
+      mul_n = new Node(_sample_function(mt, trees));
       slope_n = new Node(new Const());
-      add_n = new Node(_sample_function());
+      add_n = new Node(_sample_function(mt, trees));
       interc_n = new Node(new Const());
       mul_n->append(slope_n);
       mul_n->append(tree);

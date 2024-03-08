@@ -26,7 +26,7 @@ namespace g {
     new Add(), new Sub(), new Neg(), new Mul(), new Div(), new Inv(), 
     new Square(), new Sqrt(), new Cube(),
     new Sin(), new Cos(), 
-    new Log(), new Pow(), new Max(), new Min(), new Exp(), new Abs(),
+    new Log(), new Pow(), new Max(), new Min(), new Exp(), new Abs()
   };
 
   // ALL fitness functions 
@@ -81,6 +81,8 @@ namespace g {
   string init_strategy;
   vector<Op*> functions;
   vector<Op*> terminals;
+
+
   Vec cumul_fset_probs;
   Vec cumul_tset_probs;
   string lib_tset; // used when `fit` is called when using as lib
@@ -505,7 +507,10 @@ namespace g {
 
     for(int i =0;i<nr_multi_trees-1;i++){
         all_operators.push_back(new OutputTree(i));
+        all_operators.push_back(new FunctionTree(i));
     }
+    all_operators.push_back(new AnyOp(0));
+    all_operators.push_back(new AnyOp(1));
 
     add_addition_multiplication = parser.get<bool>("add_addition_multiplication");
     add_any = parser.get<bool>("add_any");

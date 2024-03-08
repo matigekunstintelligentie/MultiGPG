@@ -147,7 +147,7 @@ struct IMS {
           if(best_pop>ind->fitness[0]){
               best_pop = ind->fitness[0];
               best_2_pop = ind->fitness[1];
-              best_stri_pop = ind->human_repr(true);
+              best_stri_pop = ind->human_repr(false);
               nis = ind->NIS;
           }
       }
