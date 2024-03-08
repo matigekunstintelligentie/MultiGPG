@@ -370,13 +370,17 @@ struct Node {
 
     void _human_repr_recursive(vector<Node*> & trees, vector<Node*> fun_children, string & expr) {
         if(op->type()==OpType::otPlaceholder){
-            trees[((OutputTree*) op)->id]->_human_repr_recursive(trees,  fun_children, expr);
+             trees[((OutputTree*) op)->id]->_human_repr_recursive(trees,  fun_children, expr);
+            expr = "out[" + expr + "]";
         }
         else if(op->type()==OpType::otFunction){
+
             trees[((FunctionTree*) op)->id]->_human_repr_recursive(trees, this->children, expr);
+            expr = "func[" + expr + "]";
         }
         else if(op->type()==OpType::otAny){
             fun_children[((AnyOp*) op)->id]->_human_repr_recursive(trees, expr);
+            expr = "any[" + expr + "]";
         }
         else {
             int arity = op->arity();
@@ -392,10 +396,14 @@ struct Node {
 
   void _human_repr_recursive(vector<Node*> & trees, string & expr) {
       if(op->type()==OpType::otPlaceholder){
+
           trees[((OutputTree*) op)->id]->_human_repr_recursive(trees, expr);
+          expr = "out[" + expr + "]";
       }
       else if(op->type()==OpType::otFunction){
+
           trees[((FunctionTree*) op)->id]->_human_repr_recursive(trees, this->children, expr);
+          expr = "func[" + expr + "]";
       }
       else if(op->type()==OpType::otAny){
           //fun_children[((AnyOp*) op)->id]->_human_repr_recursive(trees, expr);

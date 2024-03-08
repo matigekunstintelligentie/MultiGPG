@@ -21,9 +21,12 @@ using namespace myeig;
 struct IMS {
   //vectors for storing csv outputs
   vector<int> best_sizes;
-  vector<float> best_fitnesses_mse;
-  vector<float> best_fitnesses_val_mse;
+  vector<float> best_train_mses;
+  vector<float> best_val_mses;
   vector<float> times;
+  string best_string;
+  vector<string> best_substrings;
+  vector<string> MO_archive_strings;
 
 
   Evolution* evolution = new Evolution(g::pop_size);
@@ -99,53 +102,50 @@ struct IMS {
         evolution->gomea_generation_SO(macro_generations);
       };
 
-
-
-      // TODO: decide whether the evo should reinject elites
-
       // update macro gen
       macro_generations += 1;
 
-      float best = 9999999.;
-      float best_2 = 9999999.;
-      string best_stri = "";
+      if(g::log){
+          float best_train_mse = 9999999.;
+          float best_val_mse = 9999999.;
+          float best_size = 9999999.;
+          string best_stri = "";
 
-
-      if(g::MO_mode) {
+          string MO_archive_string = "{";
+          bool add_comma = false;
           for (auto ind: g::ea->MO_archive) {
-              if (best > ind->fitness[0]) {
-                  best = ind->fitness[0];
-                  best_2 = ind->fitness[1];
+              float val_mse = g::fit_func->get_fitness_MO(ind, g::fit_func->X_val, g::fit_func->y_val, false)[0];
+
+              if (best_train_mse > ind->fitness[0]) {
+                  best_train_mse = ind->fitness[0];
+                  best_val_mse = val_mse;
+                  best_size = ind->fitness[1];
                   best_stri = ind->human_repr(true);
+                  best_string = best_stri;
+
+                  vector<string> best_substrings_tmp;
+                  for(int y=0; y<g::nr_multi_trees; y++){
+                      best_substrings_tmp.push_back(ind->trees[y]->human_repr());
+                  }
               }
-          }
-      }
-      else{
-          for (auto ind: g::ea->SO_archive) {
-              if (best > ind->fitness[0]) {
-                  best = ind->fitness[0];
-                  best_2 = ind->fitness[1];
-                  best_stri = ind->human_repr(true);
+              if(add_comma){
+                  MO_archive_string = MO_archive_string + ",";
               }
+              else{
+                  add_comma = true;
+              }
+              MO_archive_string = MO_archive_string + "[" + to_string(ind->fitness[0]) + "," + to_string(val_mse) + "," + to_string(ind->fitness[1]) + "," + ind->human_repr(true) + "]";
           }
+          MO_archive_string += "}";
+
+          print(" ~ generation: ", macro_generations, " ", to_string(tock(start_time)), ", curr. best fit: ", best_train_mse, " ", best_size, " ", best_stri);
+
+          best_train_mses.push_back(best_train_mse);
+          best_val_mses.push_back(best_val_mse);
+          best_sizes.push_back(best_size);
+          times.push_back(tock(start_time));
+          MO_archive_strings.push_back(MO_archive_string);
       }
-
-      float best_pop = 9999999.;
-      float best_2_pop = 9999999.;
-      string best_stri_pop = "";
-      int nis = 9999;
-
-      for(auto ind: evolution->population){
-          if(best_pop>ind->fitness[0]){
-              best_pop = ind->fitness[0];
-              best_2_pop = ind->fitness[1];
-              best_stri_pop = ind->human_repr(false);
-              nis = ind->NIS;
-          }
-      }
-
-      print(" ~ generation: ", macro_generations, " ", to_string(tock(start_time)), ", curr. best fit: ", best, " ", best_2, " ", best_stri, " ", best_pop, " ", best_2_pop, " ", best_stri_pop, " ", nis);
-
     }
     // finished
 
@@ -155,7 +155,71 @@ struct IMS {
 
       string str = "";
 
+      // 0 random state
+      str += to_string(g::random_state) + "\t";
+      // 1 best training mse
+      str += to_string(best_train_mses[best_train_mses.size()-1]) + "\t";
+      // 2 best validation mse
+      str += to_string(best_val_mses[best_val_mses.size()-1]) + "\t";
+      // 3 best validation mse
+      str += to_string(best_sizes[best_sizes.size()-1]) + "\t";
+      // 4 best string
+      str += best_string + "\t";
+      // 5 train variance
+      str += to_string((g::fit_func->y_train - g::fit_func->y_train.mean()).square().mean()) + "\t";
+      // 6 val variance
+      str += to_string((g::fit_func->y_val - g::fit_func->y_val.mean()).square().mean()) + "\t";
+
       csv_file << str;
+
+      // 7 best train mse over time
+      str = "";
+      for(int i=0;i<best_train_mses.size()-1;i++){
+          str += to_string(best_train_mses[i]) + ",";
+      }
+      str += to_string(best_train_mses[best_train_mses.size()-1])+"\t";
+      csv_file << str;
+
+      // 8 best val mse over time
+      str = "";
+      for(int i=0;i<best_val_mses.size()-1;i++){
+           str += to_string(best_val_mses[i]) + ",";
+      }
+      str += to_string(best_val_mses[best_val_mses.size()-1])+"\t";
+      csv_file << str;
+
+      // 8 best size over time
+      str = "";
+      for(int i=0;i<best_sizes.size()-1;i++){
+          str += to_string(best_sizes[i]) + ",";
+      }
+      str += to_string(best_sizes[best_sizes.size()-1])+"\t";
+      csv_file << str;
+
+        // 9 best substrings over time
+        str = "";
+        for(int i=0;i<best_substrings.size()-1;i++){
+            str += best_substrings[i] + ";";
+        }
+        str += best_substrings[best_substrings.size()-1]+"\t";
+        csv_file << str;
+
+      // 10 MO over time
+      str = "";
+      for(int i=0;i<MO_archive_strings.size()-1;i++){
+          str += MO_archive_strings[i] + ";";
+      }
+      str += MO_archive_strings[MO_archive_strings.size()-1]+"\t";
+      csv_file << str;
+
+      // 11 times
+      str = "";
+      for(int i=0;i<times.size()-1;i++){
+          str += to_string(times[i]) + ",";
+      }
+      str += to_string(times[times.size()-1]);
+      csv_file << str + "\n";
+
       csv_file.close();
     }
   }

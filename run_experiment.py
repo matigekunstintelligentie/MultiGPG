@@ -56,7 +56,9 @@ parser.add_argument("--random_accept_p")
 parser.add_argument("--tour", type=int)
 parser.add_argument("--fset", type=str)
 parser.add_argument('--popsize', type=int)
+
 parser.add_argument('--nr_multi_trees', type=int)
+parser.add_argument('--MO_mode', type=str2bool)
 
 args = parser.parse_args()
 

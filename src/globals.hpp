@@ -513,8 +513,12 @@ namespace g {
     nr_multi_trees = parser.get<int>("nr_multi_trees");
 
     for(int i =0;i<nr_multi_trees-1;i++){
-        all_operators.push_back(new OutputTree(i));
-        all_operators.push_back(new FunctionTree(i));
+        if(use_aro){
+            all_operators.push_back(new OutputTree(i));
+        }
+        if(use_adf) {
+            all_operators.push_back(new FunctionTree(i));
+        }
     }
     all_operators.push_back(new AnyOp(0));
     all_operators.push_back(new AnyOp(1));
@@ -563,18 +567,18 @@ namespace g {
       if(use_max_range){
           set_max_coeff_range();
       }
-//        path_to_validation_set = parser.get<string>("val");
-//        // load up
-//        if (!exists(path_to_validation_set)) {
-//            throw runtime_error("Training set not found at path "+path_to_validation_set);
-//        }
-//        Mat Xy_val = load_csv(path_to_training_set);
-//        Mat X_val = remove_column(Xy_val, Xy_val.cols()-1);
-//
-//        Vec y_val = Xy_val.col(Xy_val.cols()-1);
-//
-//        fit_func->set_Xy(X_val,y_val, "val");
-//        mse_func->set_Xy(X_val,y_val, "val");
+        path_to_validation_set = parser.get<string>("val");
+        // load up
+        if (!exists(path_to_validation_set)) {
+            throw runtime_error("Training set not found at path "+path_to_validation_set);
+        }
+        Mat Xy_val = load_csv(path_to_training_set);
+        Mat X_val = remove_column(Xy_val, Xy_val.cols()-1);
+
+        Vec y_val = Xy_val.col(Xy_val.cols()-1);
+
+        fit_func->set_Xy(X_val,y_val, "val");
+        mse_func->set_Xy(X_val,y_val, "val");
 
 
     }
@@ -593,6 +597,9 @@ namespace g {
 
 
     MO_mode = parser.get<bool>("MO_mode");
+    use_adf = parser.get<bool>("use_adf");
+    use_aro = parser.get<bool>("use_aro");
+
     n_clusters = parser.get<int>("n_clusters");
     use_max_range = parser.get<bool>("use_max_range");
     equal_p_coeffs = parser.get<bool>("equal_p_coeffs");
@@ -657,6 +664,8 @@ namespace g {
       + " nr multi trees " + std::to_string(nr_multi_trees)
       + " MO mode " + std::to_string(MO_mode)
       + " n clusters" + std::to_string(n_clusters)
+      + " use aro" + std::to_string(use_aro)
+      + " use adf" + std::to_string(use_adf)
       );
   }
 
