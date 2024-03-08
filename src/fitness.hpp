@@ -13,7 +13,6 @@ using namespace myeig;
 struct Fitness {
   int opt_evaluations = 0;
   int evaluations = 0;
-  long node_evaluations = 0;
 
   virtual ~Fitness() {};
 
@@ -61,63 +60,29 @@ struct Fitness {
     return get_fitness_MO(n, *X, *y, change_fitness);
   }
 
-  float get_fitness_opt(Individual * n, Mat * X=NULL, Vec * y=NULL) {
-    if (!X)
-      X = & this->X_batch_opt;
-    if (!y)
-      y = & this->y_batch_opt;
-
-    // update evaluations
-    //node_evaluations += n->get_num_nodes(true); 
-    // call specific implementation
-    return get_fitness_SO(n, *X, *y, false)[0];
-  }
-
-  Vec get_fitnesses_SO(vector<Individual*> population, bool compute=true, Mat * X=NULL, Vec * y=NULL) {
-    Vec fitnesses(population.size());
-    for(int i = 0; i < population.size(); i++) {
-      if (compute)
-        fitnesses[i] = get_fitness_SO(population[i], X, y, true)[0];
-      else
-        fitnesses[i] = population[i]->fitness[0];
-    }
-    return fitnesses;
-  }
-
-  Mat get_fitnesses_MO(vector<Individual*> population, bool compute=true, Mat * X=NULL, Vec * y=NULL) {
-    //TODO: hardcoded size
-    Mat fitnesses(population.size(), 2);
-    for(int i = 0; i < population.size(); i++) {
-      if(compute){
-        vector<float> fs = get_fitness_MO(population[i], X, y, true);
-        fitnesses(i,0) = fs[0];
-        fitnesses(i,1) = fs[1];
-      }
-      else{
-        fitnesses(i,0) = population[i]->fitness[0];
-        fitnesses(i,1) = population[i]->fitness[1];
-      }
-    }
-    return fitnesses;
-  }
-
-
   void _set_X(Mat & X, string type="train") {
-    if (type == "train")
-      X_train = X;
-    else if (type=="val")
-      X_val = X;
-    else
+    if (type == "train") {
+        X_train = X;
+    }
+    else if (type=="val") {
+
+        X_val = X;
+    }
+    else{
       throw runtime_error("Unrecognized X type "+type);
+      }
   }
 
   void _set_y(Vec & y, string type="train") {
-    if (type == "train")
-      y_train = y;
-    else if (type=="val")
-      y_val = y;
-    else
-      throw runtime_error("Unrecognized y type "+type);
+    if (type == "train") {
+        y_train = y;
+    }
+    else if (type=="val") {
+        y_val = y;
+    }
+    else {
+        throw runtime_error("Unrecognized y type " + type);
+    }
   }
 
   void set_Xy(Mat & X, Vec & y, string type="train") {

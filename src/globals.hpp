@@ -323,7 +323,6 @@ namespace g {
     // set options
     parser.run_and_exit_if_error();
 
-
     // verbose (MUST BE FIRST)
     verbose = parser.get<bool>("verbose");
     if (!verbose) {
@@ -386,6 +385,7 @@ namespace g {
     print("fitness function: ", fit_func_name);
 
     _call_as_lib = parser.get<bool>("lib");
+
     if (!_call_as_lib) {
       // then it expects a training set
       path_to_training_set = parser.get<string>("train");
@@ -396,12 +396,10 @@ namespace g {
       Mat Xy = load_csv(path_to_training_set);
       Mat X = remove_column(Xy, Xy.cols()-1);
 
-
       Vec y = Xy.col(Xy.cols()-1);
       fit_func->set_Xy(X,y);
       mse_func->set_Xy(X,y);
-      ea->set_X(X);
-      ea->fit_func = fit_func;
+
 
       if(use_max_range){
           set_max_coeff_range();
@@ -419,8 +417,11 @@ namespace g {
         fit_func->set_Xy(X_val,y_val, "val");
         mse_func->set_Xy(X_val,y_val, "val");
 
-
+        ea->set_X(fit_func->X_train);
+        ea->fit_func = fit_func;
     }
+
+
     lib_batch_size = parser.get<string>("bs");
     if (!_call_as_lib) {
       set_batch_size(lib_batch_size);
@@ -483,9 +484,9 @@ namespace g {
       + " equal_p_coeffs " +  std::to_string(equal_p_coeffs)
       + " nr multi trees " + std::to_string(nr_multi_trees)
       + " MO mode " + std::to_string(MO_mode)
-      + " n clusters" + std::to_string(n_clusters)
-      + " use aro" + std::to_string(use_aro)
-      + " use adf" + std::to_string(use_adf)
+      + " n clusters " + std::to_string(n_clusters)
+      + " use aro " + std::to_string(use_aro)
+      + " use adf " + std::to_string(use_adf)
       );
   }
 

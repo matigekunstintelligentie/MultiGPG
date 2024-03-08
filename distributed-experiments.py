@@ -71,22 +71,25 @@ class gpgomea_experiment(experiment):
             "use_aro": None,
             "MO_mode": None,
             "n_clusters": None,
-            "verbose": None
+            "verbose": None,
+            "use_max_range": True
 
         }
 
-        if experiment_dict is not None:
-            self.experiment_dict = experiment_dict
+        for key, value in experiment_dict.items():
+            self.experiment_dict[key] = value
 
 
 
 def run(experiment):
     experiment.check_dict()
+    print(experiment.construct_string())
     subprocess.run(experiment.construct_string(), shell=True)
 
 verbose = True
 n_processes = 1
-duration = 100
+duration = 5*60
+popsize = 100
 
 experiments = []
 
@@ -96,11 +99,11 @@ fset = '+,-,*,/,sin,cos,log,sqrt'
 extra_fset = '+,-,*,/,sin,cos,log,sqrt,max,min,exp,**2,1/'
 arithmetic_fset = '+,-,*,/'
 
-result_dir = lambda depth:"./results/multi_trees"
+result_dir = "./results/multi_trees"
 datasets = ["dowchemical","tower", "air", "concrete", "bike"]
+datasets = ["bike"]
 
-
-for i in range(5):
+for i in range(1):
     for dataset in datasets:
         contains_train = "_train" in dataset
 
@@ -110,18 +113,18 @@ for i in range(5):
            os.makedirs(directory)
 
         for exp in [
-            gpgomea_experiment({"csv_name":"deep-tree", "depth": 8, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":2048, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 1,  "t": duration, "g":-1, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True)
-            gpgomea_experiment({"csv_name":"deep-tree", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":2048, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 2,  "t": duration, "g":-1, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True),
-
-            gpgomea_experiment({"csv_name":"SO", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": False, "popsize":2048, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True),
-            gpgomea_experiment({"csv_name":"MO", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":2048, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True),
-            gpgomea_experiment({"csv_name":"MO_nocluster", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":2048, "n_clusters": 1, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True),
-
-            gpgomea_experiment({"csv_name":"MO_noadf", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":2048, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":False, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True),
-            gpgomea_experiment({"csv_name":"MO_noaro", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":2048, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True),
+            gpgomea_experiment({"csv_name":"deep-tree", "depth": 8, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 1,  "t": duration, "g":-1, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True}),
+            # gpgomea_experiment({"csv_name":"deep-tree", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 2,  "t": duration, "g":-1, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True}),
+            #
+            # gpgomea_experiment({"csv_name":"SO", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": False, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True}),
+            # gpgomea_experiment({"csv_name":"MO", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True}),
+            # gpgomea_experiment({"csv_name":"MO_nocluster", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize, "n_clusters": 1, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True}),
+            #
+            # gpgomea_experiment({"csv_name":"MO_noadf", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":False, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True}),
+            # gpgomea_experiment({"csv_name":"MO_noaro", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True}),
         ]:
 
-        experiments.append(exp)
+            experiments.append(exp)
 
 
 p = Pool(n_processes)

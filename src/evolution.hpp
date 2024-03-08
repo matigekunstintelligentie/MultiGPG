@@ -100,7 +100,10 @@ struct Evolution {
          }
         already_generated.insert(str_tree);
 
+        print("Where it goes wrong evolution.hpp:103");
         g::fit_func->get_fitness_MO(individual);
+        print("Where it goes wrong evolution.hpp:103");
+
         g::fit_func->get_fitness_SO(individual);
 
 

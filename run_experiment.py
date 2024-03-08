@@ -92,6 +92,7 @@ g = GPGRegressor(t=args.t, g=args.g, tour=args.tour, d=args.depth,  use_optim=ar
 #+,-,*,/,¬,log,pow,max,min,abs,exp,sqrt,sin,cos
 if not args.contains_train:
     X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.25, random_state=args.seed)
+
     if args.ss:
         s = SS()
         X_train = s.fit_transform(X_train)

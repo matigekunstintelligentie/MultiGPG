@@ -20,18 +20,26 @@ py::list evolve_val(string options, myeig::Mat &X, myeig::Vec &y, myeig::Mat &X_
   for (int i = 1; i < argc; i++) {
     argv[i] = (char*) opts[i-1].c_str();
   }
+
+
+
   g::read_options(argc, argv);
 
   // initialize evolution handler 
   IMS * ims = new IMS();
 
   // set training set
-  g::fit_func->set_Xy(X, y);
-  g::mse_func->set_Xy(X, y);
+    g::fit_func->set_Xy(X, y);
+    g::mse_func->set_Xy(X, y);
 
-  g::fit_func->set_Xy(X_val, y_val, "val");
-  g::mse_func->set_Xy(X_val, y_val, "val");
-  
+    g::fit_func->set_Xy(X_val, y_val, "val");
+    g::mse_func->set_Xy(X_val, y_val, "val");
+
+    g::ea->set_X(g::fit_func->X_train);
+    g::ea->fit_func = g::fit_func;
+
+
+
   if(g::use_max_range){
     g::set_max_coeff_range();
   }
@@ -43,8 +51,6 @@ py::list evolve_val(string options, myeig::Mat &X, myeig::Vec &y, myeig::Mat &X_
   // set batch size
   g::set_batch_size(g::lib_batch_size);
   g::set_batch_size_opt(g::lib_batch_size_opt);
-  // print("batch size: ", g::batch_size);
-  // print("batch size opt: ", g::batch_size_opt);
 
   // 2. RUN
   ims->run();
