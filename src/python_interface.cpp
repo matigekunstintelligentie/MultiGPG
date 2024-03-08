@@ -61,7 +61,7 @@ py::list evolve_val(string options, myeig::Mat &X, myeig::Vec &y, myeig::Mat &X_
   }
   py::list models;
   for (auto model: g::ea->MO_archive) {
-    string model_repr = model->human_repr(true);
+    string model_repr = model->human_repr(true, false);
     models.append(model_repr);
   }
 

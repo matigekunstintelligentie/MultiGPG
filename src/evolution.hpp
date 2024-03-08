@@ -100,12 +100,8 @@ struct Evolution {
          }
         already_generated.insert(str_tree);
 
-        print("Where it goes wrong evolution.hpp:103");
         g::fit_func->get_fitness_MO(individual);
-        print("Where it goes wrong evolution.hpp:103");
-
         g::fit_func->get_fitness_SO(individual);
-
 
         population.push_back(individual);
     }
@@ -401,7 +397,6 @@ struct Evolution {
       vector<vector<Individual *>> clustered_population_equal = output.first.second;
       vector<int> clusternr = output.second;
 
-
       // Per cluster, one FOS
       vector<vector<pair<vector<int>,int>>> FOSs;
       vector<vector<vector<Node *>>> clustered_FOSes_pop;
@@ -426,7 +421,6 @@ struct Evolution {
           FOSs.push_back(cluster_fbs);
       }
 
-
       vector<pair<int, int>> idx;
       for(int i=0;i<clustered_population.size();i++){
           for(int j=0;j<clustered_population[i].size();j++){
@@ -434,11 +428,7 @@ struct Evolution {
           }
       }
 
-
-
       for(int x=0; x<idx.size(); x++){
-
-
           int &i = idx[x].first;
           int &j = idx[x].second;
 
@@ -454,6 +444,8 @@ struct Evolution {
           offspring_population.push_back(offspring);
           g::ea->updateMOArchive(offspring);
       }
+
+
 
       assert(offspring_population.size()==population.size());
 

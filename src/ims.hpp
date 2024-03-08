@@ -29,7 +29,7 @@ struct IMS {
   vector<string> MO_archive_strings;
 
 
-  Evolution* evolution = new Evolution(g::pop_size);
+  Evolution* evolution;
   int macro_generations = 0;
 
   ~IMS(){
@@ -58,7 +58,8 @@ struct IMS {
   }
 
   void run() {
-    
+    evolution = new Evolution(g::pop_size);
+
     auto start_time = tick();
     
     bool stop = false;
@@ -88,6 +89,7 @@ struct IMS {
 
           break;
       }
+
 
       // perform generation
       if(g::MO_mode){

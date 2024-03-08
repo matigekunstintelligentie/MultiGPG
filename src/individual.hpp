@@ -55,9 +55,9 @@ struct Individual {
     return trees[trees.size()-1]->get_output_der(X, this->trees);
   }
 
-  string human_repr(bool full_tree=false) {
+  string human_repr(bool full_tree=false, bool add_ofa = true) {
       if(full_tree) {
-          return trees[trees.size() - 1]->human_repr(this->trees);
+          return trees[trees.size() - 1]->human_repr(this->trees, add_ofa);
       }
       else{
           return trees[trees.size() - 1]->human_repr();
