@@ -486,13 +486,6 @@ Individual * efficient_gom(Individual * og_parent, vector<vector<Node*>> & mt_po
             new_fitness = g::fit_func->get_fitness_MO(parent);
         }
 
-        if(parent->get_num_nodes(true)!=parent->fitness[1]){
-            print(parent->human_repr(false));
-            print(parent->human_repr(true));
-            print(parent->get_num_nodes(true), " ", parent->fitness[1], " ", ever_improved);
-            parent->get_num_nodes(true);
-        }
-
         // check is not worse
         if (backup_fitness[0]<new_fitness[0]) {
             // undo
@@ -522,7 +515,6 @@ Individual * efficient_gom(Individual * og_parent, vector<vector<Node*>> & mt_po
         }
 
         if(g::cmut_prob>0.){
-
             effectively_changed_indices.clear();
             backup_ops.clear();
 
@@ -564,10 +556,6 @@ Individual * efficient_gom(Individual * og_parent, vector<vector<Node*>> & mt_po
                 g::ea->updateMOArchive(parent);
                 g::ea->updateSOArchive(parent);
 
-                if(parent->get_num_nodes(true)!=parent->fitness[1]){
-                    print("COEFFMUT ", parent->get_num_nodes(true), " ",parent->fitness[1], parent->human_repr());
-                }
-
                 ever_improved = true;
             }
 
@@ -579,12 +567,13 @@ Individual * efficient_gom(Individual * og_parent, vector<vector<Node*>> & mt_po
     }
 
     if((macro_generations%g::opt_per_gen)==0 && g::use_optimiser){
+        print("opt");
         vector<float> fitness_before = parent->fitness;
 
         Individual * offspring;
-        if(g::optimiser_choice=="lm"){
-            offspring = coeff_opt_lm(parent, true);
-        }
+
+        offspring = coeff_opt_lm(parent, true);
+        
 
         vector<float> fitness_after = g::fit_func->get_fitness_MO(offspring);
 
@@ -604,6 +593,7 @@ Individual * efficient_gom(Individual * og_parent, vector<vector<Node*>> & mt_po
         else{
             offspring->clear();
         }
+
     }
 
     // variant of forced improvement that is potentially less aggressive, & less expensive to carry out
