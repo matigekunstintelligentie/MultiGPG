@@ -19,6 +19,8 @@ struct Fitness {
   Mat X_train, X_val, X_batch, X_batch_opt;
   Vec y_train, y_val, y_batch, y_batch_opt;
 
+  bool discount_size = false;
+
 
   virtual string name() {
     throw runtime_error("Not implemented");
@@ -165,7 +167,7 @@ struct MSEFitness : Fitness {
     if(change_fitness) {
         n->fitness[0] = fitness;
 
-        n->fitness[1] = n->get_num_nodes(true);
+        n->fitness[1] = n->get_num_nodes(true, discount_size);
     }
 
     return n->fitness;
@@ -228,7 +230,7 @@ struct LSMSEFitness : Fitness {
 
        if(change_fitness) {
         n->fitness[0] = fitness;
-        n->fitness[1] = n->get_num_nodes(true);
+        n->fitness[1] = n->get_num_nodes(true, discount_size);
       }
 
         return n->fitness;

@@ -72,8 +72,8 @@ class gpgomea_experiment(experiment):
             "MO_mode": None,
             "n_clusters": None,
             "verbose": None,
-            "use_max_range": True
-
+            "use_max_range": True,
+            "discount_size": None
         }
 
         for key, value in experiment_dict.items():
@@ -93,18 +93,14 @@ popsize = 2048
 
 experiments = []
 
-fset = '+'
-
-
-
-# fset = '+,-,*,/,sin,cos,log,sqrt'
-# extra_fset = '+,-,*,/,sin,cos,log,sqrt,max,min,exp,**2,1/'
-# arithmetic_fset = '+,-,*,/'
+fset = '+,-,*,/,sin,cos,log,sqrt'
+extra_fset = '+,-,*,/,sin,cos,log,sqrt,max,min,exp,**2,1/'
+arithmetic_fset = '+,-,*,/'
 
 result_dir = "./results/multi_trees"
 datasets = ["dowchemical","tower", "air", "concrete", "bike"]
 
-for i in range(10):
+for i in range(1):
     for dataset in datasets:
         contains_train = "_train" in dataset
 
@@ -114,15 +110,16 @@ for i in range(10):
            os.makedirs(directory)
 
         for exp in [
-            #gpgomea_experiment({"csv_name":"tree_8", "depth": 8, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 1,  "t": duration, "g":-1, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True}),
-            #gpgomea_experiment({"csv_name":"tree_42", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 2,  "t": duration, "g":-1, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True}),
+            #gpgomea_experiment({"csv_name":"tree_8", "depth": 8, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 1,  "t": duration, "g":-1, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":False}),
+            #gpgomea_experiment({"csv_name":"tree_42", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 2,  "t": duration, "g":-1, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":False}),
             #
-            gpgomea_experiment({"csv_name":"SO", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": False, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True}),
-            #gpgomea_experiment({"csv_name":"MO", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True}),
-            #gpgomea_experiment({"csv_name":"MO_nocluster", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize, "n_clusters": 1, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True}),
+            #gpgomea_experiment({"csv_name":"SO", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": False, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":False}),
+            #gpgomea_experiment({"csv_name":"MO", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":False}),
+            gpgomea_experiment({"csv_name":"discount", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":True}),
+            #gpgomea_experiment({"csv_name":"MO_nocluster", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize, "n_clusters": 1, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":False}),
             #
-            #gpgomea_experiment({"csv_name":"MO_noadf", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":False, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True}),
-            #gpgomea_experiment({"csv_name":"MO_noaro", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True}),
+            #gpgomea_experiment({"csv_name":"MO_noadf", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":False, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":False}),
+            #gpgomea_experiment({"csv_name":"MO_noaro", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":False}),
         ]:
 
             experiments.append(exp)

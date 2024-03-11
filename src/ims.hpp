@@ -21,6 +21,7 @@ using namespace myeig;
 struct IMS {
   //vectors for storing csv outputs
   vector<int> best_sizes;
+  vector<int> best_sizes_discount;
   vector<float> best_train_mses;
   vector<float> best_val_mses;
   vector<float> times;
@@ -59,6 +60,9 @@ struct IMS {
 
   void run() {
     evolution = new Evolution(g::pop_size);
+
+    g::fit_func->discount_size = g::discount_size;
+    g::mse_func->discount_size = g::discount_size;
 
     auto start_time = tick();
     
@@ -105,6 +109,7 @@ struct IMS {
           float best_train_mse = 9999999.;
           float best_val_mse = 9999999.;
           float best_size = 9999999.;
+          float best_size_discount = 999999999.;
           string best_stri = "";
 
           string MO_archive_string = "{";
@@ -115,7 +120,8 @@ struct IMS {
               if (best_train_mse > ind->fitness[0]) {
                   best_train_mse = ind->fitness[0];
                   best_val_mse = val_mse;
-                  best_size = ind->fitness[1];
+                  best_size = ind->get_num_nodes(true);
+                  best_size_discount = ind->get_num_nodes(true, true);
                   best_stri = ind->human_repr(true);
                   best_string = best_stri;
 
@@ -131,15 +137,16 @@ struct IMS {
               else{
                   add_comma = true;
               }
-              MO_archive_string = MO_archive_string + "[" + to_string(ind->fitness[0]) + "," + to_string(val_mse) + "," + to_string(ind->fitness[1]) + "," + ind->human_repr(true) + "]";
+              MO_archive_string = MO_archive_string + "[" + to_string(ind->fitness[0]) + "," + to_string(val_mse) + "," + to_string(ind->get_num_nodes(true)) + "," + to_string(ind->get_num_nodes(true, true)) + "," + ind->human_repr(true) + "]";
           }
           MO_archive_string += "}";
 
-          print(" ~ generation: ", macro_generations, " ", to_string(tock(start_time)), ", curr. best fit: ", best_train_mse, " ", best_size, " ", best_stri);
+          print(" ~ generation: ", macro_generations, " ", to_string(tock(start_time)), ", curr. best fit: ", best_train_mse, " ", best_size, " ", best_size_discount, " ", best_stri);
 
           best_train_mses.push_back(best_train_mse);
           best_val_mses.push_back(best_val_mse);
           best_sizes.push_back(best_size);
+          best_sizes_discount.push_back(best_size_discount);
           times.push_back(tock(start_time));
           MO_archive_strings.push_back(MO_archive_string);
       }
@@ -158,18 +165,20 @@ struct IMS {
       str += to_string(best_train_mses[best_train_mses.size()-1]) + "\t";
       // 2 best validation mse
       str += to_string(best_val_mses[best_val_mses.size()-1]) + "\t";
-      // 3 best validation mse
+      // 3 best size
       str += to_string(best_sizes[best_sizes.size()-1]) + "\t";
-      // 4 best string
+      // 4 best size
+      str += to_string(best_sizes[best_sizes.size()-1]) + "\t";
+      // 5 best string
       str += best_string + "\t";
-      // 5 train variance
+      // 6 train variance
       str += to_string((g::fit_func->y_train - g::fit_func->y_train.mean()).square().mean()) + "\t";
-      // 6 val variance
+      // 7 val variance
       str += to_string((g::fit_func->y_val - g::fit_func->y_val.mean()).square().mean()) + "\t";
 
       csv_file << str;
 
-      // 7 best train mse over time
+      // 8 best train mse over time
       str = "";
       for(int i=0;i<best_train_mses.size()-1;i++){
           str += to_string(best_train_mses[i]) + ",";
@@ -177,7 +186,7 @@ struct IMS {
       str += to_string(best_train_mses[best_train_mses.size()-1])+"\t";
       csv_file << str;
 
-      // 8 best val mse over time
+      // 9 best val mse over time
       str = "";
       for(int i=0;i<best_val_mses.size()-1;i++){
            str += to_string(best_val_mses[i]) + ",";
@@ -185,7 +194,7 @@ struct IMS {
       str += to_string(best_val_mses[best_val_mses.size()-1])+"\t";
       csv_file << str;
 
-      // 8 best size over time
+      // 10 best size over time
       str = "";
       for(int i=0;i<best_sizes.size()-1;i++){
           str += to_string(best_sizes[i]) + ",";
@@ -193,7 +202,7 @@ struct IMS {
       str += to_string(best_sizes[best_sizes.size()-1])+"\t";
       csv_file << str;
 
-        // 9 best substrings over time
+        // 11 best substrings over time
         str = "";
         for(int i=0;i<best_substrings.size()-1;i++){
             str += best_substrings[i] + ";";
@@ -201,7 +210,7 @@ struct IMS {
         str += best_substrings[best_substrings.size()-1]+"\t";
         csv_file << str;
 
-      // 10 MO over time
+      // 12 MO over time
       str = "";
       for(int i=0;i<MO_archive_strings.size()-1;i++){
           str += MO_archive_strings[i] + ";";
@@ -209,7 +218,7 @@ struct IMS {
       str += MO_archive_strings[MO_archive_strings.size()-1]+"\t";
       csv_file << str;
 
-      // 11 times
+      // 13 times
       str = "";
       for(int i=0;i<times.size()-1;i++){
           str += to_string(times[i]) + ",";

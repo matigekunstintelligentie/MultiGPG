@@ -14,11 +14,11 @@ using namespace myeig;
 struct Test {
 
   void run_all(){
-    num_nodes();
+    // num_nodes();
 // ============================================================================
 //     depth();
-    subtree();
-    is_intron();
+    // subtree();
+    // is_intron();
 //     gen_tree();
 //     operators();
 //     node_output();
@@ -52,9 +52,10 @@ struct Test {
 
   void num_nodes(){
       Node * first_tree = new Node(new Sin());
-      Node * z = new Node(new Cos());
+      Node * z = new Node(new Mul());
       first_tree->append(z);
       Node * any = new Node(new AnyOp(0));
+      z->append(any);
       z->append(any);
 
       Node * x = new Node(new FunctionTree(0));
@@ -67,10 +68,9 @@ struct Test {
       ind->trees.push_back(first_tree);
       ind->trees.push_back(x);
 
-      assert(ind->get_num_nodes(true)==3);
-      assert(ind->get_num_nodes(false)==4);
-
-      ind->clear();
+      assert(ind->get_num_nodes(true)==4);
+      assert(ind->get_num_nodes(false)==6);
+      assert(ind->get_num_nodes(true, true)==3);
   }
 
   void subtree(){

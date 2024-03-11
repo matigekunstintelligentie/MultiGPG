@@ -44,20 +44,20 @@ struct Individual {
       return  trees[trees.size()-1]->subtree(this->trees, check_introns);
   }
   
-  int get_num_nodes(bool excl_introns){
-      return trees[trees.size()-1]-> get_num_nodes(this->trees, excl_introns);
+  int get_num_nodes(bool excl_introns, bool discount=false){
+
+      if(!discount){
+          return trees[trees.size()-1]-> get_num_nodes(this->trees, excl_introns);
+      }
+      else{
+          vector<Node*> nodes = trees[trees.size()-1]->subtree(this->trees, !excl_introns);
+          set<Node*> node_set;
+          for(auto node: nodes){
+              node_set.insert(node);
+          }
+          return static_cast<int>(node_set.size());
+      }
   }
-
-   int get_num_nodes2(bool excl_introns){
-       vector<Node*> nodes = trees[trees.size()-1]->subtree(this->trees, true);
-
-       set<Node*> node_set;
-       for(auto node: nodes){
-         node_set.insert(node);
-       }
-
-       return static_cast<int>(node_set.size());
-   }
 
   Vec get_output(const Mat & X){
       return trees[trees.size()-1]->get_output(X, this->trees);
