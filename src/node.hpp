@@ -126,7 +126,7 @@ struct Node {
             n_nodes += trees[((OutputTree*) op)->id]->get_num_nodes(trees, fun_children ,excl_introns);
         }
         else if(op->type()==OpType::otFunction){
-            n_nodes += trees[((FunctionTree*) op)->id]->get_num_nodes(trees, fun_children ,excl_introns);
+            n_nodes += trees[((FunctionTree*) op)->id]->get_num_nodes(trees, this->children ,excl_introns);
         }
         else if(op->type()==OpType::otAny){
             n_nodes += fun_children[((AnyOp*) op)->id]->get_num_nodes(trees, excl_introns);

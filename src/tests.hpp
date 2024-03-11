@@ -14,6 +14,7 @@ using namespace myeig;
 struct Test {
 
   void run_all(){
+      funcs();
     // num_nodes();
 // ============================================================================
 //     depth();
@@ -27,6 +28,32 @@ struct Test {
 //     math();
 // ============================================================================
   }
+
+    void funcs(){
+        Node * first_tree = new Node(new Sin());
+        Node * any = new Node(new AnyOp(0));
+        first_tree->append(any);
+
+        Node * second_tree = new Node(new Cos());
+        Node * x = new Node(new FunctionTree(0));
+        Node * y = new Node(new Const(0.5));
+        x->append(y);
+        second_tree->append(x);
+
+        Node * x2 = new Node(new FunctionTree(1));
+        Node * y2 = new Node(new Const(0.5));
+        x2->append(y2);
+
+        Individual * ind = new Individual();
+        ind->trees.push_back(first_tree);
+        ind->trees.push_back(second_tree);
+        ind->trees.push_back(x2);
+
+//        print(ind->human_repr(true));
+//        print(ind->get_num_nodes(true));
+//
+//        assert(4==2);
+    }
 
     void is_intron(){
         Node * first_tree = new Node(new Sin());
