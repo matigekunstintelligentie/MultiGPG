@@ -13,11 +13,12 @@ using namespace myeig;
 
 struct Test {
 
-  void run_all() {
-      // num_nodes();
+  void run_all(){
+    num_nodes();
 // ============================================================================
 //     depth();
-//     subtree();
+    subtree();
+    is_intron();
 //     gen_tree();
 //     operators();
 //     node_output();
@@ -26,6 +27,28 @@ struct Test {
 //     math();
 // ============================================================================
   }
+
+    void is_intron(){
+        Node * first_tree = new Node(new Sin());
+        Node * z = new Node(new Cos());
+        first_tree->append(z);
+        Node * any = new Node(new AnyOp(0));
+        z->append(any);
+
+        Node * x = new Node(new FunctionTree(0));
+        Node * y = new Node(new Const(0.5));
+        Node * y2 = new Node(new Const(0.6));
+        x->append(y);
+        y->append(y2);
+
+        Individual * ind = new Individual();
+        ind->trees.push_back(first_tree);
+        ind->trees.push_back(x);
+
+        assert(y2->is_intron()==true);
+
+        ind->clear();
+    }
 
   void num_nodes(){
       Node * first_tree = new Node(new Sin());
@@ -36,23 +59,46 @@ struct Test {
 
       Node * x = new Node(new FunctionTree(0));
       Node * y = new Node(new Const(0.5));
+      Node * y2 = new Node(new Const(0.6));
       x->append(y);
+      y->append(y2);
 
       Individual * ind = new Individual();
       ind->trees.push_back(first_tree);
       ind->trees.push_back(x);
 
-      Mat matA(2, 2);
-      matA << 1, 2, 3, 4;
+      assert(ind->get_num_nodes(true)==3);
+      assert(ind->get_num_nodes(false)==4);
 
-      Vec output = ind->get_output(matA);
+      ind->clear();
+  }
 
-      print(output(0));
+  void subtree(){
+      Node * first_tree = new Node(new Sin());
+      Node * z = new Node(new Cos());
+      first_tree->append(z);
+      Node * any = new Node(new AnyOp(0));
+      z->append(any);
 
-      print(ind->human_repr(true));
-      print(ind->get_num_nodes(true));
+      Node * x = new Node(new FunctionTree(0));
+      Node * y = new Node(new Const(0.5));
+      Node * y2 = new Node(new Const(0.6));
+      x->append(y);
+      y->append(y2);
 
-      assert(1==2);
+      Individual * ind = new Individual();
+      ind->trees.push_back(first_tree);
+      ind->trees.push_back(x);
+
+      vector<Node*> nodes = ind->subtree(true);
+
+      assert(nodes.size()==4);
+
+      nodes = ind->subtree(false);
+
+      assert(nodes.size()==3);
+
+      ind->clear();
   }
 
 // ============================================================================

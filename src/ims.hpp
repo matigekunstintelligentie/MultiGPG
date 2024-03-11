@@ -89,8 +89,7 @@ struct IMS {
 
           break;
       }
-
-
+      
       // perform generation
       if(g::MO_mode){
         evolution->gomea_generation_MO(macro_generations);

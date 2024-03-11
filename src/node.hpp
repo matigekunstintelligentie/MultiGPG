@@ -94,161 +94,6 @@ struct Node {
     return h;
   }
 
-    int get_num_nodes(vector<Node*> &trees, vector<Node*> &fun_children, bool excl_introns=false) {
-        int n_nodes = 0;
-        if(op->type()==OpType::otPlaceholder){
-            n_nodes += trees[((OutputTree*) op)->id]->get_num_nodes(trees, fun_children ,excl_introns);
-        }
-        else if(op->type()==OpType::otFunction){
-            n_nodes += trees[((FunctionTree*) op)->id]->get_num_nodes(trees, fun_children ,excl_introns);
-        }
-        else if(op->type()==OpType::otAny){
-            n_nodes += fun_children[((AnyOp*) op)->id]->get_num_nodes(trees, excl_introns);
-        }
-        else {
-            n_nodes = 1;
-            int arity = op->arity();
-            for (int i = 0; i < arity; i++) {
-                n_nodes += children[i]->get_num_nodes(trees, fun_children, excl_introns);
-            }
-        }
-        return n_nodes;
-    }
-
-  int get_num_nodes(vector<Node*> &trees, bool excl_introns=false) {
-      int n_nodes = 0;
-      if(op->type()==OpType::otPlaceholder){
-          n_nodes += trees[((OutputTree*) op)->id]->get_num_nodes(trees, excl_introns);
-      }
-      else if(op->type()==OpType::otFunction){
-          n_nodes += trees[((FunctionTree*) op)->id]->get_num_nodes(trees, this->children, excl_introns);
-      }
-      else {
-          n_nodes = 1;
-          int arity = op->arity();
-          for (int i = 0; i < arity; i++) {
-              n_nodes += children[i]->get_num_nodes(trees, excl_introns);
-          }
-      }
-      return n_nodes;
-  }
-
-  void _height_recursive(int & max_child_depth) {
-    if (op->arity() == 0) {
-      int d = this->depth();
-      if (d > max_child_depth)
-        max_child_depth = d;
-    }
-
-    for (int i = 0; i < op->arity(); i++)
-      children[i]->_height_recursive(max_child_depth);
-  }
-
-    vector<Node*> subtree() {
-        vector<Node*> subtree;
-        _subtree_recursive(subtree);
-        return subtree;
-    }
-
-  vector<Node*> subtree(vector<Node*> &trees) {
-    vector<Node*> subtree;
-    _subtree_recursive(subtree, trees);
-    return subtree;
-  }
-
-    void _subtree_recursive(vector<Node*> &subtree) {
-        subtree.push_back(this);
-        for(Node * child : children) {
-            child->_subtree_recursive(subtree);
-        }
-    }
-
-    void _subtree_recursive(vector<Node*> &subtree, vector<Node*> &trees,  vector<Node*> &fun_children) {
-        if(op->type()==OpType::otPlaceholder){
-            trees[((OutputTree*) op)->id]->_subtree_recursive(subtree, trees, this->children);
-        }
-        else if(op->type()==OpType::otFunction){
-            trees[((FunctionTree*) op)->id]->_subtree_recursive(subtree, trees, this->children);
-        }
-        else if(op->type()==OpType::otAny){
-            fun_children[((AnyOp*) op)->id]->_subtree_recursive(subtree, trees);
-        }
-        else {
-            subtree.push_back(this);
-            for (Node *child: children) {
-                child->_subtree_recursive(subtree, trees);
-            }
-        }
-    }
-
-  void _subtree_recursive(vector<Node*> &subtree, vector<Node*> &trees) {
-      if(op->type()==OpType::otPlaceholder){
-          trees[((OutputTree*) op)->id]->_subtree_recursive(subtree, trees);
-      }
-      else if(op->type()==OpType::otFunction){
-          trees[((FunctionTree*) op)->id]->_subtree_recursive(subtree, trees, this->children);
-      }
-      else {
-          subtree.push_back(this);
-          for (Node *child: children) {
-              child->_subtree_recursive(subtree, trees);
-          }
-      }
-  }
-
-    vector<Node*> subtree(bool check_introns) {
-        vector<Node*> subtree;
-        _subtree_recursive(subtree, check_introns);
-        return subtree;
-    }
-
-  //Here
-  vector<Node*> subtree(vector<Node*> &trees, bool check_introns) {
-    vector<Node*> subtree;
-    _subtree_recursive(subtree, trees, check_introns);
-    return subtree;
-  }
-
-    void _subtree_recursive(vector<Node*> &subtree, bool check_introns) {
-
-        if(check_introns){
-            if(!this->is_intron()){
-                subtree.push_back(this);
-                for(Node * child : children) {
-                    child->_subtree_recursive(subtree, check_introns);
-                }
-            }
-        }
-        else{
-            subtree.push_back(this);
-            for(Node * child : children) {
-                child->_subtree_recursive(subtree, check_introns);
-            }
-        }
-
-    }
-  // here
-  void _subtree_recursive(vector<Node*> &subtree, vector<Node*> &trees, bool check_introns) {
-      if(op->type()==OpType::otPlaceholder){
-          return trees[((OutputTree*) op)->id]->_subtree_recursive(subtree, trees, check_introns);
-      }
-      else {
-          if (check_introns) {
-              if (!this->is_intron()) {
-                  subtree.push_back(this);
-                  for (Node *child: children) {
-                      child->_subtree_recursive(subtree, trees, check_introns);
-                  }
-              }
-          } else {
-              subtree.push_back(this);
-              for (Node *child: children) {
-                  child->_subtree_recursive(subtree, trees, check_introns);
-              }
-          }
-      }
-  }
-
   int position_among_siblings() {
     if (!parent)
       return 0;
@@ -273,6 +118,137 @@ struct Node {
       p = n->parent;
     }
     return false;
+  }
+
+    int get_num_nodes(vector<Node*> &trees, vector<Node*> &fun_children, bool excl_introns=false) {
+        int n_nodes = 0;
+        if(op->type()==OpType::otPlaceholder){
+            n_nodes += trees[((OutputTree*) op)->id]->get_num_nodes(trees, fun_children ,excl_introns);
+        }
+        else if(op->type()==OpType::otFunction){
+            n_nodes += trees[((FunctionTree*) op)->id]->get_num_nodes(trees, fun_children ,excl_introns);
+        }
+        else if(op->type()==OpType::otAny){
+            n_nodes += fun_children[((AnyOp*) op)->id]->get_num_nodes(trees, excl_introns);
+        }
+        else {
+            n_nodes = 1;
+            int arity = op->arity();
+            if(excl_introns) {
+                for (int i = 0; i < arity; i++) {
+                    n_nodes += children[i]->get_num_nodes(trees, fun_children, excl_introns);
+                }
+            }
+            else{
+                for(auto child: children){
+                    n_nodes += child->get_num_nodes(trees, fun_children, excl_introns);
+                }
+            }
+        }
+        return n_nodes;
+    }
+
+  int get_num_nodes(vector<Node*> &trees, bool excl_introns=false) {
+      int n_nodes = 0;
+      if(op->type()==OpType::otPlaceholder){
+          n_nodes += trees[((OutputTree*) op)->id]->get_num_nodes(trees, excl_introns);
+      }
+      else if(op->type()==OpType::otFunction){
+          n_nodes += trees[((FunctionTree*) op)->id]->get_num_nodes(trees, this->children, excl_introns);
+      }
+      else {
+          n_nodes = 1;
+          int arity = op->arity();
+          if(excl_introns) {
+              for (int i = 0; i < arity; i++) {
+                  n_nodes += children[i]->get_num_nodes(trees, excl_introns);
+              }
+          }
+          else{
+              for(auto child: children){
+                  n_nodes += child->get_num_nodes(trees, excl_introns);
+              }
+          }
+      }
+      return n_nodes;
+  }
+
+  void _height_recursive(int & max_child_depth) {
+    if (op->arity() == 0) {
+      int d = this->depth();
+      if (d > max_child_depth)
+        max_child_depth = d;
+    }
+
+    for (int i = 0; i < op->arity(); i++)
+      children[i]->_height_recursive(max_child_depth);
+  }
+
+  // Needed for deleting trees
+    vector<Node*> subtree() {
+        vector<Node*> subtree;
+        _subtree_recursive(subtree);
+        return subtree;
+    }
+
+    void _subtree_recursive(vector<Node*> &subtree) {
+        subtree.push_back(this);
+        for(Node * child : children) {
+            child->_subtree_recursive(subtree);
+        }
+    }
+
+  vector<Node*> subtree(vector<Node*> &trees, bool check_introns=false) {
+    vector<Node*> subtree;
+    _subtree_recursive(subtree, trees, check_introns);
+    return subtree;
+  }
+
+    void _subtree_recursive(vector<Node*> &subtree, vector<Node*> &trees,  vector<Node*> &fun_children, bool check_introns) {
+        if(op->type()==OpType::otPlaceholder){
+            trees[((OutputTree*) op)->id]->_subtree_recursive(subtree, trees, fun_children, check_introns);
+        }
+        else if(op->type()==OpType::otFunction){
+            trees[((FunctionTree*) op)->id]->_subtree_recursive(subtree, trees, this->children, check_introns);
+        }
+        else if(op->type()==OpType::otAny){
+            fun_children[((AnyOp*) op)->id]->_subtree_recursive(subtree, trees, check_introns);
+        }
+        else {
+            subtree.push_back(this);
+            if(!check_introns){
+              for (int i=0; i<op->arity(); i++) {
+                this->children[i]->_subtree_recursive(subtree, trees, fun_children, check_introns);
+              }
+            } 
+            else{
+              for (Node *child: children) {
+                child->_subtree_recursive(subtree, trees, fun_children, check_introns);
+              }
+            }
+        }
+    }
+
+  void _subtree_recursive(vector<Node*> &subtree, vector<Node*> &trees, bool check_introns) {
+      if(op->type()==OpType::otPlaceholder){
+          trees[((OutputTree*) op)->id]->_subtree_recursive(subtree, trees, check_introns);
+      }
+      else if(op->type()==OpType::otFunction){
+          trees[((FunctionTree*) op)->id]->_subtree_recursive(subtree, trees, this->children, check_introns);
+      }
+      else {
+          subtree.push_back(this);
+          if(!check_introns){
+            for (int i=0; i<op->arity(); i++) {
+              this->children[i]->_subtree_recursive(subtree, trees, check_introns);
+            }
+          }
+          else{
+            for (Node *child: children) {
+              child->_subtree_recursive(subtree, trees, check_introns);
+            }
+          }
+      }
   }
 
     Vec get_output(const Mat & X, vector<Node*> & fun_children, const vector<Node*> & trees) {
