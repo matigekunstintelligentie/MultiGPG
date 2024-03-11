@@ -57,6 +57,7 @@ parser.add_argument('--MO_mode', type=str2bool)
 parser.add_argument('--use_adf', type=str2bool)
 parser.add_argument('--use_aro', type=str2bool)
 parser.add_argument('--verbose', type=str2bool)
+parser.add_argument('--discount_size', type=str2bool)
 
 args = parser.parse_args()
 
@@ -86,7 +87,7 @@ g = GPGRegressor(t=args.t, g=args.g, tour=args.tour, d=args.depth,  use_optim=ar
         verbose=args.verbose, csv_file="{}/{}_{}_{}.csv".format(args.dir, args.seed, args.csv_name, args.dataset), opt_per_gen=args.every_n_steps, use_clip=args.clip,
         fset=args.fset, cmp=args.coeff_p, use_ftol=args.use_ftol, tol=1e-9, use_mse_opt=args.use_mse_opt, log=args.log, ff=args.ff,
          use_max_range=args.use_max_range, equal_p_coeffs=args.equal_p_coeffs,
-        MO_mode=args.MO_mode, use_adf=args.use_adf, use_aro=args.use_aro, n_clusters=args.n_clusters, max_coeffs=args.max_coeffs,
+        MO_mode=args.MO_mode, use_adf=args.use_adf, use_aro=args.use_aro, n_clusters=args.n_clusters, max_coeffs=args.max_coeffs, discount_size=args.discount_size,
         random_state=args.seed)  
 
 #+,-,*,/,¬,log,pow,max,min,abs,exp,sqrt,sin,cos
