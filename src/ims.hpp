@@ -74,12 +74,7 @@ struct IMS {
       // macro generation
 
       // update mini batch
-      // TODO: think about batch!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
-      bool mini_batch_changed = g::fit_func->update_batch(g::batch_size);
-      // TODO: reevaluate archives
-//      if (mini_batch_changed){
-//        reevaluate_elites();
-//      }
+      g::fit_func->update_batch(g::batch_size);
 
       if ((g::max_generations > 0 && macro_generations == g::max_generations) ||
           (g::max_time > 0 && tock(start_time) >= g::max_time)) {
@@ -116,10 +111,11 @@ struct IMS {
           string MO_archive_string = "{";
           bool add_comma = false;
           for (auto ind: g::ea->MO_archive) {
+              float train_mse = g::fit_func->get_fitness_MO(ind, g::fit_func->X_train, g::fit_func->y_train, false)[0];
               float val_mse = g::fit_func->get_fitness_MO(ind, g::fit_func->X_val, g::fit_func->y_val, false)[0];
 
-              if (best_train_mse > ind->fitness[0]) {
-                  best_train_mse = ind->fitness[0];
+              if (best_train_mse > train_mse) {
+                  best_train_mse = train_mse;
                   best_val_mse = val_mse;
                   best_size = ind->get_num_nodes(true);
                   best_size_discount = ind->get_num_nodes(true, true);
@@ -138,7 +134,7 @@ struct IMS {
               else{
                   add_comma = true;
               }
-              MO_archive_string = MO_archive_string + "[" + to_string(ind->fitness[0]) + "," + to_string(val_mse) + "," + to_string(ind->get_num_nodes(true)) + "," + to_string(ind->get_num_nodes(true, true)) + "," + ind->human_repr(true) + "]";
+              MO_archive_string = MO_archive_string + "[" + to_string(train_mse) + "," + to_string(val_mse) + "," + to_string(ind->get_num_nodes(true)) + "," + to_string(ind->get_num_nodes(true, true)) + "," + ind->human_repr(true) + "]";
           }
           MO_archive_string += "}";
 
