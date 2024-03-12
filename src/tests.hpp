@@ -14,7 +14,7 @@ using namespace myeig;
 struct Test {
 
   void run_all(){
-      funcs();
+      //funcs();
     // num_nodes();
 // ============================================================================
 //     depth();

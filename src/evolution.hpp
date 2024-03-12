@@ -387,8 +387,8 @@ struct Evolution {
       vector<Individual*> offspring_population;
 
       int nr_objectives = 2;
-      //int NIS_const = 1 + log10(g::pop_size);
-      int NIS_const = 1;
+      int NIS_const = 1 + log10(g::pop_size);
+      //int NIS_const = 1;
 
       // Make clusters
       // ((Clustered Population, clustered population equal), cluster number)

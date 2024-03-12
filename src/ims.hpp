@@ -74,6 +74,7 @@ struct IMS {
       // macro generation
 
       // update mini batch
+      // TODO: think about batch!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1
       bool mini_batch_changed = g::fit_func->update_batch(g::batch_size);
       // TODO: reevaluate archives
 //      if (mini_batch_changed){

@@ -294,10 +294,36 @@ struct Node {
     //return (op->apply(C) * pow(10.0, NUM_PRECISION)) / (float) pow(10.0,NUM_PRECISION);
   }
 
+    pair<Vec, Vec> get_output_der(const Mat & X, vector<Node*> & fun_children, const vector<Node*> & trees) {
+        if(op->type()==OpType::otPlaceholder){
+            return trees[((OutputTree*) op)->id]->get_output_der(X, fun_children, trees);
+        }
+        else if(op->type()==OpType::otFunction){
+            return trees[((FunctionTree*) op)->id]->get_output_der(X, this->children, trees);
+        }
+        else if(op->type()==OpType::otAny){
+            return fun_children[((AnyOp*) op)->id]->get_output_der(X, trees);
+        }
+        int a = op->arity();
+        if (a == 0){
+            return op->apply_der(X);
+        }
+        Mat C(X.rows(), a);
+        Mat D(X.rows(), a);
+        for(int i = 0; i < a; i++){
+            pair<Vec, Vec> O = children[i]->get_output_der(X, fun_children, trees);
+            C.col(i) = O.first;
+            D.col(i) = O.second;
+        }
+        return op->apply_der(C, D);
+    }
 
   pair<Vec, Vec> get_output_der(const Mat & X, const vector<Node*> & trees) {
     if(op->type()==OpType::otPlaceholder){
         return trees[((OutputTree*) op)->id]->get_output_der(X, trees);
+    }
+    else if(op->type()==OpType::otFunction){
+        return trees[((FunctionTree*) op)->id]->get_output_der(X, this->children, trees);
     }
     int a = op->arity();
     if (a == 0){
