@@ -33,12 +33,12 @@ def calc_hv(dataset_filename_fronts, key1, key2):
         y = el[1]
 
         x_array = 1. - np.array(x)
-        y_array = np.array(y)
+        y_array = np.array(y)/100.
 
         # Stack the arrays horizontally
         result = np.column_stack((x_array, y_array))
 
-        ref_point = np.array([1., 100.])
+        ref_point = np.array([1., 1.])
 
         ind = HV(ref_point=ref_point)
 
@@ -55,7 +55,7 @@ for dataset in ["dowchemical","tower", "air", "concrete", "bike"]:
 
     d = defaultdict(lambda: defaultdict(list))
     count = defaultdict(int)
-    for filename in glob.glob("./results/multi_trees2/*.csv"):
+    for filename in glob.glob("./results/multi_trees/*.csv"):
         nr = filename.split("/")[-1].split("_")[0]
         d_key = "_".join(filename.split("/")[-1].split("_")[1:]).replace(dataset,"").replace(".csv","")[:-1]
 
@@ -83,7 +83,7 @@ for dataset in ["dowchemical","tower", "air", "concrete", "bike"]:
             d[d_key][2].append(gens)
             count[d_key] += 1
 
-    for el in [['tree_42', 'tree_8'], ['MO', 'SO'], ['MO', 'discount'], ['MO', 'MO_nocluster'], ['MO_noaro','MO_noadf','MO']]:
+    for el in [['tree_42', 'tree_7'], ['MO', 'SO'], ['MO', 'discount'], ['MO', 'MO_nocluster'], ['MO_noaro','MO_noadf','MO']]:
         fig = plt.figure()
         plt.title("Dataset: {}".format(dataset.capitalize()))
         for key in d.keys():
@@ -115,7 +115,7 @@ for dataset in ["dowchemical","tower", "air", "concrete", "bike"]:
         # plt.yscale('log', base=5)
         plt.legend()
         fig.set_size_inches(32, 18)
-        plt.savefig("./results/plots2/{}.pdf".format(dataset + "".join(el)), dpi=300, bbox_inches='tight')
+        plt.savefig("./results/plots/{}.pdf".format(dataset + "".join(el)), dpi=300, bbox_inches='tight')
 
 
 for key1 in dataset_filename_fronts.keys():

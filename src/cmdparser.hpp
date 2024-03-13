@@ -417,6 +417,7 @@ namespace cli {
 						current = associated;
 						associated->handled = true;
 					} else if (current == nullptr) {
+                        error << _arguments[i] + " ";
 						error << no_default();
 						return false;
 					} else {

@@ -37,27 +37,6 @@ struct IMS {
     delete evolution;
   }
 
-
-  bool approximately_converged(Vec & fitnesses, float upper_quantile=0.9) {
-    sort(fitnesses.data(), fitnesses.data() + fitnesses.size());
-    if ((fitnesses[fitnesses.size() * upper_quantile] - fitnesses[0]) < 1e-6) {
-      return true;
-    }
-    return false;
-  }
-
-  float highest_equal_fitness(Vec & fitnesses) {
-    sort(fitnesses.data(), fitnesses.data() + fitnesses.size());
-    int closest_index = 0;
-    for(int i=fitnesses.size()-1;i>1;i--){
-      if((fitnesses[i] - fitnesses[0])<1e-6){
-        closest_index = i;
-        break;
-      }
-    }
-    return static_cast<float>(closest_index)/static_cast<float>(fitnesses.size());
-  }
-
   void run() {
     evolution = new Evolution(g::pop_size);
 
@@ -165,7 +144,7 @@ struct IMS {
       // 3 best size
       str += to_string(best_sizes[best_sizes.size()-1]) + "\t";
       // 4 best size
-      str += to_string(best_sizes[best_sizes.size()-1]) + "\t";
+      str += to_string(best_sizes_discount[best_sizes_discount.size()-1]) + "\t";
       // 5 best string
       str += best_string + "\t";
       // 6 train variance
@@ -199,7 +178,15 @@ struct IMS {
       str += to_string(best_sizes[best_sizes.size()-1])+"\t";
       csv_file << str;
 
-        // 11 best substrings over time
+        // 11 best size over time
+        str = "";
+        for(int i=0;i<best_sizes_discount.size()-1;i++){
+            str += to_string(best_sizes_discount[i]) + ",";
+        }
+        str += to_string(best_sizes_discount[best_sizes_discount.size()-1])+"\t";
+        csv_file << str;
+
+        // 12 best substrings over time
         str = "";
         for(int i=0;i<best_substrings.size()-1;i++){
             str += best_substrings[i] + ";";
@@ -207,7 +194,7 @@ struct IMS {
         str += best_substrings[best_substrings.size()-1]+"\t";
         csv_file << str;
 
-      // 12 MO over time
+      // 13 MO over time
       str = "";
       for(int i=0;i<MO_archive_strings.size()-1;i++){
           str += MO_archive_strings[i] + ";";
@@ -215,7 +202,7 @@ struct IMS {
       str += MO_archive_strings[MO_archive_strings.size()-1]+"\t";
       csv_file << str;
 
-      // 13 times
+      // 14 times
       str = "";
       for(int i=0;i<times.size()-1;i++){
           str += to_string(times[i]) + ",";

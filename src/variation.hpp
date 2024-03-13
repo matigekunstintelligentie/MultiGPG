@@ -128,20 +128,6 @@ Individual * generate_individuals(int max_depth, string init_strategy, int nr_mu
     for(int mt=0;mt<nr_multi_trees;mt++){
         individual->trees.push_back(generate_tree(max_depth, mt, individual->trees, init_strategy));
     }
-
-//    print(individual->human_repr(true));
-//
-//
-//    Individual * joe = new Individual();
-//    joe->trees.reserve(2);
-//    Node * tree1 = new Node(new Const(420.));
-//    joe->trees.push_back(tree1);
-//    Node * tree2 = new Node(new OutputTree(0));
-//    joe->trees.push_back(tree2);
-//    print(joe->human_repr(true));
-//    print(joe->human_repr(false));
-////
-////
     return individual;
 }
 
@@ -177,31 +163,6 @@ Node * append_linear_scaling(Node * tree, vector<Node*> & trees) {
 }
 
 Individual * coeff_opt_lm(Individual * parent, bool return_copy=true){
-//    Node * mult_o = new Node(new Mul());
-//    Node * const_o = new Node(new Const(5.));
-//    Node * feat_o = new Node(new Feat(0));
-//    mult_o->append(const_o);
-//    mult_o->append(feat_o);
-//
-//    Node * mult_main = new Node(new Mul());
-//    Node * output_main = new Node(new OutputTree(0));
-//    mult_main->append(output_main);
-//    mult_main->append(output_main);
-//
-//
-//
-//    Individual * joe = new Individual();
-//    joe->trees.push_back(mult_o);
-//    joe->trees.push_back(mult_main);
-//
-//
-//
-//    Individual * tree = joe;
-//    print("BF", tree->human_repr(true));
-//    parent = joe;
-//
-
-
     Individual * tree = parent;
 
 
@@ -209,9 +170,7 @@ Individual * coeff_opt_lm(Individual * parent, bool return_copy=true){
         tree = parent->clone();
     }
 
-    vector<Node*> nodes = tree->subtree(true);
-
-
+    vector<Node*> nodes = tree->subtree(false);
 
     // Get list of pointers to coeffs and their values
     vector<float> coeffsf;
@@ -459,8 +418,9 @@ Individual * efficient_gom(Individual * og_parent, vector<vector<Node*>> & mt_po
             // check if swap is not necessary
             if (offspring_nodes[idx]->op->sym() == donor_nodes[idx]->op->sym()) {
                 // might need to swap if the node is a constant that might be optimized
-                if (g::cmut_prob <= 0 || g::cmut_temp <= 0 || donor_nodes[idx]->op->type() != OpType::otConst)
+                if (g::cmut_prob <= 0 || g::cmut_temp <= 0 || donor_nodes[idx]->op->type() != OpType::otConst) {
                     continue;
+                }
             }
 
             // then execute the swap
@@ -501,12 +461,13 @@ Individual * efficient_gom(Individual * og_parent, vector<vector<Node*>> & mt_po
             parent->fitness = backup_fitness;
         } else {
             // it improved
+            if(new_fitness[0] > backup_fitness[0]) {
+                ever_improved = true;
+            }
 
             backup_fitness = new_fitness;
             g::ea->updateMOArchive(parent);
             g::ea->updateSOArchive(parent);
-
-            ever_improved = true;
         }
 
         // discard backup
@@ -537,8 +498,6 @@ Individual * efficient_gom(Individual * og_parent, vector<vector<Node*>> & mt_po
                 new_fitness = g::fit_func->get_fitness_MO(parent);
             }
 
-
-
             // check is not worse
             if (new_fitness[0] > backup_fitness[0]) {
                 // undo
@@ -550,13 +509,17 @@ Individual * efficient_gom(Individual * og_parent, vector<vector<Node*>> & mt_po
                     off_n->op = back_op->clone();
                     offspring->fitness = backup_fitness;
                 }
+                parent->trees[mt] = offspring;
+                parent->fitness = backup_fitness;
             } else{
-                // it improved
+                if(new_fitness[0] > backup_fitness[0]) {
+                    ever_improved = true;
+                }
+
+                // it changed and stayed the same or improved
                 backup_fitness = new_fitness;
                 g::ea->updateMOArchive(parent);
                 g::ea->updateSOArchive(parent);
-
-                ever_improved = true;
             }
 
             // discard backup
@@ -567,13 +530,12 @@ Individual * efficient_gom(Individual * og_parent, vector<vector<Node*>> & mt_po
     }
 
     if((macro_generations%g::opt_per_gen)==0 && g::use_optimiser){
-        print("opt");
         vector<float> fitness_before = parent->fitness;
 
         Individual * offspring;
 
         offspring = coeff_opt_lm(parent, true);
-        
+
 
         vector<float> fitness_after = g::fit_func->get_fitness_MO(offspring);
 
@@ -583,10 +545,6 @@ Individual * efficient_gom(Individual * og_parent, vector<vector<Node*>> & mt_po
             parent->fitness = fitness_after;
             g::ea->updateMOArchive(parent);
             g::ea->updateSOArchive(parent);
-
-            if(parent->get_num_nodes(true)!=parent->fitness[1]){
-                print("OPT ", parent->get_num_nodes(true), " ",parent->fitness[1], parent->human_repr());
-            }
 
             ever_improved = true;
         }
@@ -598,7 +556,6 @@ Individual * efficient_gom(Individual * og_parent, vector<vector<Node*>> & mt_po
 
     // variant of forced improvement that is potentially less aggressive, & less expensive to carry out
     if(g::tournament_size > 1 && !ever_improved){
-        print("tournament invoked");
         // make a tournament between tournament size - 1 candidates + offspring
         vector<Individual*> tournament_candidates;
         tournament_candidates.reserve(g::tournament_size - 1);
@@ -611,8 +568,6 @@ Individual * efficient_gom(Individual * og_parent, vector<vector<Node*>> & mt_po
         parent->clear();
         parent = winner;
     }
-
-
 
     return parent;
 }
@@ -669,6 +624,8 @@ check_changes_MO(Individual *offspring, bool FI, vector<float> back_obj){
         g::ea->updateMOArchive(offspring);
         return std::make_pair(true,true);
     }
+
+    // dominates, same
     return std::make_pair(false,false);
 }
 
@@ -848,6 +805,7 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & po
                 // keep changes
                 backup_fitness = parent->fitness;
                 changed = true;
+                ever_improved = true;
                 g::ea->updateMOArchive(parent);
                 g::ea->updateSOArchive(parent);
             }
