@@ -81,6 +81,7 @@ struct IMS {
       macro_generations += 1;
 
       if(g::log){
+          float biggest_size = 0;
           float best_train_mse = 9999999.;
           float best_val_mse = 9999999.;
           float best_size = 9999999.;
@@ -88,15 +89,28 @@ struct IMS {
           string best_stri = "";
 
           string MO_archive_string = "{";
+
+
+          for (auto ind: evolution->population) {
+              int size = ind->get_num_nodes(true, false);
+              if (size > biggest_size) {
+                  biggest_size = size;
+              }
+          }
+
           bool add_comma = false;
           for (auto ind: g::ea->MO_archive) {
               float train_mse = g::fit_func->get_fitness_MO(ind, g::fit_func->X_train, g::fit_func->y_train, false)[0];
               float val_mse = g::fit_func->get_fitness_MO(ind, g::fit_func->X_val, g::fit_func->y_val, false)[0];
+              int size =  ind->get_num_nodes(true, false);
+//              if(size>biggest_size){
+//                  biggest_size=size;
+//              }
 
               if (best_train_mse > train_mse) {
                   best_train_mse = train_mse;
                   best_val_mse = val_mse;
-                  best_size = ind->get_num_nodes(true);
+                  best_size = size;
                   best_size_discount = ind->get_num_nodes(true, true);
                   best_stri = ind->human_repr(true);
                   best_string = best_stri;
@@ -117,7 +131,7 @@ struct IMS {
           }
           MO_archive_string += "}";
 
-          print(" ~ generation: ", macro_generations, " ", to_string(tock(start_time)), ", curr. best fit: ", best_train_mse, " ", best_size, " ", best_size_discount, " ", best_stri);
+          print(" ~ generation: ", macro_generations, " ", to_string(tock(start_time)), ", curr. best fit: ", best_train_mse, " ", best_size, " ", best_size_discount, " ", best_stri + " ", biggest_size);
 
           best_train_mses.push_back(best_train_mse);
           best_val_mses.push_back(best_val_mse);

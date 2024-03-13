@@ -97,6 +97,8 @@ fset = '+,-,*,/,sin,cos,log,sqrt'
 extra_fset = '+,-,*,/,sin,cos,log,sqrt,max,min,exp,**2,1/'
 arithmetic_fset = '+,-,*,/'
 
+sin_fset = "+,sin"
+
 result_dir = "./results/multi_trees"
 datasets = ["dowchemical","tower", "air", "concrete", "bike"]
 
@@ -110,8 +112,10 @@ for i in range(1):
             os.makedirs(directory)
 
         for exp in [
-            gpgomea_experiment({"csv_name":"tree_7", "depth": 7, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 1,  "t": -1, "g":25, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":True}),
-            gpgomea_experiment({"csv_name":"tree_42", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 2,  "t": -1, "g":25, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":True})
+            # warning SO instead of MO
+            gpgomea_experiment({"csv_name":"tree_42", "depth": 4, "dir": directory, "batch_size": 256, "ff": "mse", "seed": i, "coeff_p": 0., "MO_mode": False, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 2,  "t": -1, "g":25, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": sin_fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":True}),
+            gpgomea_experiment({"csv_name":"tree_7", "depth": 7, "dir": directory, "batch_size": 256, "ff": "mse", "seed": i, "coeff_p": 0., "MO_mode": False, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 1,  "t": -1, "g":25, "use_adf":True, "use_aro": True, "dataset": dataset, "fset": sin_fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":True})
+
         ]:
             experiments.append(exp)
 
