@@ -29,6 +29,108 @@ struct Test {
 // ============================================================================
   }
 
+
+//    Individual * joe = new Individual();
+//    Node * sin = new Node(new Sin());
+//    Node * plus = new Node(new Add());
+//    Node * any0 = new Node(new AnyOp(0));
+//    Node * any1 = new Node(new AnyOp(1));
+//
+//
+//
+//    Node * plus0 = new Node(new Add());
+//
+//    Node * plus1 = new Node(new Add());
+//    Node * plus2 = new Node(new Add());
+//
+//
+//
+//    Node * plus3 = new Node(new Add());
+//    Node * plus4 = new Node(new Add());
+//
+//
+//
+//    Node * plus5 = new Node(new Add());
+//    Node * plus6 = new Node(new Add());
+//
+//
+//
+//    Node * A7 = new Node(new FunctionTree(0));
+//    Node * A8 = new Node(new FunctionTree(0));
+//
+//
+//
+//    Node * A9 = new Node(new FunctionTree(0));
+//    Node * A10 = new Node(new FunctionTree(0));
+//
+//
+//
+//    Node * A11 = new Node(new FunctionTree(0));
+//    Node * A12 = new Node(new FunctionTree(0));
+//    Node * A13 = new Node(new FunctionTree(0));
+//    Node * A14 = new Node(new FunctionTree(0));
+//
+//
+//
+//    Node * f0 = new Node(new Feat(0));
+//    Node * f1 = new Node(new Feat(1));
+//    Node * f2 = new Node(new Feat(0));
+//    Node * f3 = new Node(new Feat(2));
+//    Node * f4 = new Node(new Feat(0));
+//    Node * f5 = new Node(new Feat(3));
+//    Node * f6 = new Node(new Feat(0));
+//    Node * f7 = new Node(new Feat(4));
+//    Node * f8 = new Node(new Feat(0));
+//    Node * f9 = new Node(new Feat(5));
+//    Node * f10 = new Node(new Feat(0));
+//    Node * f11 = new Node(new Feat(6));
+//    Node * f12 = new Node(new Feat(0));
+//    Node * f13 = new Node(new Feat(7));
+//    Node * f14 = new Node(new Feat(0));
+//    Node * f15 = new Node(new Feat(8));
+//
+//    A7->append(f0);
+//    A7->append(f1);
+//    A8->append(f2);
+//    A8->append(f3);
+//    A9->append(f4);
+//    A9->append(f5);
+//    A10->append(f6);
+//    A10->append(f7);
+//    A11->append(f8);
+//    A11->append(f9);
+//    A12->append(f10);
+//    A12->append(f11);
+//    A13->append(f12);
+//    A13->append(f13);
+//    A14->append(f14);
+//    A14->append(f15);
+//
+//    plus6->append(A13);
+//    plus6->append(A14);
+//    plus5->append(A11);
+//    plus5->append(A12);
+//    plus4->append(A9);
+//    plus4->append(A10);
+//    plus3->append(A7);
+//    plus3->append(A8);
+//    plus2->append(plus5);
+//    plus2->append(plus6);
+//    plus1->append(plus3);
+//    plus1->append(plus4);
+//    plus0->append(plus1);
+//    plus0->append(plus2);
+//
+//    plus->append(any0);
+//    plus->append(any1);
+//    sin->append(plus);
+//
+//    joe->trees.push_back(sin);
+//    joe->trees.push_back(plus0);
+//
+//    print(joe->human_repr(true));
+//    print(to_string(g::fit_func->get_fitness_MO(joe)[0]));
+
     void funcs(){
         Node * first_tree = new Node(new Sin());
         Node * any = new Node(new AnyOp(0));

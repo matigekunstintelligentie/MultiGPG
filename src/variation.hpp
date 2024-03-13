@@ -893,7 +893,6 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & po
         }
     }
 
-
       if((macro_generations%g::opt_per_gen)==0 && g::use_optimiser){
           vector<float> fitness_before = parent->fitness;
           Individual * offspring;

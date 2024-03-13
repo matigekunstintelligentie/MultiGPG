@@ -445,8 +445,6 @@ struct Evolution {
           g::ea->updateMOArchive(offspring);
       }
 
-
-
       assert(offspring_population.size()==population.size());
 
       for(int i=0; i<population.size(); i++){

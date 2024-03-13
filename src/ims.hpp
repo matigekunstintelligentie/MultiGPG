@@ -91,21 +91,22 @@ struct IMS {
           string MO_archive_string = "{";
 
 
+          int sum_of_sizes = 0;
           for (auto ind: evolution->population) {
               int size = ind->get_num_nodes(true, false);
+              sum_of_sizes = sum_of_sizes + size;
               if (size > biggest_size) {
                   biggest_size = size;
               }
           }
+
+          print("Sum of sizes: ", to_string(sum_of_sizes), " SIZE MO archive: ", to_string(g::ea->MO_archive.size()));
 
           bool add_comma = false;
           for (auto ind: g::ea->MO_archive) {
               float train_mse = g::fit_func->get_fitness_MO(ind, g::fit_func->X_train, g::fit_func->y_train, false)[0];
               float val_mse = g::fit_func->get_fitness_MO(ind, g::fit_func->X_val, g::fit_func->y_val, false)[0];
               int size =  ind->get_num_nodes(true, false);
-//              if(size>biggest_size){
-//                  biggest_size=size;
-//              }
 
               if (best_train_mse > train_mse) {
                   best_train_mse = train_mse;
@@ -142,6 +143,10 @@ struct IMS {
       }
     }
     // finished
+
+    delete g::ea;
+
+
 
     if(g::log){
       ofstream csv_file;

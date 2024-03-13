@@ -11,6 +11,15 @@ struct ElitistArchive{
 
     Mat X_train;
 
+    ~ElitistArchive(){
+        for(auto ind: MO_archive){
+            ind->clear();
+        }
+        for(auto ind: SO_archive){
+            ind->clear();
+        }
+    }
+
     void set_X(Mat & X){
         X_train = X;
     }

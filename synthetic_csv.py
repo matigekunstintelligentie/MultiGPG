@@ -30,16 +30,17 @@ def generate_dataset(num_rows, num_cols, primes):
     dataset[:,0] = np.ones(num_rows)*(2./np.pi)
     for i in range(num_rows):
         stri = ""
-        for j in range(num_cols):
+        for j in range(1,num_cols+1):
             prime_idx = j % len(primes)  # Wrap around primes list if necessary
             prime = primes[prime_idx]
             dataset[i, j] = prime * np.random.rand()  # Sample from distribution
-            stri += stri + "np.sin(" +  str(dataset[i, j]) + "+" + str(2/np.pi) + ")"
-            if(j!=num_cols-1):
+
+            stri = stri + "np.sin(" +  str(dataset[i, j]) + "+" + str(2./np.pi) + ")"
+            if(j!=num_cols):
                 stri += "+"
-            
         # Target column calculation (example: sum of x variables)
         dataset[i, -1] = eval(stri)
+
     return dataset
 
 # Define parameters
@@ -60,6 +61,18 @@ with open('./dataset/synthetic_dataset.csv', 'w', newline='') as csvfile:
     header = ['x_' + str(i) for i in range(num_cols+1)] + ['target']
     writer.writerow(header)
     
+    # Write data
+    for row in dataset:
+        writer.writerow(row)
+
+# Write dataset to CSV file
+with open('./dataset/synthetic_dataset_train.csv', 'w', newline='') as csvfile:
+    writer = csv.writer(csvfile)
+
+    # Write header
+    #header = ['x_' + str(i) for i in range(num_cols+1)] + ['target']
+    #writer.writerow(header)
+
     # Write data
     for row in dataset:
         writer.writerow(row)

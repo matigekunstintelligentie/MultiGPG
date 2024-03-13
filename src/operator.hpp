@@ -639,7 +639,7 @@ struct Log : Fun {
 struct Sqrt : Fun {
 
   Op * clone() override {
-    return new Sqrt(*this);
+    return new Sqrt();
   }
 
   int arity() override {
