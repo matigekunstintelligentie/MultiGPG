@@ -81,7 +81,6 @@ struct IMS {
       macro_generations += 1;
 
       if(g::log){
-          float biggest_size = 0;
           float best_train_mse = 9999999.;
           float best_val_mse = 9999999.;
           float best_size = 9999999.;
@@ -90,17 +89,6 @@ struct IMS {
 
           string MO_archive_string = "{";
 
-
-          int sum_of_sizes = 0;
-          for (auto ind: evolution->population) {
-              int size = ind->get_num_nodes(true, false);
-              sum_of_sizes = sum_of_sizes + size;
-              if (size > biggest_size) {
-                  biggest_size = size;
-              }
-          }
-
-          print("Sum of sizes: ", to_string(sum_of_sizes), " SIZE MO archive: ", to_string(g::ea->MO_archive.size()));
 
           bool add_comma = false;
           for (auto ind: g::ea->MO_archive) {
@@ -132,7 +120,7 @@ struct IMS {
           }
           MO_archive_string += "}";
 
-          print(" ~ generation: ", macro_generations, " ", to_string(tock(start_time)), ", curr. best fit: ", best_train_mse, " ", best_size, " ", best_size_discount, " ", best_stri + " ", biggest_size);
+          print(" ~ generation: ", macro_generations, " ", to_string(tock(start_time)), ", curr. best fit: ", best_train_mse, " ", best_size, " ", best_size_discount, " ", best_stri);
 
           best_train_mses.push_back(best_train_mse);
           best_val_mses.push_back(best_val_mse);

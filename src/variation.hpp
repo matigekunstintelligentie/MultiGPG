@@ -629,7 +629,7 @@ check_changes_MO(Individual *offspring, bool FI, vector<float> back_obj){
     return std::make_pair(false,false);
 }
 
-Individual * efficient_gom_MO_FI(Individual * og_parent,  vector<vector<Node*>> & population, vector<pair<vector<int>, int>> & fos, int macro_generations, int objective, bool extrema, int NIS_const) {
+Individual * efficient_gom_MO_FI(Individual * og_parent, vector<pair<vector<int>, int>> & fos, int objective, bool extrema) {
     Individual * parent = og_parent->clone();
 
     auto random_fos_order = Rng::rand_perm(fos.size());
@@ -677,7 +677,7 @@ Individual * efficient_gom_MO_FI(Individual * og_parent,  vector<vector<Node*>> 
 
         // assume nothing changed
         if (change_is_meaningful) {
-            parent->trees[mt] = offspring;
+            //parent->trees[mt] = offspring;
 
             g::fit_func->get_fitness_MO(parent);
 
@@ -722,6 +722,8 @@ Individual * efficient_gom_MO_FI(Individual * og_parent,  vector<vector<Node*>> 
         for(Op * op : backup_ops) {
             delete op;
         }
+
+        donor->clear();
 
         if (changed) {
             break;
@@ -790,7 +792,7 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & po
 
         // assume nothing changed
         if (change_is_meaningful) {
-            parent->trees[mt] = offspring;
+            //parent->trees[mt] = offspring;
 
             g::fit_func->get_fitness_MO(parent);
 
@@ -919,7 +921,7 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & po
 
     if ((!changed || parent->NIS > NIS_const) && !g::ea->MO_archive.empty()) {
         parent->NIS = 0;
-        return efficient_gom_MO_FI(parent, population, fos, macro_generations, objective, extrema, NIS_const);
+        return efficient_gom_MO_FI(parent, fos, objective, extrema);
     }
 
     return parent;
