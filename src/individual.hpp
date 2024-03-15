@@ -51,11 +51,22 @@ struct Individual {
       }
       else{
           vector<Node*> nodes = trees[trees.size()-1]->subtree(this->trees, !excl_introns);
-          set<Node*> node_set;
+
+          vector<Node*> node_vec;
+          int count = 0;
           for(auto node: nodes){
+              if(node->op->type()==OpType::otConst || node->op->type()==OpType::otFeat){
+                  count++;
+              }
+              else{
+                  node_vec.push_back(node);
+              }
+          }
+          set<Node*> node_set;
+          for(auto node: node_vec) {
               node_set.insert(node);
           }
-          return static_cast<int>(node_set.size());
+          return static_cast<int>(node_set.size()) + count;
       }
   }
 
