@@ -55,6 +55,8 @@ py::list evolve_val(string options, myeig::Mat &X, myeig::Vec &y, myeig::Mat &X_
   // 2. RUN
   ims->run();
 
+
+
   // 3. OUTPUT
   if (g::ea->MO_archive.empty()) {
     throw runtime_error("Not models found, something went wrong");
@@ -65,8 +67,12 @@ py::list evolve_val(string options, myeig::Mat &X, myeig::Vec &y, myeig::Mat &X_
     models.append(model_repr);
   }
 
+  print("post models");
+
   // 4. CLEANUP
   delete ims;
+
+    print("post del ims");
 
   return models;
 }

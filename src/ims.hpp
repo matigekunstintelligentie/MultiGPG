@@ -34,6 +34,7 @@ struct IMS {
   int macro_generations = 0;
 
   ~IMS(){
+    delete g::ea;
     delete evolution;
   }
 
@@ -129,10 +130,6 @@ struct IMS {
       }
     }
     // finished
-
-    delete g::ea;
-
-
 
     if(g::log){
       ofstream csv_file;
