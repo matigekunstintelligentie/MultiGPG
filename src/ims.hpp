@@ -70,12 +70,10 @@ struct IMS {
       }
       
       // perform generation
-      if(g::MO_mode){
-        evolution->gomea_generation_MO(macro_generations);
-      }
-      else{
-        evolution->gomea_generation_SO(macro_generations);
-      };
+
+      evolution->gomea_generation_MO(macro_generations);
+
+
 
       // update macro gen
       macro_generations += 1;

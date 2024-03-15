@@ -106,9 +106,7 @@ struct Evolution {
         population.push_back(individual);
     }
 
-    if(g::MO_mode){
-        g::ea->initMOArchive(population);
-    }
+    g::ea->initMOArchive(population);
     g::ea->initSOArchive(population);
 
   }
@@ -153,7 +151,13 @@ struct Evolution {
     pair<pair<vector<vector<Individual *>>, vector<vector<Individual *>>>, vector<int>> single_cluster(vector<Individual *> &population){
         vector<vector<Individual *>> clustered_population = vector<vector<Individual *>>(1,vector<Individual *>());
         clustered_population[0] = population;
-        vector<int> clusternr = vector<int>(1, 3);
+        vector<int> clusternr;
+        if(g::MO_mode) {
+            clusternr = vector<int>(1, 3);
+        }
+        else{
+            clusternr = vector<int>(1, 0);
+        }
 
         return make_pair(make_pair(clustered_population, clustered_population), clusternr);
   }
@@ -437,7 +441,6 @@ struct Evolution {
               offspring = efficient_gom_MO(clustered_population[i][j], clustered_FOSes_pop[i], FOSs[i], macro_generation, clusternr[i], clusternr[i] < nr_objectives,  NIS_const);
           }
           else{
-              print("SIZE 1");
               offspring = efficient_gom_MO(clustered_population[i][j], clustered_FOSes_pop[i], FOSs[i], macro_generation,clusternr[i], clusternr[i] < nr_objectives, NIS_const);
           }
           offspring->clusterid = i;

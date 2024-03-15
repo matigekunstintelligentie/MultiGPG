@@ -86,9 +86,9 @@ def run(experiment):
     print(experiment.construct_string())
     subprocess.run(experiment.construct_string(), shell=True)
 
-verbose = False
-n_processes = 30
-duration = 3600
+verbose = True
+n_processes = 1
+duration = 300
 popsize = 2048
 
 experiments = []
@@ -112,7 +112,7 @@ for i in range(30):
            os.makedirs(directory)
 
         for exp in [
-            gpgomea_experiment({"csv_name":"SO", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": False, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":False}),
+            gpgomea_experiment({"csv_name":"SO", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": False, "popsize":popsize, "n_clusters": 1, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":False}),
             gpgomea_experiment({"csv_name":"MO_equalclustersize", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize*7, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":False}),
 
             gpgomea_experiment({"csv_name":"MO", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize, "n_clusters": 7, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":-1, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":False}),

@@ -66,10 +66,10 @@ for dataset in ["dowchemical","tower", "air", "concrete", "bike"]:
             scatter_y = []
 
             df = pd.read_csv(filename, sep="\t", header=None)
-            gens = len(df.iloc[0][13].split(","))
+            gens = len(df.iloc[0][14].split(","))
 
 
-            for el in df.iloc[0][12].split(";")[-1].split("],"):
+            for el in df.iloc[0][13].split(";")[-1].split("],"):
                 rep = el.replace("[","").replace("{","").split(",")
                 scatter_x.append(1. - float(rep[0])/float(df.iloc[0][6]))
                 scatter_y.append(float(rep[2]))
@@ -83,7 +83,7 @@ for dataset in ["dowchemical","tower", "air", "concrete", "bike"]:
             d[d_key][2].append(gens)
             count[d_key] += 1
 
-    for el in [['tree_42', 'tree_7'], ['MO', 'SO'], ['MO', 'discount'], ['MO', 'MO_nocluster'], ['MO_noaro','MO_noadf','MO']]:
+    for el in [['tree_42', 'tree_7'], ['MO_equalclustersize', 'SO', 'MO'], ['MO', 'discount'], ['MO', 'MO_nocluster'], ['MO_noadf','MO']]:
         fig = plt.figure()
         plt.title("Dataset: {}".format(dataset.capitalize()))
         for key in d.keys():
