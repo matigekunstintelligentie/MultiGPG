@@ -67,6 +67,8 @@ namespace g {
   // GOMEA choices
   int nr_multi_trees;
 
+  bool balanced = false;
+
   // coefficients and range
   float range = 10.;
   bool use_max_range=false;
@@ -320,6 +322,7 @@ namespace g {
     parser.set_optional<bool>("use_adf", "use_adf", false, "Whether Automatically Defined Functions are used");
     parser.set_optional<bool>("use_aro", "use_aro", false, "Whether Automatically Defined Functions are used");
     parser.set_optional<bool>("discount_size", "discount_size", false, "Whether the model size is discounted for re-use");
+    parser.set_optional<bool>("balanced", "balanced", false, "Whether balanced k-leader means is used");
     parser.set_optional<int>("n_clusters", "n_clusters", 7, "Number of clusters");
 
     // set options
@@ -442,6 +445,7 @@ namespace g {
     use_adf = parser.get<bool>("use_adf");
     use_aro = parser.get<bool>("use_aro");
     discount_size = parser.get<bool>("discount_size");
+    balanced = parser.get<bool>("balanced");
 
     n_clusters = parser.get<int>("n_clusters");
     use_max_range = parser.get<bool>("use_max_range");
