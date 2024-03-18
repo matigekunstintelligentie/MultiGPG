@@ -51,7 +51,9 @@ plt.style.use('seaborn')
 
 dataset_filename_fronts = defaultdict(lambda: defaultdict(list))
 
-for dataset in ["dowchemical","tower", "air", "concrete", "bike"]:
+max_gen = 90
+
+for dataset in ["dowchemical","tower", "air", "concrete", "bike", "synthetic_dataset"]:
 
     d = defaultdict(lambda: defaultdict(list))
     count = defaultdict(int)
@@ -66,12 +68,15 @@ for dataset in ["dowchemical","tower", "air", "concrete", "bike"]:
             scatter_y = []
 
             df = pd.read_csv(filename, sep="\t", header=None)
-            gens = len(df.iloc[0][14].split(","))
+            gens = len(df.iloc[-1][14].split(","))
 
+            mg = -1
+            if max_gen is not None and len(df.iloc[-1][13].split(";")) >= max_gen:
+                mg = max_gen - 1
 
-            for el in df.iloc[0][13].split(";")[-1].split("],"):
+            for el in df.iloc[-1][13].split(";")[mg].split("],"):
                 rep = el.replace("[","").replace("{","").split(",")
-                scatter_x.append(1. - float(rep[0])/float(df.iloc[0][6]))
+                scatter_x.append(1. - float(rep[0])/float(df.iloc[-1][6]))
                 scatter_y.append(float(rep[2]))
 
 
@@ -85,7 +90,10 @@ for dataset in ["dowchemical","tower", "air", "concrete", "bike"]:
 
     for el in [['tree_42', 'tree_7'], ['MO_equalclustersize', 'SO', 'MO'], ['MO', 'discount'], ['MO', 'MO_nocluster'], ['MO_noadf','MO']]:
         fig = plt.figure()
-        plt.title("Dataset: {}".format(dataset.capitalize()))
+        if max_gen is not None:
+            plt.title("Dataset: {} - max gen: {}".format(dataset.capitalize(), max_gen))
+        else:
+            plt.title("Dataset: {}".format(dataset.capitalize()))
         for key in d.keys():
             if key in el:
                 x = d[key][0]
@@ -115,37 +123,100 @@ for dataset in ["dowchemical","tower", "air", "concrete", "bike"]:
         # plt.yscale('log', base=5)
         plt.legend()
         fig.set_size_inches(32, 18)
-        plt.savefig("./results/plots/{}.pdf".format(dataset + "".join(el)), dpi=300, bbox_inches='tight')
+
+        if max_gen is None:
+            plt.savefig("./results/plots/{}.pdf".format(dataset + "".join(el)), dpi=300, bbox_inches='tight')
+        else:
+            plt.savefig("./results/plots/{}_{}gen.pdf".format(dataset + "".join(el), max_gen), dpi=300, bbox_inches='tight')
 
 
-for key1 in dataset_filename_fronts.keys():
-    for key2 in dataset_filename_fronts[key1].keys():
+#
+# for key1 in dataset_filename_fronts.keys():
+#     for key2 in dataset_filename_fronts[key1].keys():
+#
+#         hvs = 0
+#         count = 0
+#         for el in dataset_filename_fronts[key1][key2]:
+#             x = el[0]
+#             y = el[1]
+#
+#             x_array = 1. - np.array(x)
+#             y_array = np.array(y)
+#
+#             # Stack the arrays horizontally
+#             result = np.column_stack((x_array, y_array))
+#
+#             ref_point = np.array([2., 1000.])
+#
+#             ind = HV(ref_point=ref_point)
+#
+#             hvs += ind(result)
+#             count += 1
+#         print(key1, key2, hvs/count)
+#
+#     # log average HV
+#     # ref point should be max*10
+#     # ref_point = np.array([4., 4.])
+#     #
+#     # ind = HV(ref_point=ref_point)
+#     # print("HV", ind(np.array([[1., 3.],[2,1]])))
+#     # quit()
+#
+# # -----------------------------------------------------------------------------------
 
-        hvs = 0
-        count = 0
-        for el in dataset_filename_fronts[key1][key2]:
-            x = el[0]
-            y = el[1]
+# for dataset in ["synthetic_dataset"]:
+#
+#     for filename in glob.glob("./results/multi_trees/*.csv"):
+#         nr = filename.split("/")[-1].split("_")[0]
+#         d_key = "_".join(filename.split("/")[-1].split("_")[1:]).replace(dataset,"").replace(".csv","")[:-1]
+#
+#         if(dataset in filename):
+#             df = pd.read_csv(filename, sep="\t", header=None)
+#
+#             MO_archive_sols_only = []
+#             MO_archive = []
+#
+#             for idx, col in enumerate(df.iloc[-1][13].split(";")):
+#                 for el in col.split("],"):
+#                     rep = el.replace("[","").replace("{","").split(",")
+#
+#                     transform_rep = 1. - float(rep[0]) / float(df.iloc[-1][6])
+#
+#                     if ("{:.2f}".format(transform_rep), rep[2]) not in MO_archive_sols_only:
+#                         MO_archive_sols_only.append(("{:.2f}".format(transform_rep), float(rep[2])))
+#                         MO_archive.append((transform_rep, float(rep[2]), idx))
+#
+#             sol_idxs = []
+#             for sol_idx, sol in enumerate(MO_archive):
+#                 dom = False
+#                 for sol_comp in MO_archive:
+#                     if (sol_comp[0]-sol[0]) > 1e-3 and sol[1]>sol_comp[1]:
+#                         dom = True
+#                         break
+#
+#                 if dom:
+#                     sol_idxs.append(sol_idx)
+#
+#             for idx in sorted(list(set(sol_idxs)), reverse=True):
+#                 del MO_archive_sols_only[idx]
+#                 del MO_archive[idx]
+#
+#
+#             plt.figure()
+#             plt.title("Dataset: {}, filename: {}".format(dataset.capitalize(), d_key))
+#             xs = []
+#             ys = []
+#             cs = []
+#             for x,y,color in MO_archive:
+#                 xs.append(x)
+#                 ys.append(y)
+#                 cs.append(color)
+#
+#             plt.scatter(xs, ys, alpha=0.5, s=30, c=cs)
+#             plt.colorbar(label="Generation added")
+#
+#             plt.xlabel(r'$r^2$')
+#             plt.ylabel('Model size')
+#             plt.show()
 
-            x_array = 1. - np.array(x)
-            y_array = np.array(y)
-
-            # Stack the arrays horizontally
-            result = np.column_stack((x_array, y_array))
-
-            ref_point = np.array([2., 1000.])
-
-            ind = HV(ref_point=ref_point)
-
-            hvs += ind(result)
-            count += 1
-        print(key1, key2, hvs/count)
-
-    # log average HV
-    # ref point should be max*10
-    # ref_point = np.array([4., 4.])
-    #
-    # ind = HV(ref_point=ref_point)
-    # print("HV", ind(np.array([[1., 3.],[2,1]])))
-    # quit()
 

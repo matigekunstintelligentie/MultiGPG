@@ -462,17 +462,17 @@ struct Evolution {
 //
 //      string str = "";
 //
-////      int i;
-////      for(i =0; i<pop_size-2;i++){
-////          str += to_string(population[i]->fitness[0]) + "," + to_string(population[i]->fitness[1]) + "," + to_string(population[i]->clusterid) + ";";
-////      }
-////      i++;
-////      str += to_string(population[i]->fitness[0]) + "," + to_string(population[i]->fitness[1]) + "," + to_string(population[i]->clusterid) + "\n";
+//      int i;
+//      for(i =0; i<pop_size-2;i++){
+//          str += to_string(population[i]->fitness[0]) + "," + to_string(population[i]->fitness[1]) + "," + to_string(population[i]->clusterid) + "," + to_string(clusternr[population[i]->clusterid]) + "," + to_string(clustered_population[population[i]->clusterid].size()) + ";";
+//      }
+//      i++;
+//      str += to_string(population[i]->fitness[0]) + "," + to_string(population[i]->fitness[1]) + "," + to_string(population[i]->clusterid) + "," + to_string(clusternr[population[i]->clusterid]) + "," + to_string(clustered_population[population[i]->clusterid].size()) + "\n";
 //      int i;
 //      for(i =0; i<g::ea->MO_archive.size()-1;i++){
 //          str += to_string(g::ea->MO_archive[i]->fitness[0]) + "," + to_string(g::ea->MO_archive[i]->fitness[1]) + "," + to_string(g::ea->MO_archive[i]->clusterid) + ";";
 //      }
-//      str += to_string(g::ea->MO_archive[i]->fitness[0]) + "," + to_string(g::ea->MO_archive[i]->fitness[1]) + "," + to_string(g::ea->MO_archive[i]->clusterid) + "\n";
+      //str += to_string(g::ea->MO_archive[i]->fitness[0]) + "," + to_string(g::ea->MO_archive[i]->fitness[1]) + "," + to_string(g::ea->MO_archive[i]->clusterid) + "\n";
 //
 //      csv_file << str;
 //      csv_file.close();
