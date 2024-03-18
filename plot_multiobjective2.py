@@ -26,8 +26,8 @@ def process_rows(df):
         coordinate_strings = row[0].split(';')
         for coord_str in coordinate_strings:
             # Split each coordinate string by ',' to get x, y, z values
-            x, y, z = coord_str.split(',')
-            coordinates.append((float(x), float(y), int(z)))
+            x, y, z, z1, z2 = coord_str.split(',')
+            coordinates.append((float(x), float(y), int(z), int(z1), int(z2)))
             if float(x)>max_mse:
             	max_mse = float(x)
             if float(y)>max_len:
@@ -59,28 +59,29 @@ def process_rows(df):
 
 def update(frame):
     ax.clear()
-    ax.set_xlim(0, max_len*1.1)  # Set fixed x-axis limits
-    ax.set_ylim(0, max_mse*1.5)
+    ax.set_xlim(0, max_mse*1.5)  # Set fixed x-axis limits
+    ax.set_ylim(0, max_len*1.5)
 
-    row = processed_data[frame]
-
-    xs = []
-    ys = []
-    for coord in row:
-        xs.append(coord[0])
-        ys.append(coord[1])  
     # row = processed_data[frame]
-    # sorted_by_z = [[],[],[],[],[],[],[]]
-
+    #
+    # xs = []
+    # ys = []
     # for coord in row:
-    #   sorted_by_z[coord[2]].append((coord[0], coord[1]))
+    #     xs.append(coord[0])
+    #     ys.append(coord[1])
+    row = processed_data[frame]
+    sorted_by_z = [[],[],[],[],[],[],[]]
 
-    # for z_val, row in enumerate(sorted_by_z):
-    #   x_vals = [coord[0] for coord in row]
-    #   y_vals = [coord[1] for coord in row]
+    for coord in row:
+      sorted_by_z[coord[2]].append((coord[0], coord[1], coord[3], coord[4]))
 
-    #   ax.scatter(x_vals, y_vals, label=f'Z={z_val}')
-    ax.scatter(xs,ys)
+    for z_val, row in enumerate(sorted_by_z):
+      if(len(row)>0):
+          x_vals = [coord[0] for coord in row]
+          y_vals = [coord[1] for coord in row]
+          print(row[0])
+          ax.scatter(x_vals, y_vals, label=f'Z={z_val} obj={row[0][2]} nr={row[0][3]}')
+    #ax.scatter(xs,ys)
     ax.set_xlabel('MSE')
     ax.set_ylabel('Model size')
     ax.set_title(f'Generation {frame+1}')
@@ -96,5 +97,5 @@ ani = FuncAnimation(fig, update, frames=len(processed_data), interval=1000)
 
 for i in range(len(processed_data)):
     update(i)
-    plt.savefig(f'frame_{i:04d}.png')
+    plt.savefig(f'grame_{i:04d}.png')
 

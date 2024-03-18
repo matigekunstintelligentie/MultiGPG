@@ -9,6 +9,10 @@ from numpy.polynomial import Polynomial
 import seaborn as sns
 from pymoo.indicators.hv import HV
 
+plt.style.use('seaborn')
+
+max_gen = None
+max_size = 0
 
 dataset_filename_fronts = defaultdict(lambda: defaultdict(list))
 
@@ -50,12 +54,14 @@ def calc_hv(dataset_filename_fronts, key1, key2, x_index, max_size):
 
     return hvs/count
 
+
 def make_plots(d, x_index, appendix):
     for el in [['tree_42', 'tree_7'], ['MO_equalclustersize', 'SO', 'MO'], ['MO', 'discount'], ['MO', 'MO_nocluster'], ['MO_noadf','MO']]:
         fig = plt.figure()
         plt.title("Dataset: {}".format(dataset.capitalize()))
         markers = ['o', 'x', '^']
         x = []
+
         for key in d.keys():
             if key in el:
                 x = d[key][x_index]
@@ -80,19 +86,23 @@ def make_plots(d, x_index, appendix):
                 nondom_list_x, nondom_list_y = non_dom(x,y)
                 plt.plot(nondom_list_x, nondom_list_y, linestyle='--', c=color)
 
+        if(len(x)>0):        
+            plt.xlabel(r'$r^2$')
+            plt.ylabel('Model size')
+            # plt.yscale('log', base=5)
+            plt.legend()
+            fig.set_size_inches(32, 18)
 
-        plt.xlabel(r'$r^2$')
-        plt.ylabel('Model size')
-        # plt.yscale('log', base=5)
-        plt.legend()
-        fig.set_size_inches(32, 18)
-        if len(x)!=0:
-            plt.savefig("./results/plots/{}_{}.pdf".format(dataset + "".join(el), appendix), dpi=300, bbox_inches='tight')    
-
-plt.style.use('seaborn')
+            if max_gen is None:
+                plt.savefig("./results/plots/{}.pdf".format(dataset + "".join(el)), dpi=300, bbox_inches='tight')
+            else:
+                plt.savefig("./results/plots/{}_{}gen.pdf".format(dataset + "".join(el), max_gen), dpi=300, bbox_inches='tight')
+        plt.close()
 
 
-max_size = 0
+
+
+
 for dataset in ["dowchemical","tower", "air", "concrete", "bike", "synthetic_dataset"]:
 
     d = defaultdict(lambda: defaultdict(list))
@@ -109,20 +119,20 @@ for dataset in ["dowchemical","tower", "air", "concrete", "bike", "synthetic_dat
             scatter_x_val = []
 
             df = pd.read_csv(filename, sep="\t", header=None)
-            gens = len(df.iloc[0][14].split(","))
+            gens = len(df.iloc[-1][14].split(","))
 
+            mg = -1
+            if max_gen is not None and len(df.iloc[-1][13].split(";")) >= max_gen:
+                mg = max_gen - 1
 
-            for el in df.iloc[0][13].split(";")[-1].split("],"):
+            for el in df.iloc[-1][13].split(";")[mg].split("],"):
                 rep = el.replace("[","").replace("{","").split(",")
-                scatter_x.append(1. - float(rep[0])/float(df.iloc[0][6]))
+                scatter_x.append(1. - float(rep[0])/float(df.iloc[-1][6]))
                 scatter_y.append(float(rep[2]))
-                scatter_x_val.append(1. - float(rep[0])/float(df.iloc[0][7]))
+                scatter_x_val.append(1. - float(rep[0])/float(df.iloc[-1][7]))
 
                 if float(rep[2])>max_size:
                     max_size = float(rep[2])
-
-
-
 
             dataset_filename_fronts[dataset][d_key].append((scatter_x,scatter_y,gens,scatter_x_val))
 
@@ -134,3 +144,60 @@ for dataset in ["dowchemical","tower", "air", "concrete", "bike", "synthetic_dat
 
     make_plots(d, x_index=0, appendix="train")        
     make_plots(d, x_index=3, appendix="val")  
+
+# for dataset in ["synthetic_dataset"]:
+#
+#     for filename in glob.glob("./results/multi_trees/*.csv"):
+#         nr = filename.split("/")[-1].split("_")[0]
+#         d_key = "_".join(filename.split("/")[-1].split("_")[1:]).replace(dataset,"").replace(".csv","")[:-1]
+#
+#         if(dataset in filename):
+#             df = pd.read_csv(filename, sep="\t", header=None)
+#
+#             MO_archive_sols_only = []
+#             MO_archive = []
+#
+#             for idx, col in enumerate(df.iloc[-1][13].split(";")):
+#                 for el in col.split("],"):
+#                     rep = el.replace("[","").replace("{","").split(",")
+#
+#                     transform_rep = 1. - float(rep[0]) / float(df.iloc[-1][6])
+#
+#                     if ("{:.2f}".format(transform_rep), rep[2]) not in MO_archive_sols_only:
+#                         MO_archive_sols_only.append(("{:.2f}".format(transform_rep), float(rep[2])))
+#                         MO_archive.append((transform_rep, float(rep[2]), idx))
+#
+#             sol_idxs = []
+#             for sol_idx, sol in enumerate(MO_archive):
+#                 dom = False
+#                 for sol_comp in MO_archive:
+#                     if (sol_comp[0]-sol[0]) > 1e-3 and sol[1]>sol_comp[1]:
+#                         dom = True
+#                         break
+#
+#                 if dom:
+#                     sol_idxs.append(sol_idx)
+#
+#             for idx in sorted(list(set(sol_idxs)), reverse=True):
+#                 del MO_archive_sols_only[idx]
+#                 del MO_archive[idx]
+#
+#
+#             plt.figure()
+#             plt.title("Dataset: {}, filename: {}".format(dataset.capitalize(), d_key))
+#             xs = []
+#             ys = []
+#             cs = []
+#             for x,y,color in MO_archive:
+#                 xs.append(x)
+#                 ys.append(y)
+#                 cs.append(color)
+#
+#             plt.scatter(xs, ys, alpha=0.5, s=30, c=cs)
+#             plt.colorbar(label="Generation added")
+#
+#             plt.xlabel(r'$r^2$')
+#             plt.ylabel('Model size')
+#             plt.show()
+
+
