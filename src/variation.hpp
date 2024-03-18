@@ -897,10 +897,10 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & po
 
     parent->NIS = ever_improved ? 0 : parent->NIS + 1;
 
-   // if ((!changed || parent->NIS > NIS_const) && !g::ea->MO_archive.empty()) {
-   //     parent->NIS = 0;
-   //     return efficient_gom_MO_FI(parent, fos, objective, extrema);
-   // }
+    if ((!changed || parent->NIS > NIS_const) && !g::ea->MO_archive.empty()) {
+        parent->NIS = 0;
+        return efficient_gom_MO_FI(parent, fos, objective, extrema);
+    }
 
     return parent;
 }
