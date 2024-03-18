@@ -353,14 +353,58 @@ struct Evolution {
               int assign;
               if(clustertags_equal[i].size()==1){
                   assign = clustertags_equal[i][0];
+
+                  // TODO check
+                  if(clustered_population[assign].size()>=int(pop_size/7)){
+                      auto random_index_order = Rng::rand_perm(7);
+                      for(int z=0;z<7;z++){
+                          assign = random_index_order[z];
+                          if(clustered_population[assign].size()<int(pop_size/7)){
+                              break;
+                          }
+                      }
+                  }
               }
               else{
                   assign = clustertags_equal[i][Rng::randu() * clustertags_equal[i].size()];
+
+                  if(clustered_population[assign].size()>=int(pop_size/7)){
+                      bool found = false;
+                      auto random_index_order = Rng::rand_perm(clustertags_equal[i].size());
+                      for(int z=0;z<random_index_order.size();z++){
+                          assign = random_index_order[z];
+                          if(clustered_population[assign].size()<=int(pop_size/7)){
+                              found = true;
+                              break;
+                          }
+                      }
+                      if(!found) {
+                          random_index_order = Rng::rand_perm(7);
+                          for (int z = 0; z < 7; z++) {
+                              assign = random_index_order[z];
+                              if (clustered_population[assign].size() <= int(pop_size / 7)) {
+                                    break;
+                              }
+                          }
+                      }
+                  }
               }
               clustered_population[assign].push_back(population[i]);
           }
           else{
-              clustered_population[clustertags_kmeans[i]].push_back(population[i]);
+              if(clustered_population[clustertags_kmeans[i]].size()<=int(pop_size/7)) {
+                  clustered_population[clustertags_kmeans[i]].push_back(population[i]);
+              }
+              else{
+                  auto random_index_order = Rng::rand_perm(7);
+                  for (int z = 0; z < 7; z++) {
+                      int assign = random_index_order[z];
+                      if (clustered_population[assign].size() <= int(pop_size / 7)) {
+                          clustered_population[assign].push_back(population[i]);
+                          break;
+                      }
+                  }
+              }
           }
       }
 
@@ -420,6 +464,7 @@ struct Evolution {
                       cluster_fbs.push_back(make_pair(fos_el, j));
                   }
               }
+
           }
           clustered_FOSes_pop.push_back(FOSes_pop);
           FOSs.push_back(cluster_fbs);
@@ -429,6 +474,15 @@ struct Evolution {
       for(int i=0;i<clustered_population.size();i++){
           for(int j=0;j<clustered_population[i].size();j++){
               idx.emplace_back(i, j);
+          }
+      }
+
+
+      //TODO: why is clustered_FOSes_pop four long? for each mt? then why is it put into gom?
+      for(int x=0;x<7;x++){
+          print(x, " ", clustered_FOSes_pop[x].size(), " ", clustered_population[x].size(), " ", clusternr[x]);
+          if(clusternr[x]==0){
+              print("POPPA CLUSTERO ", clustered_FOSes_pop[x].size(), " ", clustered_population[x].size());
           }
       }
 

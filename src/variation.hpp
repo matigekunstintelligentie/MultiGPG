@@ -731,6 +731,7 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & po
     bool changed = false;
     bool ever_improved = false;
 
+
     for(int fos_idx = 0; fos_idx < fos.size(); fos_idx++){
         int mt = fos[random_fos_order[fos_idx]].second;
 
@@ -897,10 +898,10 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & po
 
     parent->NIS = ever_improved ? 0 : parent->NIS + 1;
 
-   // if ((!changed || parent->NIS > NIS_const) && !g::ea->MO_archive.empty()) {
-   //     parent->NIS = 0;
-   //     return efficient_gom_MO_FI(parent, fos, objective, extrema);
-   // }
+    if ((!changed || parent->NIS > NIS_const) && !g::ea->MO_archive.empty()) {
+        parent->NIS = 0;
+        return efficient_gom_MO_FI(parent, fos, objective, extrema);
+    }
 
     return parent;
 }

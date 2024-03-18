@@ -131,6 +131,8 @@ for dataset in ["dowchemical","tower", "air", "concrete", "bike", "synthetic_dat
             d[d_key][2].append(gens)
             d[d_key][3].extend(scatter_x_val)
 
+    if dataset=="synthetic_dataset":
+        print(d['SO'].keys())
 
     make_plots(d, x_index=0, appendix="train")        
     make_plots(d, x_index=3, appendix="val")  
