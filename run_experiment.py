@@ -36,6 +36,7 @@ parser.add_argument('--clip', type=str2bool)
 parser.add_argument('--coeff_p')
 parser.add_argument('--dataset')
 parser.add_argument('--log', type=str2bool)
+parser.add_argument('--log_pop', type=str2bool)
 parser.add_argument('--contains_train', type=str2bool)
 parser.add_argument('--t', type=int)
 parser.add_argument('--g', type=int)
@@ -86,7 +87,7 @@ g = GPGRegressor(t=args.t, g=args.g, tour=args.tour, d=args.depth,  use_optim=ar
         pop=args.popsize,
         bs_opt=args.batch_size,
         bs=2048,
-        verbose=args.verbose, csv_file="{}/{}_{}_{}.csv".format(args.dir, args.seed, args.csv_name, args.dataset), opt_per_gen=args.every_n_steps, use_clip=args.clip,
+        verbose=args.verbose, csv_file="{}/{}_{}_{}.csv".format(args.dir, args.seed, args.csv_name, args.dataset), csv_file_pop="{}/pop/{}_{}_{}.csv".format(args.dir, args.seed, args.csv_name, args.dataset), log_pop=args.log_pop, opt_per_gen=args.every_n_steps, use_clip=args.clip,
         fset=args.fset, cmp=args.coeff_p, use_ftol=args.use_ftol, tol=1e-9, use_mse_opt=args.use_mse_opt, log=args.log, ff=args.ff,
          use_max_range=args.use_max_range, equal_p_coeffs=args.equal_p_coeffs,
         MO_mode=args.MO_mode, use_adf=args.use_adf, use_aro=args.use_aro, n_clusters=args.n_clusters, max_coeffs=args.max_coeffs, discount_size=args.discount_size,

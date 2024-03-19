@@ -50,7 +50,9 @@ namespace g {
 
   // logging
   string csv_file;
+  string csv_file_pop;
   bool log = false;
+  bool log_pop = false;
 
   // Optimisation choices
   // Optimiser specific
@@ -313,7 +315,9 @@ namespace g {
     parser.set_optional<int>("opt_per_gen", "opt_per_gen", 1, "Optimise per x gens)");
     // logging
     parser.set_optional<bool>("log", "log", false, "Whether to log");
+    parser.set_optional<bool>("log_pop", "log_pop", false, "Whether to log pop");
     parser.set_optional<string>("csv_file", "csv_file", "required.csv", "CSV file that is written to.");
+    parser.set_optional<string>("csv_file_pop", "csv_file_pop", "required_pop.csv", "CSV file that pop cluster information is written to.");
     // coefficients and range
     parser.set_optional<bool>("use_max_range", "use_max_range", false, "Whether the max or 10 is used as initalisation range");
     parser.set_optional<bool>("equal_p_coeffs", "equal_p_coeffs", false, "Whether the leafs are sampled with equal probability");
@@ -459,11 +463,13 @@ namespace g {
     use_optimiser = parser.get<bool>("use_optim");
     use_ftol = parser.get<bool>("use_ftol");
     log = parser.get<bool>("log");
+    log_pop = parser.get<bool>("log_pop");
     use_mse_opt = parser.get<bool>("use_mse_opt");
     tol = parser.get<float>("tol");
     opt_per_gen = parser.get<int>("opt_per_gen");
 
     csv_file = parser.get<string>("csv_file");
+    csv_file_pop = parser.get<string>("csv_file_pop");
     //print("optim: ", optimiser_choice, " optimise: ", use_optimiser, " clip: ", use_clip, " reinject elite: ", reinject_elite);
 
 
@@ -488,6 +494,7 @@ namespace g {
       + " use_optim " +  std::to_string(use_optimiser) +
       + " use_ftol " +  std::to_string(use_ftol) +
       + " log " +  std::to_string(log) +
+      + " log pop " +  std::to_string(log_pop) +
       + " tol " +  std::to_string(tol) +
       + " use_mse_opt " +  std::to_string(use_mse_opt) +
       + " opt_per_gen " +  std::to_string(opt_per_gen) +
