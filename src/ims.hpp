@@ -215,9 +215,9 @@ struct IMS {
       // 14 consecutive_non_improvements
       str = "";
       for(int i=0;i<consecutive_non_improvements.size()-1;i++){
-          str += consecutive_non_improvements[i] + ";";
+          str += to_string(consecutive_non_improvements[i]) + ",";
       }
-      str += consecutive_non_improvements[consecutive_non_improvements.size()-1]+"\t";
+      str += to_string(consecutive_non_improvements[consecutive_non_improvements.size()-1])+"\t";
       csv_file << str;
 
       // 15 times

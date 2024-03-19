@@ -8,10 +8,11 @@ import numpy as np
 from numpy.polynomial import Polynomial
 import seaborn as sns
 from pymoo.indicators.hv import HV
+import os
 
 plt.style.use('seaborn')
 
-max_gen = 70
+max_gen = None
 max_size = 0
 
 dataset_filename_fronts = defaultdict(lambda: defaultdict(list))
@@ -55,8 +56,8 @@ def calc_hv(dataset_filename_fronts, key1, key2, x_index, max_size):
     return hvs/count
 
 
-def make_plots(d, x_index, appendix):
-    for el in [['tree_42', 'tree_7'], ['SO','MO', 'MO_balanced_fulldonor', 'MO_'],  ['MO_equalclustersize', 'SO', 'MO', 'MO_equalclustersize_fulldonor'], ['MO', 'discount'], ['MO', 'MO_nocluster'], ['MO_noadf','MO']]:
+def make_plots(d, folder, x_index, appendix):
+    for el in [['MO_fulldonor', 'MO_balanced'], ['SO','MO', 'MO_balanced_fulldonor'],  ['MO_equalclustersize', 'SO', 'MO', 'MO_equalclustersize_fulldonor'], ['MO', 'discount'], ['MO', 'MO_nocluster'], ['MO_noadf','MO'], ['tree_42', 'tree_7']]:
         fig = plt.figure()
         plt.title("Dataset: {}".format(dataset.capitalize()))
         markers = ['o', 'x', '^','s']
@@ -67,6 +68,7 @@ def make_plots(d, x_index, appendix):
                 x = d[key][x_index]
                 y = d[key][1]
 
+                print(d[key][2], key)
                 gens = np.min(d[key][2])
 
                 hvs = calc_hv(dataset_filename_fronts, dataset, key, x_index, max_size)
@@ -93,10 +95,17 @@ def make_plots(d, x_index, appendix):
             plt.legend()
             fig.set_size_inches(32, 18)
 
+
+
+            directory = "./results/plots/" + folder
+            isExist = os.path.exists(directory)
+            if not isExist:
+                os.makedirs(directory)
+
             if max_gen is None:
-                plt.savefig("./results/plots/{}_{}.pdf".format(dataset + "".join(el), appendix), dpi=300, bbox_inches='tight')
+                plt.savefig(directory + "/{}_{}.pdf".format(dataset + "".join(el), appendix), dpi=300, bbox_inches='tight')
             else:
-                plt.savefig("./results/plots/{}_{}gen_{}.pdf".format(dataset + "".join(el), max_gen, appendix), dpi=300, bbox_inches='tight')
+                plt.savefig(directory + "/{}_{}gen_{}.pdf".format(dataset + "".join(el), max_gen, appendix), dpi=300, bbox_inches='tight')
         plt.close()
 
 
@@ -106,8 +115,12 @@ def make_plots(d, x_index, appendix):
 for dataset in ["dowchemical","tower", "air", "concrete", "bike", "synthetic_dataset"]:
 
     d = defaultdict(lambda: defaultdict(list))
-    for filename in glob.glob("./results/balanced/*.csv"):
+
+    folder = "multi_trees"
+    dir = "./results/" + folder
+    for filename in glob.glob(dir + "/*.csv"):
         nr = filename.split("/")[-1].split("_")[0]
+        #d_key = "_".join(filename.split("/")[-1].split("_")[1:]).replace(dataset,"").replace(".csv","")[:-1]
         d_key = "_".join(filename.split("/")[-1].split("_")[1:]).replace(dataset,"").replace(".csv","")[:-1]
 
         if(dataset in filename):
@@ -119,17 +132,20 @@ for dataset in ["dowchemical","tower", "air", "concrete", "bike", "synthetic_dat
             scatter_x_val = []
 
             df = pd.read_csv(filename, sep="\t", header=None)
-            gens = len(df.iloc[-1][-1].split(","))
+
+
+            gens = len(df.iloc[0][14].split(","))
+
 
             mg = -1
-            if max_gen is not None and len(df.iloc[-1][13].split(";")) >= max_gen:
+            if max_gen is not None and len(df.iloc[0][13].split(";")) >= max_gen:
                 mg = max_gen - 1
 
-            for el in df.iloc[-1][13].split(";")[mg].split("],"):
+            for el in df.iloc[0][13].split(";")[mg].split("],"):
                 rep = el.replace("[","").replace("{","").split(",")
-                scatter_x.append(1. - float(rep[0])/float(df.iloc[-1][6]))
+                scatter_x.append(1. - float(rep[0])/float(df.iloc[0][6]))
                 scatter_y.append(float(rep[2]))
-                scatter_x_val.append(1. - float(rep[0])/float(df.iloc[-1][7]))
+                scatter_x_val.append(1. - float(rep[0])/float(df.iloc[0][7]))
 
                 if float(rep[2])>max_size:
                     max_size = float(rep[2])
@@ -142,8 +158,8 @@ for dataset in ["dowchemical","tower", "air", "concrete", "bike", "synthetic_dat
             d[d_key][3].extend(scatter_x_val)
 
 
-    make_plots(d, x_index=0, appendix="train")        
-    make_plots(d, x_index=3, appendix="val")
+    make_plots(d, folder, x_index=0, appendix="train")
+    make_plots(d, folder, x_index=3, appendix="val")
 
 # for dataset in ["synthetic_dataset"]:
 #
