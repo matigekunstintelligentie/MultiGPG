@@ -309,7 +309,11 @@ struct Evolution {
               distances[i] = (norm_data.col(i) - cluster_centers.col(x)).square().mean();
 
           }
-          for(int times=0; times<((2*pop_size)/initialised_k); times++){
+          int donor_pop_size = ((2*pop_size)/initialised_k);
+          if(g::full_donor){
+              donor_pop_size = pop_size;
+          }
+          for(int times=0; times<donor_pop_size; times++){
               clustered_population_equal[x].push_back(population[argmin(distances)]);
 
               clustertags_equal[argmin(distances)].push_back(x);
@@ -334,19 +338,7 @@ struct Evolution {
 
       // if not yet assigned solution in equal size clustering, assign to closest. if multiple are assigned, assign to random of multiple center
       for (int i = 0; i < pop_size; i++) {
-          if(!clustertags_equal[i].empty()){
-              int assign;
-              if(clustertags_equal[i].size()==1){
-                  assign = clustertags_equal[i][0];
-              }
-              else{
-                  assign = clustertags_equal[i][Rng::randu() * clustertags_equal[i].size()];
-              }
-              //clustered_population[assign].push_back(population[i]);
-          }
-
           clustered_population[clustertags_kmeans[i]].push_back(population[i]);
-
       }
 
 
@@ -536,7 +528,11 @@ struct Evolution {
               distances[i] = (norm_data.col(i) - cluster_centers.col(x)).square().mean();
 
           }
-          for(int times=0; times<((2*pop_size)/initialised_k); times++){
+          int donor_pop_size = ((2*pop_size)/initialised_k);
+          if(g::full_donor){
+              donor_pop_size = pop_size;
+          }
+          for(int times=0; times<donor_pop_size; times++){
               clustered_population_equal[x].push_back(population[argmin(distances)]);
 
               clustertags_equal[argmin(distances)].push_back(x);
@@ -661,25 +657,25 @@ struct Evolution {
       population = offspring_population;
 
 
-      ofstream csv_file;
-      csv_file.open("MOMT.csv", ios::app);
-
-      string str = "";
-
-      int i;
-      for(i =0; i<pop_size-2;i++){
-          str += to_string(population[i]->fitness[0]) + "," + to_string(population[i]->fitness[1]) + "," + to_string(population[i]->clusterid) + "," + to_string(clusternr[population[i]->clusterid]) + "," + to_string(clustered_population[population[i]->clusterid].size()) + ";";
-      }
-      i++;
-      str += to_string(population[i]->fitness[0]) + "," + to_string(population[i]->fitness[1]) + "," + to_string(population[i]->clusterid) + "," + to_string(clusternr[population[i]->clusterid]) + "," + to_string(clustered_population[population[i]->clusterid].size()) + "\n";
-////      int i;
-////      for(i =0; i<g::ea->MO_archive.size()-1;i++){
-////          str += to_string(g::ea->MO_archive[i]->fitness[0]) + "," + to_string(g::ea->MO_archive[i]->fitness[1]) + "," + to_string(g::ea->MO_archive[i]->clusterid) + ";";
-////      }
-//      //str += to_string(g::ea->MO_archive[i]->fitness[0]) + "," + to_string(g::ea->MO_archive[i]->fitness[1]) + "," + to_string(g::ea->MO_archive[i]->clusterid) + "\n";
-////
-      csv_file << str;
-      csv_file.close();
+//      ofstream csv_file;
+//      csv_file.open("MOMT.csv", ios::app);
+//
+//      string str = "";
+//
+//      int i;
+//      for(i =0; i<pop_size-2;i++){
+//          str += to_string(population[i]->fitness[0]) + "," + to_string(population[i]->fitness[1]) + "," + to_string(population[i]->clusterid) + "," + to_string(clusternr[population[i]->clusterid]) + "," + to_string(clustered_population[population[i]->clusterid].size()) + ";";
+//      }
+//      i++;
+//      str += to_string(population[i]->fitness[0]) + "," + to_string(population[i]->fitness[1]) + "," + to_string(population[i]->clusterid) + "," + to_string(clusternr[population[i]->clusterid]) + "," + to_string(clustered_population[population[i]->clusterid].size()) + "\n";
+//////      int i;
+//////      for(i =0; i<g::ea->MO_archive.size()-1;i++){
+//////          str += to_string(g::ea->MO_archive[i]->fitness[0]) + "," + to_string(g::ea->MO_archive[i]->fitness[1]) + "," + to_string(g::ea->MO_archive[i]->clusterid) + ";";
+//////      }
+////      //str += to_string(g::ea->MO_archive[i]->fitness[0]) + "," + to_string(g::ea->MO_archive[i]->fitness[1]) + "," + to_string(g::ea->MO_archive[i]->clusterid) + "\n";
+//////
+//      csv_file << str;
+//      csv_file.close();
   }
 
 

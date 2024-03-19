@@ -68,6 +68,7 @@ namespace g {
   int nr_multi_trees;
 
   bool balanced = false;
+  bool full_donor = false;
 
   // coefficients and range
   float range = 10.;
@@ -323,6 +324,7 @@ namespace g {
     parser.set_optional<bool>("use_aro", "use_aro", false, "Whether Automatically Defined Functions are used");
     parser.set_optional<bool>("discount_size", "discount_size", false, "Whether the model size is discounted for re-use");
     parser.set_optional<bool>("balanced", "balanced", false, "Whether balanced k-leader means is used");
+    parser.set_optional<bool>("full_donor", "full_donor", false, "Whether the full population is used as donor population");
     parser.set_optional<int>("n_clusters", "n_clusters", 7, "Number of clusters");
 
     // set options
@@ -446,6 +448,7 @@ namespace g {
     use_aro = parser.get<bool>("use_aro");
     discount_size = parser.get<bool>("discount_size");
     balanced = parser.get<bool>("balanced");
+    full_donor = parser.get<bool>("full_donor");
 
     n_clusters = parser.get<int>("n_clusters");
     use_max_range = parser.get<bool>("use_max_range");
@@ -494,6 +497,8 @@ namespace g {
       + " n clusters " + std::to_string(n_clusters)
       + " use aro " + std::to_string(use_aro)
       + " use adf " + std::to_string(use_adf)
+      + " balanced " + std::to_string(balanced)
+      + " full donor " + std::to_string(full_donor)
       );
   }
 

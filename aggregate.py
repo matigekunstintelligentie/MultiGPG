@@ -12,7 +12,7 @@ from pymoo.indicators.hv import HV
 plt.style.use('seaborn')
 
 max_gen = None
-max_size = 20
+max_size = 0
 
 dataset_filename_fronts = defaultdict(lambda: defaultdict(list))
 
@@ -56,7 +56,7 @@ def calc_hv(dataset_filename_fronts, key1, key2, x_index, max_size):
 
 
 def make_plots(d, x_index, appendix):
-    for el in [['tree_42', 'tree_7'], ['SO','MO', 'MO_balanced'], ['MO_equalclustersize', 'SO', 'MO', 'MO_balanced_equalclustersize'], ['MO', 'discount'], ['MO', 'MO_nocluster'], ['MO_noadf','MO']]:
+    for el in [['tree_42', 'tree_7'], ['SO','MO', 'MO_balanced'], ['MO_equalclustersize', 'SO', 'MO', 'MO_equalclustersize_balanced'], ['MO', 'discount'], ['MO', 'MO_nocluster'], ['MO_noadf','MO']]:
         fig = plt.figure()
         plt.title("Dataset: {}".format(dataset.capitalize()))
         markers = ['o', 'x', '^','s']
@@ -81,7 +81,7 @@ def make_plots(d, x_index, appendix):
                 # Plot scatter plot and line plot
                 color = sns.color_palette()[int(el.index(key))]  # Get color from tab10 colormap
                 marker = markers[int(el.index(key))]
-                plt.scatter(x, y, alpha=0.6, s=25, label=key + " Average HV={0:.3f}, Average gens={1:.1f}".format(hvs, gens), c=color, marker=marker)
+                plt.scatter(x, y, alpha=0.6, s=25, label=key + " Average HV={0:.3f}, Average gens={1:.1f}".format(hvs, gens), color=color, marker=marker)
                 plt.plot(x_fit, y_fit, c=color)
                 nondom_list_x, nondom_list_y = non_dom(x,y)
                 plt.plot(nondom_list_x, nondom_list_y, linestyle='--', c=color)

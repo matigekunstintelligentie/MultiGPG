@@ -5,6 +5,8 @@ import pandas as pd
 import numpy as np
 from matplotlib.animation import FuncAnimation
 
+
+
 def read_tsv_file(file_path):
     try:
         # Read the TSV file into a pandas DataFrame
@@ -17,6 +19,7 @@ def read_tsv_file(file_path):
 
 
 def process_rows(df):
+
     max_len = 0
     max_mse =0
     processed_data = []
@@ -28,6 +31,8 @@ def process_rows(df):
             # Split each coordinate string by ',' to get x, y, z values
             x, y, z, z1, z2 = coord_str.replace("inf","200").split(',')
             coordinates.append((float(x), float(y), int(z), int(z1), int(z2)))
+
+
             if float(x)>max_mse:
             	max_mse = float(x)
             if float(y)>max_len:
@@ -69,6 +74,12 @@ def update(frame):
     # for coord in row:
     #     xs.append(coord[0])
     #     ys.append(coord[1])
+
+    best_mse_ind = (999999.,999999,-1)
+    best_size_ind = (999999.,999999,-1)
+
+
+
     row = processed_data[frame]
     sorted_by_z = [[],[],[],[],[],[],[]]
 
@@ -80,6 +91,15 @@ def update(frame):
           x_vals = [coord[0] for coord in row]
           y_vals = [coord[1] for coord in row]
           ax.scatter(x_vals, y_vals, label=f'Z={z_val} obj={row[0][2]} nr={row[0][3]}', alpha=0.5)
+
+          for coord in row:
+              if coord[0]<best_mse_ind[0]:
+                best_mse_ind = (coord[0],coord[1],z_val,row[0][2],row[0][3])
+              if coord[1]<best_size_ind[1]:
+                best_size_ind = (coord[0],coord[1],z_val,row[0][2],row[0][3])
+
+    ax.scatter(best_mse_ind[0],best_mse_ind[1],marker='x', label=f'Z={best_mse_ind[2]}, obj={best_mse_ind[3]}')
+    ax.scatter(best_size_ind[0],best_size_ind[1],marker='x', label=f'Z={best_size_ind[2]}, obj={best_size_ind[3]}')
     #ax.scatter(xs,ys)
     ax.set_xlabel('MSE')
     ax.set_ylabel('Model size')
