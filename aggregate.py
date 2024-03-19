@@ -12,7 +12,7 @@ from pymoo.indicators.hv import HV
 plt.style.use('seaborn')
 
 max_gen = None
-max_size = 0
+max_size = 20
 
 dataset_filename_fronts = defaultdict(lambda: defaultdict(list))
 
@@ -56,10 +56,10 @@ def calc_hv(dataset_filename_fronts, key1, key2, x_index, max_size):
 
 
 def make_plots(d, x_index, appendix):
-    for el in [['tree_42', 'tree_7'], ['MO_equalclustersize', 'SO', 'MO'], ['MO', 'discount'], ['MO', 'MO_nocluster'], ['MO_noadf','MO']]:
+    for el in [['tree_42', 'tree_7'], ['SO','MO', 'MO_balanced'], ['MO_equalclustersize', 'SO', 'MO', 'MO_balanced_equalclustersize'], ['MO', 'discount'], ['MO', 'MO_nocluster'], ['MO_noadf','MO']]:
         fig = plt.figure()
         plt.title("Dataset: {}".format(dataset.capitalize()))
-        markers = ['o', 'x', '^']
+        markers = ['o', 'x', '^','s']
         x = []
 
         for key in d.keys():
@@ -106,7 +106,7 @@ def make_plots(d, x_index, appendix):
 for dataset in ["dowchemical","tower", "air", "concrete", "bike", "synthetic_dataset"]:
 
     d = defaultdict(lambda: defaultdict(list))
-    for filename in glob.glob("./results/multi_trees/*.csv"):
+    for filename in glob.glob("./results/balanced/*.csv"):
         nr = filename.split("/")[-1].split("_")[0]
         d_key = "_".join(filename.split("/")[-1].split("_")[1:]).replace(dataset,"").replace(".csv","")[:-1]
 
