@@ -88,9 +88,9 @@ def run(experiment):
     print(experiment.construct_string())
     subprocess.run(experiment.construct_string(), shell=True)
 
-verbose = True
-n_processes = 1
-duration = 300
+verbose = False
+n_processes = 30
+duration = 3600
 popsize = 2048
 
 experiments = []
