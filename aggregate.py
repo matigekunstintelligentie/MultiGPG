@@ -11,7 +11,7 @@ from pymoo.indicators.hv import HV
 
 plt.style.use('seaborn')
 
-max_gen = None
+max_gen = 70
 max_size = 0
 
 dataset_filename_fronts = defaultdict(lambda: defaultdict(list))
@@ -56,7 +56,7 @@ def calc_hv(dataset_filename_fronts, key1, key2, x_index, max_size):
 
 
 def make_plots(d, x_index, appendix):
-    for el in [['tree_42', 'tree_7'], ['SO','MO', 'MO_balanced'], ['MO_equalclustersize', 'SO', 'MO', 'MO_equalclustersize_balanced'], ['MO', 'discount'], ['MO', 'MO_nocluster'], ['MO_noadf','MO']]:
+    for el in [['tree_42', 'tree_7'], ['SO','MO', 'MO_balanced_fulldonor', 'MO_'],  ['MO_equalclustersize', 'SO', 'MO', 'MO_equalclustersize_fulldonor'], ['MO', 'discount'], ['MO', 'MO_nocluster'], ['MO_noadf','MO']]:
         fig = plt.figure()
         plt.title("Dataset: {}".format(dataset.capitalize()))
         markers = ['o', 'x', '^','s']
@@ -67,7 +67,7 @@ def make_plots(d, x_index, appendix):
                 x = d[key][x_index]
                 y = d[key][1]
 
-                gens = np.mean(d[key][2])
+                gens = np.min(d[key][2])
 
                 hvs = calc_hv(dataset_filename_fronts, dataset, key, x_index, max_size)
 
@@ -94,9 +94,9 @@ def make_plots(d, x_index, appendix):
             fig.set_size_inches(32, 18)
 
             if max_gen is None:
-                plt.savefig("./results/plots/{}.pdf".format(dataset + "".join(el)), dpi=300, bbox_inches='tight')
+                plt.savefig("./results/plots/{}_{}.pdf".format(dataset + "".join(el), appendix), dpi=300, bbox_inches='tight')
             else:
-                plt.savefig("./results/plots/{}_{}gen.pdf".format(dataset + "".join(el), max_gen), dpi=300, bbox_inches='tight')
+                plt.savefig("./results/plots/{}_{}gen_{}.pdf".format(dataset + "".join(el), max_gen, appendix), dpi=300, bbox_inches='tight')
         plt.close()
 
 
@@ -119,7 +119,7 @@ for dataset in ["dowchemical","tower", "air", "concrete", "bike", "synthetic_dat
             scatter_x_val = []
 
             df = pd.read_csv(filename, sep="\t", header=None)
-            gens = len(df.iloc[-1][14].split(","))
+            gens = len(df.iloc[-1][-1].split(","))
 
             mg = -1
             if max_gen is not None and len(df.iloc[-1][13].split(";")) >= max_gen:
@@ -143,7 +143,7 @@ for dataset in ["dowchemical","tower", "air", "concrete", "bike", "synthetic_dat
 
 
     make_plots(d, x_index=0, appendix="train")        
-    make_plots(d, x_index=3, appendix="val")  
+    make_plots(d, x_index=3, appendix="val")
 
 # for dataset in ["synthetic_dataset"]:
 #

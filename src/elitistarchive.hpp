@@ -8,6 +8,8 @@ struct ElitistArchive{
     vector<Individual*> SO_archive;
     vector<Individual*> MO_archive;
     Fitness * fit_func;
+    bool improved_this_gen = false;
+    int generations_without_improvement = 0;
 
     Mat X_train;
 
@@ -156,8 +158,7 @@ struct ElitistArchive{
 
         if ((!solution_is_dominated && !identical_objectives_already_exist) || (diversity_added)) {
             Individual *new_individual = individual->clone();
-            // TODO: does this matter?
-            //fit_func->get_fitness_MO(new_individual);
+            improved_this_gen = true;
             MO_archive.push_back(new_individual);
         }
     }

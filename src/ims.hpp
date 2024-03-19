@@ -28,6 +28,7 @@ struct IMS {
   string best_string;
   vector<string> best_substrings;
   vector<string> MO_archive_strings;
+  vector<int> consecutive_non_improvements;
 
 
   Evolution* evolution;
@@ -74,7 +75,13 @@ struct IMS {
 
       evolution->gomea_generation_MO(macro_generations);
 
-
+      if(g::ea->improved_this_gen){
+          g::ea->improved_this_gen = false;
+          g::ea->generations_without_improvement = 0;
+      }
+      else{
+          g::ea->generations_without_improvement++;
+      }
 
       // update macro gen
       macro_generations += 1;
@@ -121,6 +128,7 @@ struct IMS {
 
           print(" ~ generation: ", macro_generations, " ", to_string(tock(start_time)), ", curr. best fit: ", best_train_mse, " ", best_size, " ", best_size_discount, " ", best_stri);
 
+          consecutive_non_improvements.push_back(g::ea->generations_without_improvement);
           best_train_mses.push_back(best_train_mse);
           best_val_mses.push_back(best_val_mse);
           best_sizes.push_back(best_size);
@@ -204,7 +212,15 @@ struct IMS {
       str += MO_archive_strings[MO_archive_strings.size()-1]+"\t";
       csv_file << str;
 
-      // 14 times
+      // 14 consecutive_non_improvements
+      str = "";
+      for(int i=0;i<consecutive_non_improvements.size()-1;i++){
+          str += consecutive_non_improvements[i] + ";";
+      }
+      str += consecutive_non_improvements[consecutive_non_improvements.size()-1]+"\t";
+      csv_file << str;
+
+      // 15 times
       str = "";
       for(int i=0;i<times.size()-1;i++){
           str += to_string(times[i]) + ",";
