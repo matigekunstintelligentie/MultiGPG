@@ -58,7 +58,7 @@ def calc_hv(dataset_filename_fronts, key1, key2, x_index, max_size):
 
 def make_plots(d, folder, x_index, appendix):
     #for el in [['MO_fulldonor', 'MO_balanced'], ['SO','MO', 'MO_balanced_fulldonor'],  ['MO_equalclustersize', 'SO', 'MO', 'MO_equalclustersize_fulldonor'], ['MO', 'discount'], ['MO', 'MO_nocluster'], ['MO_noadf','MO'], ['tree_42', 'tree_7']]:
-    for el in [['MO_balanced_fulldonor', 'MO_balanced', 'MO', 'SO'], ['MO_equalclustersize', 'SO', 'MO_equalclustersize_balanced_fulldonor', 'MO_equalclustersize_fulldonor']]:
+    for el in [['SO','MO_balanced_fulldonor', 'MO_balanced', 'MO'], ['SO','MO_equalclustersize_balanced', 'MO_equalclustersize_balanced_fulldonor', 'MO_equalclustersize_fulldonor']]:
         fig = plt.figure()
         plt.title("Dataset: {}".format(dataset.capitalize()))
         markers = ['o', 'x', '^','s']
@@ -84,12 +84,13 @@ def make_plots(d, folder, x_index, appendix):
                 # Plot scatter plot and line plot
                 color = sns.color_palette()[int(el.index(key))]  # Get color from tab10 colormap
                 marker = markers[int(el.index(key))]
-                plt.scatter(x, y, alpha=0.6, s=25, label=key + " Average HV={0:.3f}, Average gens={1:.1f}".format(hvs, gens), color=color, marker=marker)
-                plt.plot(x_fit, y_fit, c=color)
+                plt.scatter(x, y, alpha=0.5, s=25, label=key + " Average HV={0:.3f}, Average gens={1:.1f}".format(hvs, gens), color=color, marker=marker)
+                plt.plot(x_fit, y_fit, c=color, alpha=0.5)
                 nondom_list_x, nondom_list_y = non_dom(x,y)
-                plt.plot(nondom_list_x, nondom_list_y, linestyle='--', c=color)
+                plt.plot(nondom_list_x, nondom_list_y, linestyle='--', c=color,alpha=0.5)
 
-        if(len(x)>0):        
+        if(len(x)>0):
+            plt.xlim(0.5,None)
             plt.xlabel(r'$r^2$')
             plt.ylabel('Model size')
             # plt.yscale('log', base=5)
@@ -117,7 +118,7 @@ for dataset in ["dowchemical","tower", "air", "concrete", "bike", "synthetic_dat
 
     d = defaultdict(lambda: defaultdict(list))
 
-    folder = "test"
+    folder = "multi_trees"
     dir = "./results/" + folder
     for filename in glob.glob(dir + "/*.csv"):
         nr = filename.split("/")[-1].split("_")[0]
@@ -132,10 +133,10 @@ for dataset in ["dowchemical","tower", "air", "concrete", "bike", "synthetic_dat
 
             scatter_x_val = []
 
-            df = pd.read_csv(filename, sep="\t", header=None)
+            df = pd.read_csv(filename, sep="\t", header=None, error_bad_lines=False)
 
 
-            gens = len(df.iloc[0][14].split(","))
+            gens = len(df.iloc[0][8].split(","))
 
 
             mg = -1

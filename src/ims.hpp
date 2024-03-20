@@ -126,7 +126,7 @@ struct IMS {
           }
           MO_archive_string += "}";
 
-          print(" ~ generation: ", macro_generations, " ", to_string(tock(start_time)), ", curr. best fit: ", best_train_mse, " ", best_size, " ", best_size_discount, " ", best_stri);
+          print(" ~ generation: ", macro_generations, " ", g::ea->generations_without_improvement, " ", to_string(tock(start_time)), ", curr. best fit: ", best_train_mse, " ", best_size, " ", best_size_discount, " ", best_stri);
 
           consecutive_non_improvements.push_back(g::ea->generations_without_improvement);
           best_train_mses.push_back(best_train_mse);

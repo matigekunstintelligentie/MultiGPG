@@ -309,10 +309,8 @@ struct Evolution {
               distances[i] = (norm_data.col(i) - cluster_centers.col(x)).square().mean();
 
           }
-          int donor_pop_size = ((2*pop_size)/initialised_k);
-          if(g::full_donor){
-              donor_pop_size = pop_size;
-          }
+          int donor_pop_size = ((g::donor_fraction*pop_size)/initialised_k);
+
           for(int times=0; times<donor_pop_size; times++){
               clustered_population_equal[x].push_back(population[argmin(distances)]);
 
@@ -528,10 +526,8 @@ struct Evolution {
               distances[i] = (norm_data.col(i) - cluster_centers.col(x)).square().mean();
 
           }
-          int donor_pop_size = ((2*pop_size)/initialised_k);
-          if(g::full_donor){
-              donor_pop_size = pop_size;
-          }
+          int donor_pop_size = ((g::donor_fraction*pop_size)/initialised_k);
+
           for(int times=0; times<donor_pop_size; times++){
               clustered_population_equal[x].push_back(population[argmin(distances)]);
 
