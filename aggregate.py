@@ -57,7 +57,8 @@ def calc_hv(dataset_filename_fronts, key1, key2, x_index, max_size):
 
 
 def make_plots(d, folder, x_index, appendix):
-    for el in [['MO_fulldonor', 'MO_balanced'], ['SO','MO', 'MO_balanced_fulldonor'],  ['MO_equalclustersize', 'SO', 'MO', 'MO_equalclustersize_fulldonor'], ['MO', 'discount'], ['MO', 'MO_nocluster'], ['MO_noadf','MO'], ['tree_42', 'tree_7']]:
+    #for el in [['MO_fulldonor', 'MO_balanced'], ['SO','MO', 'MO_balanced_fulldonor'],  ['MO_equalclustersize', 'SO', 'MO', 'MO_equalclustersize_fulldonor'], ['MO', 'discount'], ['MO', 'MO_nocluster'], ['MO_noadf','MO'], ['tree_42', 'tree_7']]:
+    for el in [['MO_balanced_fulldonor', 'MO_balanced', 'MO', 'SO'], ['MO_equalclustersize', 'SO', 'MO_equalclustersize_balanced_fulldonor', 'MO_equalclustersize_fulldonor']]:
         fig = plt.figure()
         plt.title("Dataset: {}".format(dataset.capitalize()))
         markers = ['o', 'x', '^','s']
@@ -73,7 +74,7 @@ def make_plots(d, folder, x_index, appendix):
 
                 hvs = calc_hv(dataset_filename_fronts, dataset, key, x_index, max_size)
 
-                coefficients = np.polyfit(x, y, deg=2)  # Adjust the degree of polynomial as needed
+                coefficients = np.polyfit(x, y, deg=5)  # Adjust the degree of polynomial as needed
                 poly = np.poly1d(coefficients)
 
                 # Generate points for the fitted curve
@@ -116,7 +117,7 @@ for dataset in ["dowchemical","tower", "air", "concrete", "bike", "synthetic_dat
 
     d = defaultdict(lambda: defaultdict(list))
 
-    folder = "multi_trees"
+    folder = "test"
     dir = "./results/" + folder
     for filename in glob.glob(dir + "/*.csv"):
         nr = filename.split("/")[-1].split("_")[0]
