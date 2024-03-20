@@ -315,9 +315,11 @@ namespace g {
     parser.set_optional<int>("opt_per_gen", "opt_per_gen", 1, "Optimise per x gens)");
     // logging
     parser.set_optional<bool>("log", "log", false, "Whether to log");
+
     parser.set_optional<bool>("log_pop", "log_pop", false, "Whether to log pop");
     parser.set_optional<string>("csv_file", "csv_file", "required.csv", "CSV file that is written to.");
     parser.set_optional<string>("csv_file_pop", "csv_file_pop", "required_pop.csv", "CSV file that pop cluster information is written to.");
+
     // coefficients and range
     parser.set_optional<bool>("use_max_range", "use_max_range", false, "Whether the max or 10 is used as initalisation range");
     parser.set_optional<bool>("equal_p_coeffs", "equal_p_coeffs", false, "Whether the leafs are sampled with equal probability");
@@ -482,8 +484,9 @@ namespace g {
 
     if (!_call_as_lib) {
       set_terminals(lib_tset);
-      print("terminal set: ",str_terminal_set()," (probs: ",lib_tset_probs, (lib_feat_sel_number > -1 ? ", feat.selection : "+to_string(lib_feat_sel_number) : ""), ")");
-    } 
+
+    }
+    print("terminal set: ",str_terminal_set());
 
     cout << std::setprecision(NUM_PRECISION);
 

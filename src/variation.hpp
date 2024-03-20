@@ -170,164 +170,165 @@ Individual * coeff_opt_lm(Individual * parent, bool return_copy=true){
         tree = parent->clone();
     }
 
-    vector<Node*> nodes = tree->subtree(false);
+    try {
 
-    // Get list of pointers to coeffs and their values
-    vector<float> coeffsf;
-    vector<Node*> coeff_ptrs;
-    for(int i = 0; i < nodes.size(); i++) {
-      if(nodes[i]->op->type()==OpType::otConst){
+        vector<Node *> nodes = tree->subtree(false);
 
-          if(std::find(coeff_ptrs.begin(), coeff_ptrs.end(), nodes[i]) == coeff_ptrs.end()) {
-              coeff_ptrs.push_back(nodes[i]);
-              coeffsf.push_back((float) ((Const*)nodes[i]->op)->c);
-          }
+        // Get list of pointers to coeffs and their values
+        vector<float> coeffsf;
+        vector<Node *> coeff_ptrs;
+        for (int i = 0; i < nodes.size(); i++) {
+            if (nodes[i]->op->type() == OpType::otConst) {
 
-      }
+                if (std::find(coeff_ptrs.begin(), coeff_ptrs.end(), nodes[i]) == coeff_ptrs.end()) {
+                    coeff_ptrs.push_back(nodes[i]);
+                    coeffsf.push_back((float) ((Const *) nodes[i]->op)->c);
+                }
+
+            }
+        }
+
+        // Fill vector with coeffs with 2 extra for linear scaling
+        int size = coeffsf.size() + 2;
+        Eigen::VectorXf coeffsfv(size);
+        for (int i = 0; i < coeffsf.size(); i++) {
+            coeffsfv(i) = coeffsf[i];
+        }
+
+        if (coeff_ptrs.size() > 0) {
+
+            pair<float, float> intc_slope = make_pair(0., 1.);
+            if (!g::use_mse_opt) {
+                Vec p = tree->get_output(g::fit_func->X_train);
+                intc_slope = linear_scaling_coeffs(g::fit_func->y_train, p);
+            }
+
+            coeffsfv(coeff_ptrs.size()) = intc_slope.first;
+            coeffsfv(coeff_ptrs.size() + 1) = intc_slope.second;
+
+            g::mse_func->update_batch_opt(g::batch_size_opt);
+
+            struct LMFunctor {
+                // 'm' pairs of (x, f(x))
+                Mat X_train;
+                Vec y_train;
+                Individual *tree;
+                std::vector<Node *> coeff_ptrs;
+                pair<float, float> intc_slope;
+
+                // Compute 'm' errors, one for each data point, for the given parameter values in 'x'
+                int operator()(const Eigen::VectorXf &x, Eigen::VectorXf &fvec) const {
+                    for (int i = 0; i < coeff_ptrs.size(); i++) {
+                        ((Const *) coeff_ptrs[i]->op)->c = (float) x(i);
+                    }
+
+                    fvec = y_train - (x(coeff_ptrs.size()) + x(coeff_ptrs.size() + 1) * tree->get_output(X_train));
+
+                    g::mse_func->opt_evaluations += 1;
+
+                    return 0;
+                }
+
+                // Compute the jacobian of the errors
+                int df(const Eigen::VectorXf &x, Eigen::MatrixXf &fjac) const {
+                    // 'x' has dimensions n x 1
+                    // It contains the current estimates for the parameters.
+
+                    // 'fjac' has dimensions m x n
+                    // It will contain the jacobian of the errors, calculated numerically in this case.
+
+                    // Update the coefficients in the tree
+                    for (int i = 0; i < coeff_ptrs.size(); i++) {
+                        ((Const *) coeff_ptrs[i]->op)->c = (float) x(i);
+                    }
+
+                    Mat Jacobian(X_train.rows(), coeff_ptrs.size() + 2);
+                    Jacobian = Mat::Zero(X_train.rows(), coeff_ptrs.size() + 2);
+
+                    for (int i = 0; i < coeff_ptrs.size(); i++) {
+                        // Mark the operator as being differentiable
+                        ((Const *) coeff_ptrs[i]->op)->d = static_cast<float>(1);
+                        pair<Vec, Vec> output = tree->get_output_der(X_train);
+
+                        g::mse_func->opt_evaluations += 1;
+                        if (g::use_clip) {
+                            Jacobian.col(i) = (-output.second * x(coeff_ptrs.size() + 1)).cwiseMax(-1).cwiseMin(1);
+                        } else {
+                            Jacobian.col(i) = -output.second * x(coeff_ptrs.size() + 1);
+                        }
+                        ((Const *) coeff_ptrs[i]->op)->d = static_cast<float>(0);
+                    }
+
+                    Vec output = tree->get_output(g::mse_func->X_batch_opt);
+                    g::mse_func->opt_evaluations += 1;
+
+                    if (!g::use_mse_opt) {
+                        Jacobian.col(coeff_ptrs.size()) = Vec::Zero(X_train.rows()) + 1.;
+                        Jacobian.col(coeff_ptrs.size() + 1) = -output;
+                    } else {
+                        Jacobian.col(coeff_ptrs.size()) = Vec::Zero(X_train.rows());
+                        Jacobian.col(coeff_ptrs.size() + 1) = Vec::Zero(X_train.rows());
+                    }
+
+                    if (g::use_clip) {
+                        Jacobian.col(coeff_ptrs.size()) = Jacobian.col(coeff_ptrs.size()).cwiseMax(-1).cwiseMin(1);
+                        Jacobian.col(coeff_ptrs.size() + 1) = Jacobian.col(coeff_ptrs.size() + 1).cwiseMax(-1).cwiseMin(
+                                1);
+                    }
+
+                    fjac = Jacobian.matrix();
+                    return 0;
+                }
+
+                // Number of data points, i.e. values.
+                int m;
+
+                // Returns 'm', the number of values.
+                int values() const { return m; }
+
+                // The number of parameters, i.e. inputs.
+                int n;
+
+                // Returns 'n', the number of inputs.
+                int inputs() const { return n; }
+            };
+
+            LMFunctor functor;
+
+            functor.X_train = g::mse_func->X_batch_opt;
+            functor.y_train = g::mse_func->y_batch_opt;
+            functor.m = g::mse_func->X_batch_opt.rows();
+            functor.n = g::mse_func->X_batch_opt.cols();
+            functor.intc_slope = intc_slope;
+
+            functor.tree = tree;
+            functor.coeff_ptrs = coeff_ptrs;
+
+            Eigen::LevenbergMarquardt<LMFunctor, float> lm(functor);
+            lm.parameters.maxfev = g::lm_max_fev;
+            //lm.parameters.factor = 10000000;
+            lm.parameters.gtol = 0.;
+            lm.parameters.ftol = 0.;
+            lm.parameters.xtol = 0.;
+
+            if (g::use_ftol) {
+                lm.parameters.ftol = g::tol;
+            } else {
+                lm.parameters.gtol = g::tol;
+            }
+
+            int status = lm.minimize(coeffsfv);
+
+            for (int i = 0; i < coeff_ptrs.size(); i++) {
+                ((Const *) coeff_ptrs[i]->op)->c = coeffsfv(i);
+            }
+
+        }
     }
-
-   // Fill vector with coeffs with 2 extra for linear scaling
-   int size = coeffsf.size() + 2;
-   Eigen::VectorXf coeffsfv(size);
-   for(int i=0; i<coeffsf.size(); i++) {
-     coeffsfv(i) = coeffsf[i];
-   }
-
-   if(coeff_ptrs.size()>0){
-
-     pair<float,float> intc_slope = make_pair(0.,1.);
-     if(!g::use_mse_opt){
-       Vec p = tree->get_output(g::fit_func->X_train);
-       intc_slope = linear_scaling_coeffs(g::fit_func->y_train, p);
-     }
-
-     coeffsfv(coeff_ptrs.size()) = intc_slope.first;
-     coeffsfv(coeff_ptrs.size() + 1) = intc_slope.second;
-
-     g::mse_func->update_batch_opt(g::batch_size_opt);
-
-     struct LMFunctor{
-       // 'm' pairs of (x, f(x))
-       Mat X_train;
-       Vec y_train;
-       Individual* tree;
-       std::vector<Node*> coeff_ptrs;
-       pair<float,float> intc_slope;
-
-       // Compute 'm' errors, one for each data point, for the given parameter values in 'x'
-       int operator()(const Eigen::VectorXf &x, Eigen::VectorXf &fvec) const{
-           for(int i=0; i<coeff_ptrs.size(); i++){
-               ((Const*)coeff_ptrs[i]->op)->c = (float) x(i);
-           }
-
-           fvec = y_train - (x(coeff_ptrs.size()) + x(coeff_ptrs.size()+1) * tree->get_output(X_train));
-
-           g::mse_func->opt_evaluations += 1;
-
-           return 0;
-       }
-
-       // Compute the jacobian of the errors
-       int df(const Eigen::VectorXf &x, Eigen::MatrixXf &fjac) const{
-           // 'x' has dimensions n x 1
-           // It contains the current estimates for the parameters.
-
-           // 'fjac' has dimensions m x n
-           // It will contain the jacobian of the errors, calculated numerically in this case.
-
-           // Update the coefficients in the tree
-           for(int i=0; i<coeff_ptrs.size(); i++){
-               ((Const*)coeff_ptrs[i]->op)->c = (float) x(i);
-           }
-
-           Mat Jacobian(X_train.rows(),coeff_ptrs.size() + 2);
-           Jacobian=Mat::Zero(X_train.rows(),coeff_ptrs.size() + 2);
-
-           for(int i=0; i<coeff_ptrs.size(); i++){
-               // Mark the operator as being differentiable
-               ((Const*)coeff_ptrs[i]->op)->d = static_cast<float>(1);
-
-               pair<Vec,Vec> output = tree->get_output_der(X_train);
-
-               g::mse_func->opt_evaluations += 1;
-               if(g::use_clip){
-                   Jacobian.col(i) = (-output.second * x(coeff_ptrs.size()+1)).cwiseMax(-1).cwiseMin(1);
-               }
-               else{
-                   Jacobian.col(i) = -output.second * x(coeff_ptrs.size()+1);
-               }
-               ((Const*)coeff_ptrs[i]->op)->d = static_cast<float>(0);
-           }
-
-           Vec output = tree->get_output(g::mse_func->X_batch_opt);
-           g::mse_func->opt_evaluations += 1;
-
-           if(!g::use_mse_opt){
-                    Jacobian.col(coeff_ptrs.size()) = Vec::Zero(X_train.rows()) + 1.;
-                    Jacobian.col(coeff_ptrs.size() + 1) = -output;
-           }
-           else{
-                    Jacobian.col(coeff_ptrs.size()) = Vec::Zero(X_train.rows());
-                    Jacobian.col(coeff_ptrs.size() + 1) = Vec::Zero(X_train.rows());
-           }
-
-           if(g::use_clip){
-               Jacobian.col(coeff_ptrs.size()) = Jacobian.col(coeff_ptrs.size()).cwiseMax(-1).cwiseMin(1);
-               Jacobian.col(coeff_ptrs.size() + 1) = Jacobian.col(coeff_ptrs.size() + 1).cwiseMax(-1).cwiseMin(1);
-           }
-
-           fjac = Jacobian.matrix();
-           return 0;
-       }
-
-       // Number of data points, i.e. values.
-       int m;
-
-       // Returns 'm', the number of values.
-       int values() const { return m; }
-
-       // The number of parameters, i.e. inputs.
-           int n;
-
-       // Returns 'n', the number of inputs.
-       int inputs() const { return n; }
-     };
-
-     LMFunctor functor;
-
-     functor.X_train = g::mse_func->X_batch_opt;
-     functor.y_train = g::mse_func->y_batch_opt;
-     functor.m = g::mse_func->X_batch_opt.rows();
-     functor.n = g::mse_func->X_batch_opt.cols();
-     functor.intc_slope = intc_slope;
-
-     functor.tree = tree;
-     functor.coeff_ptrs = coeff_ptrs;
-
-     Eigen::LevenbergMarquardt<LMFunctor, float> lm(functor);
-     lm.parameters.maxfev = g::lm_max_fev;
-     //lm.parameters.factor = 10000000;
-     lm.parameters.gtol = 0.;
-     lm.parameters.ftol = 0.;
-     lm.parameters.xtol = 0.;
-
-     if(g::use_ftol){
-        lm.parameters.ftol = g::tol;
-     }
-     else{
-       lm.parameters.gtol = g::tol;
-     }
-
-     int status = lm.minimize(coeffsfv);
-
-     for(int i=0; i<coeff_ptrs.size(); i++){
-         ((Const*)coeff_ptrs[i]->op)->c = coeffsfv(i);
-     }
-
-   }
-
-
-
+    catch (...) {
+        // TODO: Any node throws not implemented error
+        // ln(sin((any/cos(193.193634033))))
+    }
 
   return tree;
 }

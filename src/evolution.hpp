@@ -656,11 +656,13 @@ struct Evolution {
 
       population = offspring_population;
 
-      if(g::log_pop) {
+
+      if(g::log_pop){
           ofstream csv_file;
           csv_file.open(g::csv_file_pop, ios::app);
 
           string str = "";
+
 
 
           for (auto ind: population) {
@@ -670,6 +672,7 @@ struct Evolution {
           }
           str.pop_back();
           str += "\n";
+
 
           csv_file << str;
           csv_file.close();
