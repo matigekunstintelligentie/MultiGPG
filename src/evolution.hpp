@@ -111,43 +111,6 @@ struct Evolution {
 
   }
 
-    void gomea_generation_SO(int macro_generation) {
-        vector<pair<vector<int>,int>> foses;
-        vector<vector<Node*>> foses_pop;
-        foses_pop.reserve(g::nr_multi_trees);
-
-        for(int i =0; i<g::nr_multi_trees;i++){
-            vector<Node *> fos_pop;
-            fos_pop.reserve(population.size());
-            for(int j =0; j<population.size();j++){
-                fos_pop.push_back(population[j]->trees[i]);
-            }
-            vector<vector<int>> fos = fbs[0][i]->build_linkage_tree(fos_pop, i);
-            for(auto fos_el: fos){
-                foses.push_back(make_pair(fos_el,i));
-            }
-            foses_pop.push_back(fos_pop);
-        }
-
-        // perform GOM
-        vector<Individual*> offspring_population;
-        offspring_population.reserve(pop_size);
-
-        for(int i = 0; i < pop_size; i++) {
-            Individual * offspring = efficient_gom(population[i], foses_pop, population, foses, macro_generation);
-
-            offspring_population.push_back(offspring);
-            g::ea->updateSOArchive(offspring);
-        }
-
-        // replace parent with offspring population
-        clear_population(population);
-
-        population = offspring_population;
-
-        ++gen_number;
-    }
-
     pair<pair<vector<vector<Individual *>>, vector<vector<Individual *>>>, vector<int>> single_cluster(vector<Individual *> &population){
         vector<vector<Individual *>> clustered_population = vector<vector<Individual *>>(1,vector<Individual *>());
         clustered_population[0] = population;
@@ -348,7 +311,7 @@ struct Evolution {
   pair<pair<vector<vector<Individual *>>, vector<vector<Individual *>>>, vector<int>>
   K_leader_means(vector<Individual *> &population) {
       int k = g::n_clusters;
-      if(k<2){
+      if(k<2 || !g::MO_mode){
           return single_cluster(population);
       }
 
@@ -594,15 +557,15 @@ struct Evolution {
       }
 
       vector<vector<Individual *>> clustered_population = output.first.first;
-      vector<vector<Individual *>> clustered_population_equal = output.first.second;
+      vector<vector<Individual *>> clustered_donor_population = output.first.second;
       vector<int> clusternr = output.second;
 
       // Per cluster, one FOS
       vector<vector<pair<vector<int>,int>>> FOSs;
-      vector<vector<vector<Node *>>> clustered_FOSes_pop;
+      vector<vector<vector<Node *>>> clustered_donor_pop;
       for(int i = 0; i<g::n_clusters; i++){
           vector<pair<vector<int>,int>> cluster_fbs;
-          vector<vector<Node*>> FOSes_pop;
+          vector<vector<Node*>> donor_pop;
           for(int j = 0; j<g::nr_multi_trees; j++){
               if(clustered_population[i].size()>0) {
                   vector<Node *> fos_pop;
@@ -610,14 +573,21 @@ struct Evolution {
                   for (int x = 0; x < clustered_population[i].size(); x++) {
                       fos_pop.push_back(clustered_population[i][x]->trees[j]);
                   }
-                  FOSes_pop.push_back(fos_pop);
+
                   vector<vector<int>> fos = fbs[i][j]->build_linkage_tree(fos_pop, j);
                   for (auto fos_el: fos) {
                       cluster_fbs.push_back(make_pair(fos_el, j));
                   }
               }
+              if(clustered_donor_population[i].size()>0){
+                  vector<Node *> fos_donor_pop;
+                  for(int x=0;x<clustered_donor_population[i].size();x++){
+                      fos_donor_pop.push_back(clustered_donor_population[i][x]->trees[j]);
+                  }
+                  donor_pop.push_back(fos_donor_pop);
+              }
           }
-          clustered_FOSes_pop.push_back(FOSes_pop);
+          clustered_donor_pop.push_back(donor_pop);
           FOSs.push_back(cluster_fbs);
       }
 
@@ -634,10 +604,10 @@ struct Evolution {
 
           Individual *offspring;
           if(clustered_population[i].size()>1){
-              offspring = efficient_gom_MO(clustered_population[i][j], clustered_FOSes_pop[i], FOSs[i], macro_generation, clusternr[i], clusternr[i] < nr_objectives,  NIS_const);
+              offspring = efficient_gom_MO(clustered_population[i][j], clustered_donor_pop[i], FOSs[i], macro_generation, clusternr[i], clusternr[i] < nr_objectives,  NIS_const);
           }
           else{
-              offspring = efficient_gom_MO(clustered_population[i][j], clustered_FOSes_pop[i], FOSs[i], macro_generation,clusternr[i], clusternr[i] < nr_objectives, NIS_const);
+              offspring = efficient_gom_MO(clustered_population[i][j], clustered_donor_pop[i], FOSs[i], macro_generation,clusternr[i], clusternr[i] < nr_objectives, NIS_const);
           }
           offspring->clusterid = i;
           offspring_population.push_back(offspring);
@@ -658,8 +628,6 @@ struct Evolution {
           csv_file.open(g::csv_file_pop, ios::app);
 
           string str = "";
-
-
 
           for (auto ind: population) {
               str += to_string(ind->fitness[0]) + "," + to_string(ind->fitness[1]) + "," +
