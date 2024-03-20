@@ -18,27 +18,38 @@ def read_tsv_file(file_path):
         print(f"An error occurred: {str(e)}")
 
 
+def process_row(row, max_mse, max_len, data, update_max=False):
+    coordinates = []
+    # Split each long line by ';' to get individual coordinate strings
+    coordinate_strings = row[0].split(';')
+    for coord_str in coordinate_strings:
+        # Split each coordinate string by ',' to get x, y, z values
+        x, y, z, z1, z2 = coord_str.replace("inf","-1").split(',')
+        coordinates.append((float(x), float(y), int(z), int(z1), int(z2)))
+
+        if update_max:
+            if float(x)>max_mse and int(float(x)) !=-1:
+                max_mse = float(x)
+            if float(y)>max_len and int(float(x))!=-1:
+                max_len = float(y)
+    data.append(coordinates)
+    return max_mse, max_len
+
 def process_rows(df):
-
     max_len = 0
-    max_mse =0
+    max_mse = 0
     processed_data = []
+    processed_cluster_data = []
+    processed_donor_data = []
     for index, row in df.iterrows():
-        coordinates = []
-        # Split each long line by ';' to get individual coordinate strings
-        coordinate_strings = row[0].split(';')
-        for coord_str in coordinate_strings:
-            # Split each coordinate string by ',' to get x, y, z values
-            x, y, z, z1, z2 = coord_str.replace("inf","200").split(',')
-            coordinates.append((float(x), float(y), int(z), int(z1), int(z2)))
+        if index%3==0:
+            max_mse, max_len = process_row(row, max_mse, max_len, processed_data, update_max=True)
+        if index%3==1:
+            process_row(row, max_mse, max_len, processed_cluster_data, update_max=False)
+        if index%3==1:
+            process_row(row, max_mse, max_len, processed_donor_data, update_max=False)
 
-
-            if float(x)>max_mse:
-            	max_mse = float(x)
-            if float(y)>max_len:
-            	max_len = float(y)
-        processed_data.append(coordinates)
-    return processed_data, max_len, max_mse
+    return processed_data, processed_cluster_data, processed_donor_data, max_len, max_mse
 
 
 
@@ -64,27 +75,19 @@ def process_rows(df):
 
 def update(frame):
     ax.clear()
-    # ax.set_xlim(0, max_mse*1.5)  # Set fixed x-axis limits
-    # ax.set_ylim(0, max_len*1.5)
-
-    # row = processed_data[frame]
-    #
-    # xs = []
-    # ys = []
-    # for coord in row:
-    #     xs.append(coord[0])
-    #     ys.append(coord[1])
 
     best_mse_ind = (999999.,999999,-1)
     best_size_ind = (999999.,999999,-1)
 
-
-
-    row = processed_data[frame]
+    row = data[frame]
     sorted_by_z = [[],[],[],[],[],[],[]]
 
     for coord in row:
-      sorted_by_z[coord[2]].append((coord[0], coord[1], coord[3], coord[4]))
+
+
+      x = float(str(coord[0]).replace("-1.0", str(max_mse)))  
+      y = float(str(coord[1]).replace("-1.0", str(max_len)))  
+      sorted_by_z[coord[2]].append((x, y, coord[3], coord[4]))
 
     for z_val, row in enumerate(sorted_by_z):
       if(len(row)>0):
@@ -106,15 +109,76 @@ def update(frame):
     ax.set_title(f'Generation {frame+1}')
     ax.legend()
 
+def update2(frame):
+    ax.clear()
+
+    colors = ['b','g','r','c','m','y','k']
+
+    row = data[frame]
+    sorted_by_z = [[],[],[],[],[],[],[]]
+
+    for coord in row:
+      x = float(str(coord[0]).replace("-1.0", str(max_mse)))  
+      y = float(str(coord[1]).replace("-1.0", str(max_len)))  
+      sorted_by_z[coord[2]].append((x, y, coord[3], coord[4]))
+
+    for z_val, row in enumerate(sorted_by_z):
+      if(len(row)>0):
+          x_vals = [coord[0] for coord in row]
+          y_vals = [coord[1] for coord in row]
+          ax.scatter(x_vals, y_vals, label=f'Z={z_val} obj={row[0][2]} nr={row[0][3]}', alpha=0.5, marker="x", color=[colors[z_val]])
+
+    row = data2[frame]
+    sorted_by_z = [[],[],[],[],[],[],[]]
+
+    for coord in row:
+      x = float(str(coord[0]).replace("-1.0", str(max_mse)))  
+      y = float(str(coord[1]).replace("-1.0", str(max_len)))  
+      sorted_by_z[coord[2]].append((x, y, coord[3], coord[4]))
+
+    for z_val, row in enumerate(sorted_by_z):
+      if(len(row)>0):
+          x_vals = [coord[0] for coord in row]
+          y_vals = [coord[1] for coord in row]
+          if(row[0][2]==0):
+            ax.scatter(x_vals, y_vals, label=f'Z={z_val} obj={row[0][2]} nr={row[0][3]}', alpha=0.5, marker="o", color=[colors[z_val]])      
+
+    ax.set_xlabel('MSE')
+    ax.set_ylabel('Model size')
+    ax.set_title(f'Generation {frame+1}')
+    ax.legend()    
 
 
-tsv_file_path = "./MOMT.csv"
+def make_frames(data, title):
+    global ax
+    fig, ax = plt.subplots()
+
+    ani = FuncAnimation(fig, update, frames=len(data), interval=1000)
+
+    for i in range(len(data)):
+        update(i)
+        plt.savefig(f'./frames/{title}_{i:04d}.png')
+
+def make_frames2(data, data2, title):
+    global ax
+    fig, ax = plt.subplots()
+
+    ani = FuncAnimation(fig, update2, frames=len(data), interval=1000)
+
+    for i in range(len(data)):
+        update2(i)
+        plt.savefig(f'./frames/{title}_{i:04d}.png')
+
+tsv_file_path = "./balanced.csv"
 df = read_tsv_file(tsv_file_path)
-processed_data, max_len, max_mse = process_rows(df)
-fig, ax = plt.subplots()
-ani = FuncAnimation(fig, update, frames=len(processed_data), interval=1000)
+processed_data, processed_cluster_data, processed_cluster_data, max_len, max_mse = process_rows(df)
 
-for i in range(len(processed_data)):
-    update(i)
-    plt.savefig(f'frame_{i:04d}.png')
+data = processed_cluster_data
+make_frames(processed_data, "pop")
+
+data = processed_cluster_data
+data2 = processed_cluster_data
+make_frames2(data, data2, "donors")
+
+
 

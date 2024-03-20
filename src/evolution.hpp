@@ -598,6 +598,46 @@ struct Evolution {
           }
       }
 
+
+      if(g::log_pop && macro_generation>0){
+          ofstream csv_file;
+          csv_file.open(g::csv_file_pop, ios::app);
+
+          string str = "";
+
+          for (auto ind: population) {
+              str += to_string(ind->fitness[0]) + "," + to_string(ind->fitness[1]) + "," +
+                     to_string(ind->clusterid) + "," + to_string(clusternr[ind->clusterid]) + "," +
+                     to_string(clustered_population[ind->clusterid].size()) + ";";
+          }
+          str.pop_back();
+          str += "\n";
+
+          for(int clusterid=0; clusterid<g::n_clusters;clusterid++){
+              for (auto ind: clustered_population[clusterid]) {
+                  str += to_string(ind->fitness[0]) + "," + to_string(ind->fitness[1]) + "," +
+                         to_string(clusterid) + "," + to_string(clusternr[clusterid]) + "," +
+                         to_string(clustered_population[clusterid].size()) + ";";
+              }
+          }
+          str.pop_back();
+          str += "\n";
+
+          for(int clusterid=0; clusterid<g::n_clusters;clusterid++){
+              for (auto ind: clustered_donor_population[clusterid]) {
+                  str += to_string(ind->fitness[0]) + "," + to_string(ind->fitness[1]) + "," +
+                         to_string(clusterid) + "," + to_string(clusternr[clusterid]) + "," +
+                         to_string(clustered_donor_population[clusterid].size()) + ";";
+              }
+          }
+          str.pop_back();
+          str += "\n";
+
+          csv_file << str;
+          csv_file.close();
+      }
+
+
       for(int x=0; x<idx.size(); x++){
           int &i = idx[x].first;
           int &j = idx[x].second;
@@ -609,6 +649,7 @@ struct Evolution {
           else{
               offspring = efficient_gom_MO(clustered_population[i][j], clustered_donor_pop[i], FOSs[i], macro_generation,clusternr[i], clusternr[i] < nr_objectives, NIS_const);
           }
+
           offspring->clusterid = i;
           offspring_population.push_back(offspring);
           g::ea->updateMOArchive(offspring);
@@ -623,24 +664,7 @@ struct Evolution {
       population = offspring_population;
 
 
-      if(g::log_pop){
-          ofstream csv_file;
-          csv_file.open(g::csv_file_pop, ios::app);
 
-          string str = "";
-
-          for (auto ind: population) {
-              str += to_string(ind->fitness[0]) + "," + to_string(ind->fitness[1]) + "," +
-                     to_string(ind->clusterid) + "," + to_string(clusternr[ind->clusterid]) + "," +
-                     to_string(clustered_population[ind->clusterid].size()) + ";";
-          }
-          str.pop_back();
-          str += "\n";
-
-
-          csv_file << str;
-          csv_file.close();
-      }
   }
 
 
