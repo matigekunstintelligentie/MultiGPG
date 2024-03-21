@@ -125,6 +125,199 @@ struct Evolution {
         return make_pair(make_pair(clustered_population, clustered_population), clusternr);
   }
 
+    pair<pair<vector<vector<Individual *>>, vector<vector<Individual *>>>, vector<int>>
+    balanced_K_2_leader_means(vector<Individual *> &population) {
+        int k = g::n_clusters;
+
+        // If 1 cluster then return the whole population in one cluster, the population as donor population, and all clusternr 3 (MO) or 0 in SO mode
+        if(k<2){
+            return single_cluster(population);
+        }
+
+        int pop_size = population.size();
+
+        // keep track of possible leaders
+        vector<int> range(pop_size);
+        iota(range.begin(), range.end(), 0);
+
+        // all solutions are still possible as leaders
+        unordered_set<int> remaining_solutions(range.begin(), range.end());
+
+
+        // get objective value data and normalise
+        int nr_objs = 2;
+        Mat norm_data(nr_objs, pop_size);
+        for(int i=0; i<remaining_solutions.size(); i++){
+            for(int j=0; j<nr_objs; j++){
+                norm_data(j,i) = population[i]->fitness[j];
+            }
+        }
+
+        vector<vector<Individual*>> top_clusters(2);
+
+        // Make two clusters
+        auto rand_obj_perm_extrema = Rng::rand_perm(2);
+        for(auto random_obj: rand_obj_perm_extrema) {
+            vector<Individual*> extreme_cluster;
+            vector<int> myVector(remaining_solutions.begin(), remaining_solutions.end());
+            sort(myVector.begin(), myVector.end(), [&](int i, int j) {
+                return population[i]->fitness[random_obj] < population[j]->fitness[random_obj];
+            });
+            for(int i = 0; i<int(pop_size/k); i++){
+                extreme_cluster.push_back(population[myVector[i]]);
+                remaining_solutions.erase(myVector[i]);
+            }
+            top_clusters[random_obj] = extreme_cluster;
+        }
+
+        for(int i=0; i<nr_objs; i++){
+            float min;
+            bool min_initialised = false;
+            float max;
+            bool max_initialised = false;
+            // get min and max for objective
+            for(int x: range){
+                float value = norm_data(i, x);
+                if ((!min_initialised || value < min) && !isinf(value)) {
+                    min = value;
+                    min_initialised = true;
+                }
+                if ((!max_initialised || value > max) && !isinf(value)) {
+                    max = value;
+                    max_initialised = true;
+                }
+            }
+            //normalize each value in population for that objective
+            for (int j = 0; j < pop_size; j++) {
+                if(isinf(norm_data(i, j)) && norm_data(i, j)<0){
+                    norm_data(i, j) = min;
+                }
+                if(isinf(norm_data(i, j))){
+                    norm_data(i, j) = max;
+                }
+                norm_data(i, j) = (norm_data(i, j) - min) / ((max - min)+0.0000000001);
+            }
+        }
+
+        // get first leaders based on smallest objective value
+        int initialised_k = 0;
+        vector<int> idx_leaders;
+
+        auto rand_obj_perm = Rng::rand_perm(nr_objs);
+
+        int idx_min = *remaining_solutions.begin();
+        for (int x: remaining_solutions) {
+            if (norm_data(rand_obj_perm[0], idx_min) > norm_data(rand_obj_perm[0], x)) {
+                idx_min = x;
+            }
+        }
+        int first_leader = idx_min;
+        idx_leaders.push_back(first_leader);
+        remaining_solutions.erase(first_leader);
+        initialised_k++;
+
+
+        // find other leaders
+        // first get distance of all remaining possible leaders to first leaders
+        Vec dists = Vec::Zero(pop_size);
+
+
+        for(int x: remaining_solutions){
+            dists(x) = (norm_data.col(x) - norm_data.col(idx_leaders[0])).square().mean();
+        }
+
+        while(initialised_k<k-2 && !remaining_solutions.empty()){
+            // select leader with the furthest distance to other leaders
+            int new_leader = argmax(dists);
+            idx_leaders.push_back(new_leader);
+            initialised_k++;
+            // minimum distance of new leader to other leaders now becomes 0 and the new leader is not a remaining possible leader
+            dists[new_leader] = 0;
+            remaining_solutions.erase(new_leader);
+            // update distances of possible new leaders: if the new solution is closer to the individual then the one currently closest we update the distance
+            for (size_t x: remaining_solutions) {
+                double minimum = min((norm_data.col(x) - norm_data.col(new_leader)).square().mean(), dists[x]);
+                dists[x] = minimum;
+            }
+        }
+
+        // intialize cluster tags for k-means
+        vector<int> clustertags_kmeans(pop_size);
+        // initialize matrix for centers of the clusters (start with location of the leaders)
+        Mat cluster_centers = Mat::Zero(nr_objs, idx_leaders.size());
+        for(int i =0; i<idx_leaders.size(); i++){
+            cluster_centers.col(i) = norm_data.col(idx_leaders[i]);
+        }
+
+        unordered_set<int> new_remaining_solutions(range.begin(), range.end());
+
+        while(new_remaining_solutions.size()>0){
+            auto random_cluster_order = Rng::rand_perm(k-2);
+            for(int j = 0; j<k-2; j++){
+                int cluster_nr = random_cluster_order[j];
+
+                // pick closest idx
+                int closest_idx;
+                bool lowest_dist_init = false;
+                float lowest_dist;
+
+                for(auto i: new_remaining_solutions){
+                    // check the center that is closest for this indivdual
+                    if (!lowest_dist_init ||
+                        lowest_dist > (norm_data.col(i) - cluster_centers.col(cluster_nr)).square().mean()) {
+                        lowest_dist = (norm_data.col(i) - cluster_centers.col(cluster_nr)).square().mean();
+                        closest_idx = i;
+                        lowest_dist_init = true;
+                    }
+                }
+                //assign
+                clustertags_kmeans[closest_idx]= cluster_nr;
+
+                new_remaining_solutions.erase(closest_idx);
+            }
+        }
+
+        vector<vector<int>> clustertags_equal = vector<vector<int>>(pop_size,vector<int>());
+        // store the solutions of each cluster in a separate vector for FOS in clustered_population
+        vector<vector<Individual *>> clustered_population = vector<vector<Individual *>>(k,vector<Individual *>());
+        vector<vector<Individual *>> clustered_population_equal = vector<vector<Individual *>>(k,vector<Individual *>());
+
+        // assign to each cluster the closest donor_fraction*pop_size/cluster solutions
+        for(int x=0; x<initialised_k; x++){
+            Vec distances = Vec(pop_size);
+            // for each individual
+            for(int i = 0; i<pop_size; i++){
+                distances[i] = (norm_data.col(i) - cluster_centers.col(x)).square().mean();
+            }
+            int donor_pop_size = ((g::donor_fraction*pop_size)/initialised_k);
+
+            for(int times=0; times<donor_pop_size; times++){
+                clustered_population_equal[x].push_back(population[argmin(distances)]);
+
+                clustertags_equal[argmin(distances)].push_back(x);
+
+                distances[argmin(distances)] = std::numeric_limits<float>::infinity();
+            }
+        }
+
+        vector<int> clusternr = vector<int>(k, nr_objs + 1);
+
+        // if not yet assigned solution in equal size clustering, assign to closest. if multiple are assigned, assign to random of multiple center
+        for (int i = 0; i < pop_size-2*int(pop_size/k); i++) {
+            clustered_population[clustertags_kmeans[i]].push_back(population[i]);
+        }
+
+        clustered_population[clustered_population.size()-2] = top_clusters[0];
+        clustered_population_equal[clustered_population.size()-2] = top_clusters[0];
+        clusternr[clusternr.size()-2] = rand_obj_perm_extrema[0];
+
+        clustered_population[clustered_population.size()-1] = top_clusters[1];
+        clustered_population_equal[clustered_population.size()-1] = top_clusters[1];
+        clusternr[clusternr.size()-1] = rand_obj_perm_extrema[1];
+
+        return make_pair(make_pair(clustered_population, clustered_population_equal), clusternr);
+    }
+
   pair<pair<vector<vector<Individual *>>, vector<vector<Individual *>>>, vector<int>>
   balanced_K_leader_means(vector<Individual *> &population) {
       int k = g::n_clusters;
@@ -530,7 +723,11 @@ struct Evolution {
 
       pair<pair<vector<vector<Individual*>>, vector<vector<Individual*>>>, vector<int>> output;
       if(g::balanced){
+          //output = balanced_K_leader_means(population);
           output = balanced_K_leader_means(population);
+      }
+      else if(g::k2){
+          output = balanced_K_2_leader_means(population);
       }
       else{
           output = K_leader_means(population);
@@ -609,6 +806,14 @@ struct Evolution {
                          to_string(clusterid) + "," + to_string(clusternr[clusterid]) + "," +
                          to_string(clustered_donor_population[clusterid].size()) + ";";
               }
+          }
+          str.pop_back();
+          str += "\n";
+
+          for (auto ind: g::ea->MO_archive) {
+              str += to_string(ind->fitness[0]) + "," + to_string(ind->fitness[1]) + "," +
+                     to_string(-1) + "," + to_string(-1) + "," +
+                     to_string(-1) + ";";
           }
           str.pop_back();
           str += "\n";

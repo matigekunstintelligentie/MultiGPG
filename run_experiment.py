@@ -61,6 +61,7 @@ parser.add_argument('--verbose', type=str2bool)
 parser.add_argument('--discount_size', type=str2bool)
 parser.add_argument('--balanced', type=str2bool)
 parser.add_argument('--accept_diversity', type=str2bool)
+parser.add_argument('--k2', type=str2bool)
 parser.add_argument('--donor_fraction', type=float)
 
 
@@ -95,7 +96,7 @@ g = GPGRegressor(t=args.t, g=args.g, tour=args.tour, d=args.depth,  use_optim=ar
 
          use_max_range=args.use_max_range, equal_p_coeffs=args.equal_p_coeffs,
         MO_mode=args.MO_mode, use_adf=args.use_adf, use_aro=args.use_aro, n_clusters=args.n_clusters, max_coeffs=args.max_coeffs, discount_size=args.discount_size,
-        random_state=args.seed, nr_multi_trees=args.nr_multi_trees, balanced=args.balanced, donor_fraction=args.donor_fraction, accept_diversity=args.accept_diversity)
+        random_state=args.seed, nr_multi_trees=args.nr_multi_trees, balanced=args.balanced, donor_fraction=args.donor_fraction, accept_diversity=args.accept_diversity, k2=args.k2)
 
 #+,-,*,/,¬,log,pow,max,min,abs,exp,sqrt,sin,cos
 if not args.contains_train:

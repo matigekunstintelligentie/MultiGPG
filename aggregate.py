@@ -117,7 +117,7 @@ for dataset in ["dowchemical","tower", "air", "concrete", "bike", "synthetic_dat
 
     d = defaultdict(lambda: defaultdict(list))
 
-    folder = "multi_trees"
+    folder = "test"
     dir = "./results/" + folder
     for filename in glob.glob(dir + "/*.csv"):
         nr = filename.split("/")[-1].split("_")[0]
@@ -158,6 +158,13 @@ for dataset in ["dowchemical","tower", "air", "concrete", "bike", "synthetic_dat
             d[d_key][1].extend(scatter_y)
             d[d_key][2].append(gens)
             d[d_key][3].extend(scatter_x_val)
+            d[d_key][4].append(df.iloc[0][1])
+
+    print("DATASET", dataset)        
+    for d_key in sorted(list(d.keys()), key=lambda d_key: np.mean(d[d_key][4])):
+        print(d_key)
+        print(np.mean(d[d_key][4]), len(d[d_key][4]))
+
 
 
     make_plots(d, folder, x_index=0, appendix="train")

@@ -4,8 +4,9 @@ import copy
 import pandas as pd
 import numpy as np
 from matplotlib.animation import FuncAnimation
+import glob
 
-
+import os
 
 def read_tsv_file(file_path):
     try:
@@ -41,15 +42,18 @@ def process_rows(df):
     processed_data = []
     processed_cluster_data = []
     processed_donor_data = []
+    processed_front_data = []
     for index, row in df.iterrows():
-        if index%3==0:
+        if index%4==0:
             max_mse, max_len = process_row(row, max_mse, max_len, processed_data, update_max=True)
-        if index%3==1:
+        if index%4==1:
             process_row(row, max_mse, max_len, processed_cluster_data, update_max=False)
-        if index%3==1:
+        if index%4==2:
             process_row(row, max_mse, max_len, processed_donor_data, update_max=False)
+        if index%4==3:
+            process_row(row, max_mse, max_len, processed_front_data, update_max=False)
 
-    return processed_data, processed_cluster_data, processed_donor_data, max_len, max_mse
+    return processed_data, processed_cluster_data, processed_donor_data, processed_front_data, max_len, max_mse
 
 
 
@@ -101,12 +105,14 @@ def update(frame):
               if coord[1]<best_size_ind[1]:
                 best_size_ind = (coord[0],coord[1],z_val,row[0][2],row[0][3])
 
+    ax.set_ylim(0,200)
+    ax.set_xlim(0,4000)
     ax.scatter(best_mse_ind[0],best_mse_ind[1],marker='x', label=f'Z={best_mse_ind[2]}, obj={best_mse_ind[3]}')
     ax.scatter(best_size_ind[0],best_size_ind[1],marker='x', label=f'Z={best_size_ind[2]}, obj={best_size_ind[3]}')
     #ax.scatter(xs,ys)
     ax.set_xlabel('MSE')
     ax.set_ylabel('Model size')
-    ax.set_title(f'Generation {frame+1}')
+    ax.set_title(f'Generation {frame+1} best mse {best_mse_ind[0]}')
     ax.legend()
 
 def update2(frame):
@@ -142,43 +148,64 @@ def update2(frame):
           y_vals = [coord[1] for coord in row]
           if(row[0][2]==0):
             ax.scatter(x_vals, y_vals, label=f'Z={z_val} obj={row[0][2]} nr={row[0][3]}', alpha=0.5, marker="o", color=[colors[z_val]])      
-
+    
+    ax.set_ylim(0,200)
+    ax.set_xlim(0,4000)
     ax.set_xlabel('MSE')
     ax.set_ylabel('Model size')
     ax.set_title(f'Generation {frame+1}')
     ax.legend()    
 
 
-def make_frames(data, title):
+def make_frames(data, folder, title):
     global ax
     fig, ax = plt.subplots()
 
     ani = FuncAnimation(fig, update, frames=len(data), interval=1000)
 
+    directory = f'./frames/{folder}'
+    isExist = os.path.exists(directory)
+    if not isExist:
+        os.makedirs(directory)
+
     for i in range(len(data)):
         update(i)
-        plt.savefig(f'./frames/{title}_{i:04d}.png')
+        plt.savefig(f'{directory}/{title}_{i:04d}.png')
 
-def make_frames2(data, data2, title):
+def make_frames2(data, data2, folder, title):
     global ax
     fig, ax = plt.subplots()
 
     ani = FuncAnimation(fig, update2, frames=len(data), interval=1000)
 
+    directory = f'./frames/{folder}'
+    isExist = os.path.exists(directory)
+    if not isExist:
+        os.makedirs(directory)
+
     for i in range(len(data)):
         update2(i)
-        plt.savefig(f'./frames/{title}_{i:04d}.png')
+        plt.savefig(f'{directory}/{title}_{i:04d}.png')
 
-tsv_file_path = "./results/test/pop/1_SO_tower.csv"
-df = read_tsv_file(tsv_file_path)
-processed_data, processed_cluster_data, processed_cluster_data, max_len, max_mse = process_rows(df)
 
-data = processed_cluster_data
-make_frames(processed_data, "pop")
+for filename in glob.glob("./results/test/*.csv"):
+    folder = filename.split("/")[-1]
+    #folder = "1_MO_tower.csv"
+    tsv_file_path = f'./results/test/pop/{folder}'
 
-data = processed_cluster_data
-data2 = processed_cluster_data
-make_frames2(data, data2, "donors")
+
+    df = read_tsv_file(tsv_file_path)
+    processed_data, processed_cluster_data, processed_cluster_data, processed_front_data, max_len, max_mse = process_rows(df)
+
+    data = processed_front_data
+    make_frames(data, folder, "front")
+
+    data = processed_cluster_data
+    make_frames(data, folder, "pop")
+
+    data = processed_cluster_data
+    data2 = processed_cluster_data
+    make_frames2(data, data2, folder, "donors")
 
 
 
