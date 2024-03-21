@@ -58,7 +58,7 @@ def calc_hv(dataset_filename_fronts, key1, key2, x_index, max_size):
 
 def make_plots(d, folder, x_index, appendix):
     #for el in [['MO_fulldonor', 'MO_balanced'], ['SO','MO', 'MO_balanced_fulldonor'],  ['MO_equalclustersize', 'SO', 'MO', 'MO_equalclustersize_fulldonor'], ['MO', 'discount'], ['MO', 'MO_nocluster'], ['MO_noadf','MO'], ['tree_42', 'tree_7']]:
-    for el in [['SO','MO_balanced_fulldonor', 'MO_balanced', 'MO'], ['SO','MO_equalclustersize_balanced', 'MO_equalclustersize_balanced_fulldonor', 'MO_equalclustersize_fulldonor']]:
+    for el in [['SO','MO_equalclustersize_balanced','MO_equalclustersize_balanced_frac1'],['MO', 'discount'], ['MO', 'MO_nocluster'], ['MO_noadf','MO'],['SO','MO_balanced']]:
         fig = plt.figure()
         plt.title("Dataset: {}".format(dataset.capitalize()))
         markers = ['o', 'x', '^','s']
@@ -69,7 +69,6 @@ def make_plots(d, folder, x_index, appendix):
                 x = d[key][x_index]
                 y = d[key][1]
 
-                print(d[key][2], key)
                 gens = np.min(d[key][2])
 
                 hvs = calc_hv(dataset_filename_fronts, dataset, key, x_index, max_size)
@@ -133,7 +132,8 @@ for dataset in ["dowchemical","tower", "air", "concrete", "bike", "synthetic_dat
 
             scatter_x_val = []
 
-            df = pd.read_csv(filename, sep="\t", header=None, error_bad_lines=False)
+            #, error_bad_lines=False
+            df = pd.read_csv(filename, sep="\t", header=None)
 
 
             gens = len(df.iloc[0][8].split(","))

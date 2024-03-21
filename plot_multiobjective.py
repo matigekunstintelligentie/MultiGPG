@@ -169,7 +169,7 @@ def make_frames2(data, data2, title):
         update2(i)
         plt.savefig(f'./frames/{title}_{i:04d}.png')
 
-tsv_file_path = "./balanced.csv"
+tsv_file_path = "./results/test/pop/1_SO_tower.csv"
 df = read_tsv_file(tsv_file_path)
 processed_data, processed_cluster_data, processed_cluster_data, max_len, max_mse = process_rows(df)
 

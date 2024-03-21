@@ -186,7 +186,6 @@ struct Evolution {
       vector<int> idx_leaders;
 
       auto rand_obj_perm = Rng::rand_perm(nr_objs);
-
       // TODO: here we force the elite of each objective to be a leader
       for(auto random_obj: rand_obj_perm) {
           int idx_min = *remaining_solutions.begin();
@@ -225,8 +224,6 @@ struct Evolution {
 
       // intialize cluster tags for k-means
       vector<int> clustertags_kmeans(pop_size);
-      // intialize bool for whether there was a change in cluster assignments
-      bool cluster_change = true;
       // initialize matrix for centers of the clusters (start with location of the leaders)
       Mat cluster_centers = Mat::Zero(nr_objs, idx_leaders.size());
       for(int i =0; i<idx_leaders.size(); i++){
@@ -244,6 +241,7 @@ struct Evolution {
               int closest_idx;
               bool lowest_dist_init = false;
               float lowest_dist;
+
               for(auto i: new_remaining_solutions){
                   // check the center that is closest for this indivdual
                   if (!lowest_dist_init ||
@@ -255,22 +253,22 @@ struct Evolution {
               }
               //assign
               clustertags_kmeans[closest_idx]= cluster_nr;
-              new_remaining_solutions.erase(closest_idx);
 
-              //update cluster center
+              new_remaining_solutions.erase(closest_idx);
           }
       }
+
       vector<vector<int>> clustertags_equal = vector<vector<int>>(pop_size,vector<int>());
       // store the solutions of each cluster in a separate vector for FOS in clustered_population
       vector<vector<Individual *>> clustered_population = vector<vector<Individual *>>(initialised_k,vector<Individual *>());
       vector<vector<Individual *>> clustered_population_equal = vector<vector<Individual *>>(initialised_k,vector<Individual *>());
 
-      // assign to each cluster the closest 2*pop_size/cluster solutions
+      // assign to each cluster the closest donor_fraction*pop_size/cluster solutions
       for(int x=0; x<initialised_k; x++){
           Vec distances = Vec(pop_size);
+          // for each individual
           for(int i = 0; i<pop_size; i++){
               distances[i] = (norm_data.col(i) - cluster_centers.col(x)).square().mean();
-
           }
           int donor_pop_size = ((g::donor_fraction*pop_size)/initialised_k);
 
@@ -362,27 +360,9 @@ struct Evolution {
           }
       }
 
-//      // get first leaders based on smallest objective value
+      // get first leaders based on smallest objective value
       int initialised_k = 0;
       vector<int> idx_leaders;
-//      // take a random objective
-//      int random_obj = round(Rng::randu()*(nr_objs-1));
-//
-//      int idx_min = *remaining_solutions.begin();
-//      for(int x: remaining_solutions){
-//          if(norm_data(random_obj, idx_min)>norm_data(random_obj,x)){
-//              idx_min = x;
-//          }
-//      }
-//
-//      int first_leader = idx_min;
-//      idx_leaders.push_back(first_leader);
-//      remaining_solutions.erase(first_leader);
-//      initialised_k++;
-//
-//      // get first leaders based on smallest objective value
-//      int initialised_k = 0;
-//      vector<int> idx_leaders;
 
       auto rand_obj_perm = Rng::rand_perm(nr_objs);
 

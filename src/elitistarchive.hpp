@@ -10,6 +10,7 @@ struct ElitistArchive{
     Fitness * fit_func;
     bool improved_this_gen = false;
     int generations_without_improvement = 0;
+    bool accept_diversity = false;
 
     Mat X_train;
 
@@ -140,7 +141,8 @@ struct ElitistArchive{
                     break;
                 }
             }
-            if(identical_objectives_already_exist){
+
+            if(identical_objectives_already_exist && accept_diversity){
                 if (diversityAdded(individual, i)) {
                     diversity_added = true;
                     MO_archive[i]->clear();

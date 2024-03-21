@@ -53,6 +53,7 @@ namespace g {
   string csv_file_pop;
   bool log = false;
   bool log_pop = false;
+  bool accept_diversity = false;
 
   // Optimisation choices
   // Optimiser specific
@@ -330,6 +331,7 @@ namespace g {
     parser.set_optional<bool>("use_aro", "use_aro", false, "Whether Automatically Defined Functions are used");
     parser.set_optional<bool>("discount_size", "discount_size", false, "Whether the model size is discounted for re-use");
     parser.set_optional<bool>("balanced", "balanced", false, "Whether balanced k-leader means is used");
+    parser.set_optional<bool>("accept_diversity", "accept_diversity", false, "Whether non-dominated, but equal objective solution are accepted into the MO-archive");
     parser.set_optional<float>("donor_fraction", "donor_fraction", 2., "What fraction of the closest full population is used as donor population");
     parser.set_optional<int>("n_clusters", "n_clusters", 7, "Number of clusters");
 
@@ -454,6 +456,8 @@ namespace g {
     use_aro = parser.get<bool>("use_aro");
     discount_size = parser.get<bool>("discount_size");
     balanced = parser.get<bool>("balanced");
+    accept_diversity = parser.get<bool>("accept_diversity");
+    ea->accept_diversity = accept_diversity;
     donor_fraction = parser.get<float>("donor_fraction");
 
     n_clusters = parser.get<int>("n_clusters");
@@ -509,6 +513,7 @@ namespace g {
       + " use adf " + std::to_string(use_adf)
       + " balanced " + std::to_string(balanced)
       + " donor_fraction " + std::to_string(donor_fraction)
+      + " accept_diversity " + std::to_string(accept_diversity)
       );
   }
 
