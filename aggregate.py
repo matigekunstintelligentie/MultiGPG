@@ -13,7 +13,7 @@ import os
 plt.style.use('seaborn')
 
 max_gen = None
-max_size = 0
+max_size = 10
 
 dataset_filename_fronts = defaultdict(lambda: defaultdict(list))
 
@@ -58,7 +58,7 @@ def calc_hv(dataset_filename_fronts, key1, key2, x_index, max_size):
 
 def make_plots(d, folder, x_index, appendix):
     #for el in [['MO_fulldonor', 'MO_balanced'], ['SO','MO', 'MO_balanced_fulldonor'],  ['MO_equalclustersize', 'SO', 'MO', 'MO_equalclustersize_fulldonor'], ['MO', 'discount'], ['MO', 'MO_nocluster'], ['MO_noadf','MO'], ['tree_42', 'tree_7']]:
-    for el in [['SO','MO_equalclustersize_balanced','MO_equalclustersize_balanced_frac1'],['MO', 'discount'], ['MO', 'MO_nocluster'], ['MO_noadf','MO'],['SO','MO_balanced']]:
+    for el in [['MO_equalclustersize_k2_frac1','MO_equalclustersize_k2'],['SO','MO_equalclustersize_balanced','MO_equalclustersize_balanced_frac1'],['MO', 'discount'], ['MO', 'MO_nocluster'], ['MO_noadf','MO'],['SO','MO_balanced']]:
         fig = plt.figure()
         plt.title("Dataset: {}".format(dataset.capitalize()))
         markers = ['o', 'x', '^','s']

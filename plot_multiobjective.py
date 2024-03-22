@@ -56,27 +56,6 @@ def process_rows(df):
     return processed_data, processed_cluster_data, processed_donor_data, processed_front_data, max_len, max_mse
 
 
-
-# def update(frame):
-#     ax.clear()
-#     ax.set_xlim(15, 50)  # Set fixed x-axis limits
-#     ax.set_ylim(0, 32)  
-#     row = processed_data[frame]
-#     sorted_by_z = [[],[],[],[],[],[],[]]
-
-#     for coord in row:
-#     	sorted_by_z[coord[2]].append((coord[0], coord[1]))
-
-#     for z_val, row in enumerate(sorted_by_z):
-# 	    x_vals = [coord[0] for coord in row]
-# 	    y_vals = [coord[1] for coord in row]
-
-# 	    ax.scatter(x_vals, y_vals, label=f'Z={z_val}')
-#     ax.set_xlabel('MSE')
-#     ax.set_ylabel('Model size')
-#     ax.set_title(f'Generation {frame+1}')
-#     ax.legend()
-
 def update(frame):
     ax.clear()
 
@@ -146,8 +125,8 @@ def update2(frame):
       if(len(row)>0):
           x_vals = [coord[0] for coord in row]
           y_vals = [coord[1] for coord in row]
-          if(row[0][2]==0):
-            ax.scatter(x_vals, y_vals, label=f'Z={z_val} obj={row[0][2]} nr={row[0][3]}', alpha=0.5, marker="o", color=[colors[z_val]])      
+          if(z_val == 2):
+            ax.scatter(x_vals, y_vals, label=f'Z={z_val} obj={row[0][2]} nr={row[0][3]}', alpha=0.2, marker="o", color=[colors[z_val]])      
     
     ax.set_ylim(0,200)
     ax.set_xlim(0,4000)
@@ -190,22 +169,25 @@ def make_frames2(data, data2, folder, title):
 
 for filename in glob.glob("./results/test/*.csv"):
     folder = filename.split("/")[-1]
-    #folder = "1_MO_tower.csv"
-    tsv_file_path = f'./results/test/pop/{folder}'
+    #folder = "balanced.csv"
+    tsv_file_path =  f'./results/test/pop/{folder}'
 
 
     df = read_tsv_file(tsv_file_path)
-    processed_data, processed_cluster_data, processed_cluster_data, processed_front_data, max_len, max_mse = process_rows(df)
+    try:
+        processed_data, processed_cluster_data, processed_donor_data, processed_front_data, max_len, max_mse = process_rows(df)
 
-    data = processed_front_data
-    make_frames(data, folder, "front")
+        data = processed_front_data
+        make_frames(data, folder, "front")
 
-    data = processed_cluster_data
-    make_frames(data, folder, "pop")
+        data = processed_cluster_data
+        make_frames(data, folder, "pop")
 
-    data = processed_cluster_data
-    data2 = processed_cluster_data
-    make_frames2(data, data2, folder, "donors")
-
+        data = processed_cluster_data
+        data2 = processed_donor_data
+        make_frames2(data, data2, folder, "donors")
+    except:
+        print(tsv_file_path)
+        pass    
 
 

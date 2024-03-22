@@ -130,7 +130,7 @@ struct Evolution {
         int k = g::n_clusters;
 
         // If 1 cluster then return the whole population in one cluster, the population as donor population, and all clusternr 3 (MO) or 0 in SO mode
-        if(k<2){
+        if(k<2 || !g::MO_mode){
             return single_cluster(population);
         }
 
@@ -143,7 +143,6 @@ struct Evolution {
         // all solutions are still possible as leaders
         unordered_set<int> remaining_solutions(range.begin(), range.end());
 
-
         // get objective value data and normalise
         int nr_objs = 2;
         Mat norm_data(nr_objs, pop_size);
@@ -155,16 +154,20 @@ struct Evolution {
 
         vector<vector<Individual*>> top_clusters(2);
 
-        // Make two clusters
         auto rand_obj_perm_extrema = Rng::rand_perm(2);
-        for(auto random_obj: rand_obj_perm_extrema) {
+        // Make two clusters
+        for(int random_obj = 0; random_obj<2; random_obj++){
+            rand_obj_perm_extrema[random_obj] = random_obj;
+        //for(auto random_obj: rand_obj_perm_extrema) {
             vector<Individual*> extreme_cluster;
             vector<int> myVector(remaining_solutions.begin(), remaining_solutions.end());
             sort(myVector.begin(), myVector.end(), [&](int i, int j) {
                 return population[i]->fitness[random_obj] < population[j]->fitness[random_obj];
             });
+
             for(int i = 0; i<int(pop_size/k); i++){
                 extreme_cluster.push_back(population[myVector[i]]);
+                // Remove from remaining solutions
                 remaining_solutions.erase(myVector[i]);
             }
             top_clusters[random_obj] = extreme_cluster;
@@ -216,11 +219,9 @@ struct Evolution {
         remaining_solutions.erase(first_leader);
         initialised_k++;
 
-
         // find other leaders
         // first get distance of all remaining possible leaders to first leaders
         Vec dists = Vec::Zero(pop_size);
-
 
         for(int x: remaining_solutions){
             dists(x) = (norm_data.col(x) - norm_data.col(idx_leaders[0])).square().mean();
@@ -249,8 +250,10 @@ struct Evolution {
             cluster_centers.col(i) = norm_data.col(idx_leaders[i]);
         }
 
-        unordered_set<int> new_remaining_solutions(range.begin(), range.end());
+        //#unordered_set<int> new_remaining_solutions(range.begin(), range.end());
+        unordered_set<int> new_remaining_solutions = remaining_solutions;
 
+        //print(new_remaining_solutions.size());
         while(new_remaining_solutions.size()>0){
             auto random_cluster_order = Rng::rand_perm(k-2);
             for(int j = 0; j<k-2; j++){
@@ -283,13 +286,13 @@ struct Evolution {
         vector<vector<Individual *>> clustered_population_equal = vector<vector<Individual *>>(k,vector<Individual *>());
 
         // assign to each cluster the closest donor_fraction*pop_size/cluster solutions
-        for(int x=0; x<initialised_k; x++){
+        for(int x=0; x<k-2; x++){
             Vec distances = Vec(pop_size);
             // for each individual
             for(int i = 0; i<pop_size; i++){
                 distances[i] = (norm_data.col(i) - cluster_centers.col(x)).square().mean();
             }
-            int donor_pop_size = ((g::donor_fraction*pop_size)/initialised_k);
+            int donor_pop_size = ((g::donor_fraction*pop_size)/(k));
 
             for(int times=0; times<donor_pop_size; times++){
                 clustered_population_equal[x].push_back(population[argmin(distances)]);
@@ -303,7 +306,11 @@ struct Evolution {
         vector<int> clusternr = vector<int>(k, nr_objs + 1);
 
         // if not yet assigned solution in equal size clustering, assign to closest. if multiple are assigned, assign to random of multiple center
-        for (int i = 0; i < pop_size-2*int(pop_size/k); i++) {
+        for (auto i: remaining_solutions) {
+            clustered_population[clustertags_kmeans[i]].push_back(population[i]);
+        }
+
+        for (auto i: idx_leaders) {
             clustered_population[clustertags_kmeans[i]].push_back(population[i]);
         }
 
@@ -315,6 +322,7 @@ struct Evolution {
         clustered_population_equal[clustered_population.size()-1] = top_clusters[1];
         clusternr[clusternr.size()-1] = rand_obj_perm_extrema[1];
 
+
         return make_pair(make_pair(clustered_population, clustered_population_equal), clusternr);
     }
 
@@ -323,7 +331,7 @@ struct Evolution {
       int k = g::n_clusters;
 
       // If 1 cluster then return the whole population in one cluster, the population as donor population, and all clusternr 3 (MO) or 0 in SO mode
-      if(k<2){
+      if(k<2 || !g::MO_mode){
           return single_cluster(population);
       }
 
@@ -782,6 +790,7 @@ struct Evolution {
 
           string str = "";
 
+
           for (auto ind: population) {
               str += to_string(ind->fitness[0]) + "," + to_string(ind->fitness[1]) + "," +
                      to_string(ind->clusterid) + "," + to_string(clusternr[ind->clusterid]) + "," +
@@ -789,6 +798,7 @@ struct Evolution {
           }
           str.pop_back();
           str += "\n";
+
 
           for(int clusterid=0; clusterid<g::n_clusters;clusterid++){
               for (auto ind: clustered_population[clusterid]) {
@@ -840,7 +850,7 @@ struct Evolution {
           g::ea->updateMOArchive(offspring);
       }
 
-      assert(offspring_population.size()==population.size());
+      assert(offspring_population.size()==pop_size);
 
       for(int i=0; i<population.size(); i++){
           population[i]->clear();
