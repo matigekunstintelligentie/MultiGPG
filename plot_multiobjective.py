@@ -167,27 +167,27 @@ def make_frames2(data, data2, folder, title):
         plt.savefig(f'{directory}/{title}_{i:04d}.png')
 
 
-for filename in glob.glob("./results/test/*.csv"):
-    folder = filename.split("/")[-1]
-    #folder = "balanced.csv"
-    tsv_file_path =  f'./results/test/pop/{folder}'
+#for filename in glob.glob("./results/test/*.csv"):
+#folder = filename.split("/")[-1]
+folder = "1_MO_tower.csv"
+tsv_file_path =  f'./results/MOSO/pop/{folder}'
 
 
-    df = read_tsv_file(tsv_file_path)
-    try:
-        processed_data, processed_cluster_data, processed_donor_data, processed_front_data, max_len, max_mse = process_rows(df)
+df = read_tsv_file(tsv_file_path)
+try:
+    processed_data, processed_cluster_data, processed_donor_data, processed_front_data, max_len, max_mse = process_rows(df)
 
-        data = processed_front_data
-        make_frames(data, folder, "front")
+    data = processed_front_data
+    make_frames(data, folder, "front")
 
-        data = processed_cluster_data
-        make_frames(data, folder, "pop")
+    data = processed_cluster_data
+    make_frames(data, folder, "pop")
 
-        data = processed_cluster_data
-        data2 = processed_donor_data
-        make_frames2(data, data2, folder, "donors")
-    except:
-        print(tsv_file_path)
-        pass    
+    data = processed_cluster_data
+    data2 = processed_donor_data
+    make_frames2(data, data2, folder, "donors")
+except:
+    print(tsv_file_path)
+    pass    
 
 
