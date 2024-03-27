@@ -94,7 +94,7 @@ def run(experiment):
 
 verbose = False
 n_processes = 30
-duration = 3600
+duration = 3600*2
 generations = -1
 popsize = 2048
 
@@ -144,9 +144,9 @@ for i in range(10):
             # gpgomea_experiment({"csv_name":"MO_equalclustersize_k2_frac1", "depth":  4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize*5, "n_clusters": 5, "max_coeffs": -1, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":False,"balanced":False,"k2":True,"log_pop":False,"donor_fraction":1.}),
 
 
-            gpgomea_experiment({"csv_name":"MO_equalclustersize_k2_frac1_noadf", "depth":  4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize*5, "n_clusters": 5, "max_coeffs": -1, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":False, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":False,"balanced":False,"k2":True,"log_pop":False,"donor_fraction":1.}),
-            gpgomea_experiment({"csv_name":"MO_equalclustersize_k2_frac1_discount", "depth":  4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize*5, "n_clusters": 5, "max_coeffs": -1, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":True,"balanced":False,"k2":True,"log_pop":False,"donor_fraction":1.}),
-            gpgomea_experiment({"csv_name":"SO_discount", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": False, "popsize":popsize, "n_clusters": 1, "max_coeffs": -1, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":True,"balanced":False,"log_pop":False}),
+            #gpgomea_experiment({"csv_name":"MO_equalclustersize_k2_frac1_noadf", "depth":  4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize*5, "n_clusters": 5, "max_coeffs": -1, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":False, "use_aro": True, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":False,"balanced":False,"k2":True,"log_pop":False,"donor_fraction":1.}),
+            #gpgomea_experiment({"csv_name":"MO_equalclustersize_k2_frac1_discount", "depth":  4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize*5, "n_clusters": 5, "max_coeffs": -1, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":True,"balanced":False,"k2":True,"log_pop":False,"donor_fraction":1.}),
+            #gpgomea_experiment({"csv_name":"SO_discount", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": False, "popsize":popsize, "n_clusters": 1, "max_coeffs": -1, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":True,"balanced":False,"log_pop":False}),
         ]:
 
             experiments.append(exp)
@@ -155,7 +155,7 @@ p = Pool(n_processes)
 p.map(run, experiments)
 
 result_dir = "./results/ADF"
-for i in range(10):
+for i in range(30):
     for dataset in ["synthetic_dataset"]:
         contains_train = "_train" in dataset
         directory = result_dir

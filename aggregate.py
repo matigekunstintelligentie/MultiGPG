@@ -64,21 +64,35 @@ def statistics(hv_list, el, dataset, appendix):
         for x in ["{0:.2f} $\\pm$ {1:.2f}".format(np.mean(hv_list[k]), np.std(hv_list[k])) for k in sorted(list(hv_list.keys()))]:
             stri += x + " & "
         print(stri)
-        x = sp.posthoc_wilcoxon(hv_list, p_adjust="Holm")
+        
+        
+        x = sp.posthoc_wilcoxon(np.array([hv_list[k][0] for k in sorted(list(hv_list.keys()))]), p_adjust="Holm")
         print(x)
         print("#"*20)
         return x
-    except:
+    except Exception as e:
+        print(e)
         pass
 
+experiments = [
+    #['SO','MO'],
+    #['MO_equalclustersize', 'MO_balanced', 'MO_k2', 'MO_frac1'], 
+    #['MO_equalclustersize_frac1', 'MO_equalclustersize_balanced', 'MO_equalclustersize_k2'], 
+    #['MO_equalclustersize_balanced_frac1','MO_equalclustersize_k2_frac1','SO'],
+    #['MO_equalclustersize_k2_frac1_noadf, MO_equalclustersize_k2_frac1'],
+    #['MO_equalclustersize_k2_frac1_discount','MO_equalclustersize_k2_frac1','SO','SO_discount'],
+    #['MO_equalclustersize_k2_frac1_noadf','MO_equalclustersize_k2_frac1'],
+    ['tree_7','tree_42'],
+    #["MO","MO_nocluster"]
+    ]
+
+big_list = []
+for sublist in experiments:
+    big_list.extend(sublist)
 
 def make_plots(d, folder, x_index, appendix):
     
-    for el in [
-    ['SO','MO'],
-    ['MO_equalclustersize', 'MO_balanced', 'MO_k2', 'MO_frac1'], 
-    ['MO_equalclustersize_frac1', 'MO_equalclustersize_balanced', 'MO_equalclustersize_k2'], 
-    ['MO_equalclustersize_balanced_frac1','MO_equalclustersize_k2_frac1','SO']]:
+    for el in experiments:
         fig = plt.figure()
         plt.title("Dataset: {}".format(dataset.capitalize()))
         markers = ['o', 'x', '^','s']
@@ -88,6 +102,7 @@ def make_plots(d, folder, x_index, appendix):
 
         for key in d.keys():
             if key in el:
+                print(key)
                 x = d[key][x_index]
                 y = d[key][1]
 
@@ -146,15 +161,18 @@ def make_plots(d, folder, x_index, appendix):
 #
 
 for dataset in ["air", "bike", "concrete","dowchemical","tower", "synthetic_dataset"]:
-
-
     d = defaultdict(lambda: defaultdict(list))
+    c = defaultdict(int)
+    time = defaultdict(float)
 
-    folder = "MOSO"
+    folder = "ADF"
     dir = "./results/" + folder
-    for filename in glob.glob(dir + "/*.csv"):
+    for filename in sorted(glob.glob(dir + "/*.csv")):
         nr = filename.split("/")[-1].split("_")[0]
         d_key = "_".join(filename.split("/")[-1].split("_")[1:]).replace(dataset,"").replace(".csv","")[:-1]
+
+        if d_key not in big_list:
+            continue
 
         if(dataset in filename):
             try:
@@ -163,10 +181,10 @@ for dataset in ["air", "bike", "concrete","dowchemical","tower", "synthetic_data
                 scatter_y = []
 
                 scatter_x_val = []
-
+                 
                 #, error_bad_lines=False
                 df = pd.read_csv(filename, sep="\t", header=None, nrows=max_gen)
-
+                
 
                 gens = len(df.iloc[0][8].split(","))
 
@@ -191,9 +209,17 @@ for dataset in ["air", "bike", "concrete","dowchemical","tower", "synthetic_data
                 d[d_key][2].append(gens)
                 d[d_key][3].extend(scatter_x_val)
                 d[d_key][4].append(df.iloc[0][1])
-            except:
+                c[d_key] += df.iloc[0][1]<0.01
+                
+                time[d_key] += float((df.iloc[0][15]).split(",")[[str(best_mse).rstrip("0") for best_mse in df.iloc[0][8].split(",")].index(str(df.iloc[0][1]).rstrip("0"))])
+                print(d_key, df.iloc[0][15].split(",")[-1], len(df.iloc[0][15].split(",")), float(df.iloc[0][15].split(",")[-1])-float(df.iloc[0][15].split(",")[-2]), float(df.iloc[0][15].split(",")[0]))
+            except Exception as e:
+                print(e)
+                quit()
                 pass
 
+    for k in c.keys():
+        print(k, c[k], time[k]/30.)
     # print("DATASET", dataset) 
     # for d_key in sorted(list(d.keys()), key=lambda d_key: np.mean(d[d_key][4])):
     #     print(d_key)
