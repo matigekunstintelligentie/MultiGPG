@@ -97,6 +97,8 @@ struct IMS {
 
 
           bool add_comma = false;
+
+
           for (auto ind: g::ea->MO_archive) {
               float train_mse = g::fit_func->get_fitness_MO(ind, g::fit_func->X_train, g::fit_func->y_train, false)[0];
               float val_mse = g::fit_func->get_fitness_MO(ind, g::fit_func->X_val, g::fit_func->y_val, false)[0];

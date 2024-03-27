@@ -741,9 +741,12 @@ struct Evolution {
           output = K_leader_means(population);
       }
 
+
+
       vector<vector<Individual *>> clustered_population = output.first.first;
       vector<vector<Individual *>> clustered_donor_population = output.first.second;
       vector<int> clusternr = output.second;
+
 
       // Per cluster, one FOS
       vector<vector<pair<vector<int>,int>>> FOSs;
@@ -775,6 +778,8 @@ struct Evolution {
           clustered_donor_pop.push_back(donor_pop);
           FOSs.push_back(cluster_fbs);
       }
+
+
 
       vector<pair<int, int>> idx;
       for(int i=0;i<clustered_population.size();i++){
@@ -837,6 +842,8 @@ struct Evolution {
           int &i = idx[x].first;
           int &j = idx[x].second;
 
+
+
           Individual *offspring;
           if(clustered_population[i].size()>1){
               offspring = efficient_gom_MO(clustered_population[i][j], clustered_donor_pop[i], FOSs[i], macro_generation, clusternr[i], clusternr[i] < nr_objectives,  NIS_const);
@@ -849,6 +856,8 @@ struct Evolution {
           offspring_population.push_back(offspring);
           g::ea->updateMOArchive(offspring);
       }
+
+
 
       assert(offspring_population.size()==pop_size);
 
