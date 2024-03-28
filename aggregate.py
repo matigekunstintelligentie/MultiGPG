@@ -66,7 +66,7 @@ def statistics(hv_list, el, dataset, appendix):
         print(stri)
         
         
-        x = sp.posthoc_wilcoxon(np.array([hv_list[k][0] for k in sorted(list(hv_list.keys()))]), p_adjust="Holm")
+        x = sp.posthoc_wilcoxon([hv_list[k][0] for k in sorted(list(hv_list.keys()))], p_adjust="Holm")
         print(x)
         print("#"*20)
         return x
@@ -82,7 +82,7 @@ experiments = [
     #['MO_equalclustersize_k2_frac1_noadf, MO_equalclustersize_k2_frac1'],
     #['MO_equalclustersize_k2_frac1_discount','MO_equalclustersize_k2_frac1','SO','SO_discount'],
     #['MO_equalclustersize_k2_frac1_noadf','MO_equalclustersize_k2_frac1'],
-    ['tree_7','tree_42'],
+    ['tree_7','tree_42','tree44'],
     #["MO","MO_nocluster"]
     ]
 
@@ -186,18 +186,18 @@ for dataset in ["air", "bike", "concrete","dowchemical","tower", "synthetic_data
                 df = pd.read_csv(filename, sep="\t", header=None, nrows=max_gen)
                 
 
-                gens = len(df.iloc[0][8].split(","))
+                gens = len(df.iloc[-1][8].split(","))
 
 
                 mg = -1
-                if max_gen is not None and len(df.iloc[0][13].split(";")) >= max_gen:
+                if max_gen is not None and len(df.iloc[-1][13].split(";")) >= max_gen:
                     mg = max_gen - 1
 
-                for el in df.iloc[0][13].split(";")[mg].split("],"):
+                for el in df.iloc[-1][13].split(";")[mg].split("],"):
                     rep = el.replace("[","").replace("{","").split(",")
-                    scatter_x.append(1. - float(rep[0])/float(df.iloc[0][6]))
+                    scatter_x.append(1. - float(rep[0])/float(df.iloc[-1][6]))
                     scatter_y.append(float(rep[2]))
-                    scatter_x_val.append(1. - float(rep[0])/float(df.iloc[0][7]))
+                    scatter_x_val.append(1. - float(rep[0])/float(df.iloc[-1][7]))
 
                     if float(rep[2])>max_size:
                         max_size = float(rep[2])
@@ -208,11 +208,11 @@ for dataset in ["air", "bike", "concrete","dowchemical","tower", "synthetic_data
                 d[d_key][1].extend(scatter_y)
                 d[d_key][2].append(gens)
                 d[d_key][3].extend(scatter_x_val)
-                d[d_key][4].append(df.iloc[0][1])
-                c[d_key] += df.iloc[0][1]<0.01
+                d[d_key][4].append(df.iloc[-1][1])
+                c[d_key] += df.iloc[-1][1]<0.01
                 
-                time[d_key] += float((df.iloc[0][15]).split(",")[[str(best_mse).rstrip("0") for best_mse in df.iloc[0][8].split(",")].index(str(df.iloc[0][1]).rstrip("0"))])
-                print(d_key, df.iloc[0][15].split(",")[-1], len(df.iloc[0][15].split(",")), float(df.iloc[0][15].split(",")[-1])-float(df.iloc[0][15].split(",")[-2]), float(df.iloc[0][15].split(",")[0]))
+                time[d_key] += float((df.iloc[-1][15]).split(",")[[str(best_mse).rstrip("0") for best_mse in df.iloc[-1][8].split(",")].index(str(df.iloc[-1][1]).rstrip("0"))])
+                print(d_key, df.iloc[-1][1],df.iloc[-1][15].split(",")[-1], len(df.iloc[-1][15].split(",")), float(df.iloc[-1][15].split(",")[-1])-float(df.iloc[-1][15].split(",")[-2]))
             except Exception as e:
                 print(e)
                 quit()
