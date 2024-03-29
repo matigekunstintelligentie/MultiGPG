@@ -124,7 +124,7 @@ struct ElitistArchive{
     void updateMOArchive(Individual * individual){
         bool solution_is_dominated = false;
         bool diversity_added = false;
-        bool identical_objectives_already_exist;
+        bool identical_objectives_already_exist = false;
 
         for(int i = 0; i<MO_archive.size(); i++){
             // Check domination
