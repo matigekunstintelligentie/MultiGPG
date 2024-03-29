@@ -15,7 +15,7 @@ py::list evolve_val(string options, myeig::Mat &X, myeig::Vec &y, myeig::Mat &X_
   auto opts = split_string(options, " ");
   int argc = opts.size()+1;
   char * argv[argc];
-  string title = "gpg";
+  string title = "mgpg";
   argv[0] = (char*) title.c_str();
   for (int i = 1; i < argc; i++) {
     argv[i] = (char*) opts[i-1].c_str();
@@ -82,7 +82,7 @@ py::list evolve(string options, myeig::Mat &X, myeig::Vec &y) {
   auto opts = split_string(options, " ");
   int argc = opts.size()+1;
   char * argv[argc];
-  string title = "gpg";
+  string title = "mgpg";
   argv[0] = (char*) title.c_str();
   for (int i = 1; i < argc; i++) {
     argv[i] = (char*) opts[i-1].c_str();
@@ -127,8 +127,8 @@ py::list evolve(string options, myeig::Mat &X, myeig::Vec &y) {
   return models;
 }
 
-PYBIND11_MODULE(_pb_gpg, m) {
-  m.doc() = "pybind11-based interface for gpg"; // optional module docstring
-  m.def("evolve", &evolve, "Runs gpg evolution in C++");
-  m.def("evolve_val", &evolve_val, "Runs gpg evolution in C++");
+PYBIND11_MODULE(_pb_mgpg, m) {
+  m.doc() = "pybind11-based interface for mgpg"; // optional module docstring
+  m.def("evolve", &evolve, "Runs mgpg evolution in C++");
+  m.def("evolve_val", &evolve_val, "Runs mgpg evolution in C++");
 }

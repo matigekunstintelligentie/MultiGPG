@@ -9,7 +9,7 @@ main-build:
 	cmake -S ../../ -B . -DCMAKE_PREFIX_PATH=$(CONDA_PREFIX) -DCMAKE_BUILD_TYPE=$(BUILDTYPE) && \
 	make && \
 	cp -r ../../src/pypkg . && \
-	mv _pb_gpg*.so pypkg/pygpg/_pb_gpg.so && \
+	mv _pb_mgpg*.so pypkg/pymgpg/_pb_mgpg.so && \
 	cd pypkg && \
 	python setup.py install --user --force && \
 	cd ../ && \

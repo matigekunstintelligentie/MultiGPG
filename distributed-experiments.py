@@ -93,8 +93,8 @@ def run(experiment):
     subprocess.run(experiment.construct_string(), shell=True)
 
 log_pop = False
-verbose = True
-n_processes = 1
+verbose = False
+n_processes = 30
 duration = 3600*2
 generations = -1
 popsize = 1024
