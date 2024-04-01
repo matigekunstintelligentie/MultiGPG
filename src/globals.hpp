@@ -38,6 +38,7 @@ namespace g {
   int max_generations;
   int max_time;
   int max_evals;
+  int max_non_improve;
 
   bool MO_mode = false;
   bool use_adf = false;
@@ -288,7 +289,9 @@ namespace g {
     parser.set_optional<int>("pop", "population_size", 4096, "Population size");
     parser.set_optional<int>("g", "generations", 20, "Budget of generations (-1 for disabled)");
     parser.set_optional<int>("t", "time", -1, "Budget of time (-1 for disabled)");
-      parser.set_optional<int>("e", "evals", -1, "Budget of evals (-1 for disabled)");
+    parser.set_optional<int>("e", "evals", -1, "Budget of evals (-1 for disabled)");
+    parser.set_optional<int>("max_non_improve", "max_non_improve", -1, "Budget of non_improves (-1 for disabled)");
+
     // initialization
     parser.set_optional<string>("is", "initialization_strategy", "hh", "Strategy to sample the initial population");
     parser.set_optional<int>("d", "depth", 4, "Maximum depth that the trees can have");
@@ -367,6 +370,7 @@ namespace g {
     max_evals = parser.get<int>("e");
     max_generations = parser.get<int>("g");
     max_time = parser.get<int>("t");
+    max_non_improve = parser.get<int>("max_non_improve");
     print("budget: ",
        max_generations > -1 ? max_generations : INF, " generations, ",
        max_time > -1 ? max_time : INF, " time [s], "

@@ -58,7 +58,7 @@ struct IMS {
       g::fit_func->update_batch(g::batch_size);
 
       if ((g::max_generations > 0 && macro_generations == g::max_generations) ||
-          (g::max_time > 0 && tock(start_time) >= g::max_time) || (g::max_evals > 0 && g::fit_func->evaluations>=g::max_evals)) {
+          (g::max_time > 0 && tock(start_time) >= g::max_time) || (g::max_evals > 0 && g::fit_func->evaluations>=g::max_evals) || (g::max_non_improve>0 && g::ea->generations_without_improvement >= g::max_non_improve)) {
           stop = true;
 
           if(g::max_generations > 0 && macro_generations == g::max_generations){
