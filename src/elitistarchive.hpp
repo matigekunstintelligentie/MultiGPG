@@ -136,7 +136,7 @@ struct ElitistArchive{
 
             identical_objectives_already_exist = true;
             for(int j=0; j<2; j++){
-                if(individual->fitness[j] != MO_archive[i]->fitness[j]){
+                if(abs(individual->fitness[j] - MO_archive[i]->fitness[j])>1e-9){
                     identical_objectives_already_exist = false;
                     break;
                 }
