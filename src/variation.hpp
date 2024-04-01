@@ -695,8 +695,7 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & do
 
     if ((!changed || parent->NIS > NIS_const) && !g::ea->MO_archive.empty()) {
         //TODO
-        print("FI");
-        parent->NIS = 0;
+                parent->NIS = 0;
         return efficient_gom_MO_FI(parent, fos, objective, extrema);
     }
 

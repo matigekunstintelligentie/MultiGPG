@@ -1,5 +1,5 @@
 import numpy as np
-from pygpg.sk import GPGRegressor
+from pymgpg.sk import MGPGRegressor
 from sklearn.metrics import r2_score, mean_squared_error
 from sklearn.model_selection import GridSearchCV
 import argparse
@@ -86,17 +86,29 @@ def inject_string(b):
     else:
         return "noinject_elite"
 
-g = GPGRegressor(t=args.t, g=args.g, tour=args.tour, d=args.depth,  use_optim=args.optimize,
+g = MGPGRegressor(t=args.t, g=args.g, tour=args.tour, d=args.depth,  
+        use_optim=args.optimize,
         pop=args.popsize,
         bs_opt=args.batch_size,
         bs=2048,
 
-        verbose=args.verbose, csv_file="{}/{}_{}_{}.csv".format(args.dir, args.seed, args.csv_name, args.dataset), csv_file_pop="{}/pop/{}_{}_{}.csv".format(args.dir, args.seed, args.csv_name, args.dataset), log_pop=args.log_pop, opt_per_gen=args.every_n_steps, use_clip=args.clip,
-        fset=args.fset, cmp=args.coeff_p, use_ftol=args.use_ftol, tol=1e-9, use_mse_opt=args.use_mse_opt, log=args.log, ff=args.ff,
+        verbose=args.verbose, 
+        csv_file="{}/{}_{}_{}.csv".format(args.dir, args.seed, args.csv_name, args.dataset), 
+        csv_file_pop="{}/pop/{}_{}_{}.csv".format(args.dir, args.seed, 
+            args.csv_name, args.dataset), 
+        log_pop=args.log_pop, opt_per_gen=args.every_n_steps, 
+        use_clip=args.clip,
+        fset=args.fset, cmp=args.coeff_p, use_ftol=args.use_ftol, 
+        tol=1e-9, use_mse_opt=args.use_mse_opt, log=args.log, ff=args.ff,
 
          use_max_range=args.use_max_range, equal_p_coeffs=args.equal_p_coeffs,
-        MO_mode=args.MO_mode, use_adf=args.use_adf, use_aro=args.use_aro, n_clusters=args.n_clusters, max_coeffs=args.max_coeffs, discount_size=args.discount_size,
-        random_state=args.seed, nr_multi_trees=args.nr_multi_trees, balanced=args.balanced, donor_fraction=args.donor_fraction, accept_diversity=args.accept_diversity, k2=args.k2)
+        MO_mode=args.MO_mode, use_adf=args.use_adf, use_aro=args.use_aro, 
+        n_clusters=args.n_clusters, max_coeffs=args.max_coeffs, 
+        discount_size=args.discount_size,
+        random_state=args.seed, nr_multi_trees=args.nr_multi_trees, 
+        balanced=args.balanced, 
+        donor_fraction=args.donor_fraction, 
+        accept_diversity=args.accept_diversity, k2=args.k2)
 
 #+,-,*,/,¬,log,pow,max,min,abs,exp,sqrt,sin,cos
 if not args.contains_train:

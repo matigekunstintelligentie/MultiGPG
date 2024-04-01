@@ -94,8 +94,8 @@ def run(experiment):
 
 log_pop = False
 verbose = False
-n_processes = 30
-duration = 3600*2
+n_processes = 10
+duration = 100
 generations = -1
 popsize = 1024
 

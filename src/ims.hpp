@@ -58,7 +58,7 @@ struct IMS {
       g::fit_func->update_batch(g::batch_size);
 
       if ((g::max_generations > 0 && macro_generations == g::max_generations) ||
-          (g::max_time > 0 && tock(start_time) >= g::max_time)) {
+          (g::max_time > 0 && tock(start_time) >= g::max_time) || (g::max_evals > 0 && g::fit_func->evaluations>=g::max_evals)) {
           stop = true;
 
           if(g::max_generations > 0 && macro_generations == g::max_generations){
@@ -66,6 +66,9 @@ struct IMS {
           }
           if(g::max_time > 0 && tock(start_time) >= g::max_time){
               print("Stopping due to max time");
+          }
+          if(g::max_evals > 0 && g::fit_func->evaluations>=g::max_evals){
+              print("Stopping due to max evals ", g::fit_func->evaluations);
           }
 
           break;
