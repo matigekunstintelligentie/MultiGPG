@@ -9,7 +9,6 @@ struct ElitistArchive{
     vector<Individual*> MO_archive;
     Fitness * fit_func;
     bool improved_this_gen = false;
-    int generations_without_improvement = 0;
     bool accept_diversity = false;
 
     Mat X_train;
@@ -125,6 +124,7 @@ struct ElitistArchive{
         bool solution_is_dominated = false;
         bool diversity_added = false;
         bool identical_objectives_already_exist = false;
+        bool near_identical_objectives_already_exist = false;
 
         for(int i = 0; i<MO_archive.size(); i++){
             // Check domination
@@ -136,8 +136,16 @@ struct ElitistArchive{
 
             identical_objectives_already_exist = true;
             for(int j=0; j<2; j++){
-                if(abs(individual->fitness[j] - MO_archive[i]->fitness[j])>1e-9){
+                if(individual->fitness[j] != MO_archive[i]->fitness[j]){
                     identical_objectives_already_exist = false;
+                    break;
+                }
+            }
+
+            near_identical_objectives_already_exist = true;
+            for(int j=0; j<2; j++){
+                if(abs(individual->fitness[j] - MO_archive[i]->fitness[j])>1e-6){
+                    near_identical_objectives_already_exist = false;
                     break;
                 }
             }
@@ -160,8 +168,10 @@ struct ElitistArchive{
 
         if ((!solution_is_dominated && !identical_objectives_already_exist) || (diversity_added)) {
             Individual *new_individual = individual->clone();
-            improved_this_gen = true;
             MO_archive.push_back(new_individual);
+        }
+        if ((!solution_is_dominated && !near_identical_objectives_already_exist)){
+            improved_this_gen = true;
         }
     }
 };
