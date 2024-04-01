@@ -95,6 +95,11 @@ py::list evolve(string options, myeig::Mat &X, myeig::Vec &y) {
   // set training set
   g::fit_func->set_Xy(X, y);
   g::mse_func->set_Xy(X, y);
+
+
+  g::ea->set_X(g::fit_func->X_train);
+
+  g::ea->fit_func = g::fit_func;
   
   if(g::use_max_range){
     g::set_max_coeff_range();
@@ -117,7 +122,7 @@ py::list evolve(string options, myeig::Mat &X, myeig::Vec &y) {
   }
   py::list models;
   for (auto it: g::ea->MO_archive) {
-    string model_repr = it->human_repr(true);
+    string model_repr = it->human_repr(true, false);
     models.append(model_repr);
   }
 
