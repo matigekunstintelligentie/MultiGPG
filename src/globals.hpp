@@ -338,7 +338,7 @@ namespace g {
     parser.set_optional<bool>("discount_size", "discount_size", false, "Whether the model size is discounted for re-use");
     parser.set_optional<bool>("balanced", "balanced", false, "Whether balanced k-leaders is used");
     parser.set_optional<bool>("k2", "k2", false, "Whether balanced k-2-leaders is used");
-    parser.set_optional<bool>("accept_diversity", "accept_diversity", true, "Whether non-dominated, but equal objective solution are accepted into the MO-archive");
+    parser.set_optional<bool>("accept_diversity", "accept_diversity", false, "Whether non-dominated, but equal objective solution are accepted into the MO-archive");
     parser.set_optional<float>("donor_fraction", "donor_fraction", 2., "What fraction of the closest full population is used as donor population");
     parser.set_optional<int>("n_clusters", "n_clusters", 7, "Number of clusters");
 

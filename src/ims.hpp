@@ -57,7 +57,11 @@ struct IMS {
       // update mini batch
       g::fit_func->update_batch(g::batch_size);
 
-      if ((g::max_generations > 0 && macro_generations == g::max_generations) ||
+      bool expression_found = false;
+      if(best_train_mses.size()>0){
+          expression_found = best_train_mses[best_train_mses.size()-1]<1e-9;
+      }
+      if (expression_found || (g::max_generations > 0 && macro_generations == g::max_generations) ||
           (g::max_time > 0 && tock(start_time) >= g::max_time) || (g::max_evals > 0 && g::fit_func->evaluations>=g::max_evals) || (g::max_non_improve>0 && generations_without_improvement >= g::max_non_improve)) {
           stop = true;
 
@@ -72,6 +76,9 @@ struct IMS {
           }
           if(g::max_non_improve>0 && generations_without_improvement >= g::max_non_improve){
               print("Stopping due to non improvements ", generations_without_improvement);
+          }
+          if(best_train_mses[best_train_mses.size()-1]<1e-9){
+              print("Stopping due to finding expression with mse 0");
           }
 
           break;
