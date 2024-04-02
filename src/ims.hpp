@@ -57,8 +57,12 @@ struct IMS {
       // update mini batch
       g::fit_func->update_batch(g::batch_size);
 
-      if ((g::max_generations > 0 && macro_generations == g::max_generations) ||
-          (g::max_time > 0 && tock(start_time) >= g::max_time)) {
+      bool expression_found = false;
+      if(best_train_mses.size()>0){
+          expression_found = best_train_mses[best_train_mses.size()-1]<1e-9;
+      }
+      if (expression_found || (g::max_generations > 0 && macro_generations == g::max_generations) ||
+          (g::max_time > 0 && tock(start_time) >= g::max_time) || (g::max_evals > 0 && g::fit_func->evaluations>=g::max_evals) || (g::max_non_improve>0 && generations_without_improvement >= g::max_non_improve)) {
           stop = true;
 
           if(g::max_generations > 0 && macro_generations == g::max_generations){
@@ -67,26 +71,41 @@ struct IMS {
           if(g::max_time > 0 && tock(start_time) >= g::max_time){
               print("Stopping due to max time");
           }
+          if(g::max_evals > 0 && g::fit_func->evaluations>=g::max_evals){
+              print("Stopping due to max evals ", g::fit_func->evaluations);
+          }
+          if(g::max_non_improve>0 && generations_without_improvement >= g::max_non_improve){
+              print("Stopping due to non improvements ", generations_without_improvement);
+          }
+          if(best_train_mses[best_train_mses.size()-1]<1e-9){
+              print("Stopping due to finding expression with mse 0");
+          }
 
           break;
       }
       
       // perform generation
 
+
+
       evolution->gomea_generation_MO(macro_generations);
+
+
 
       if(g::ea->improved_this_gen){
           g::ea->improved_this_gen = false;
-          g::ea->generations_without_improvement = 0;
+          generations_without_improvement = 0;
       }
       else{
-          g::ea->generations_without_improvement++;
+          generations_without_improvement++;
       }
 
       // update macro gen
       macro_generations += 1;
 
+
       if(g::log){
+
           float best_train_mse = 9999999.;
           float best_val_mse = 9999999.;
           float best_size = 9999999.;
@@ -100,11 +119,16 @@ struct IMS {
 
 
           for (auto ind: g::ea->MO_archive) {
+
               float train_mse = g::fit_func->get_fitness_MO(ind, g::fit_func->X_train, g::fit_func->y_train, false)[0];
+
               float val_mse = g::fit_func->get_fitness_MO(ind, g::fit_func->X_val, g::fit_func->y_val, false)[0];
+
               int size =  ind->get_num_nodes(true, false);
 
+
               if (best_train_mse > train_mse) {
+;
                   best_train_mse = train_mse;
                   best_val_mse = val_mse;
                   best_size = size;
@@ -128,15 +152,19 @@ struct IMS {
           }
           MO_archive_string += "}";
 
-          print(" ~ generation: ", macro_generations, " ", g::ea->generations_without_improvement, " ", to_string(tock(start_time)), ", curr. best fit: ", best_train_mse, " ", best_size, " ", best_size_discount, " ", best_stri);
+          print(" ~ generation: ", macro_generations, " ", generations_without_improvement, " ", to_string(tock(start_time)), ", curr. best fit: ", best_train_mse, " ", best_size, " ", best_size_discount, " ", best_stri);
 
-          consecutive_non_improvements.push_back(g::ea->generations_without_improvement);
+          consecutive_non_improvements.push_back(generations_without_improvement);
           best_train_mses.push_back(best_train_mse);
           best_val_mses.push_back(best_val_mse);
           best_sizes.push_back(best_size);
           best_sizes_discount.push_back(best_size_discount);
           times.push_back(tock(start_time));
           MO_archive_strings.push_back(MO_archive_string);
+      }
+      else{
+
+          print(" ~ generation: ", macro_generations, " ", generations_without_improvement, " ", to_string(tock(start_time)), " ", g::ea->MO_archive.size(), " ", g::fit_func->evaluations);
       }
     }
     // finished

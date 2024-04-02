@@ -165,7 +165,7 @@ struct Evolution {
                 return population[i]->fitness[random_obj] < population[j]->fitness[random_obj];
             });
 
-            for(int i = 0; i<int(pop_size/k); i++){
+            for(int i = 0; i<floor(pop_size/k); i++){
                 extreme_cluster.push_back(population[myVector[i]]);
                 // Remove from remaining solutions
                 remaining_solutions.erase(myVector[i]);
@@ -780,7 +780,6 @@ struct Evolution {
       }
 
 
-
       vector<pair<int, int>> idx;
       for(int i=0;i<clustered_population.size();i++){
           for(int j=0;j<clustered_population[i].size();j++){
@@ -833,6 +832,8 @@ struct Evolution {
           str.pop_back();
           str += "\n";
 
+          str += to_string(g::ea->min_objs[0]) + "," + to_string(g::ea->min_objs[1]) + "," + to_string(g::ea->max_objs[0]) + "," + to_string(g::ea->max_objs[1]) + "," + to_string(g::ea->num_boxes) + "\n";
+
           csv_file << str;
           csv_file.close();
       }
@@ -841,8 +842,6 @@ struct Evolution {
       for(int x=0; x<idx.size(); x++){
           int &i = idx[x].first;
           int &j = idx[x].second;
-
-
 
           Individual *offspring;
           if(clustered_population[i].size()>1){
@@ -857,15 +856,20 @@ struct Evolution {
           g::ea->updateMOArchive(offspring);
       }
 
+      g::ea->update_minmax();
 
-
+      // TODO: !!!!!!!!!!!!
       assert(offspring_population.size()==pop_size);
 
       for(int i=0; i<population.size(); i++){
           population[i]->clear();
+          population[i] = nullptr;
       }
 
       population = offspring_population;
+
+      // This should be needed
+      population.erase(std::remove_if(population.begin(), population.end(), [](Individual *ind){return ind== nullptr;}), population.end());
 
 
 

@@ -15,7 +15,7 @@ py::list evolve_val(string options, myeig::Mat &X, myeig::Vec &y, myeig::Mat &X_
   auto opts = split_string(options, " ");
   int argc = opts.size()+1;
   char * argv[argc];
-  string title = "gpg";
+  string title = "mgpg";
   argv[0] = (char*) title.c_str();
   for (int i = 1; i < argc; i++) {
     argv[i] = (char*) opts[i-1].c_str();
@@ -82,7 +82,7 @@ py::list evolve(string options, myeig::Mat &X, myeig::Vec &y) {
   auto opts = split_string(options, " ");
   int argc = opts.size()+1;
   char * argv[argc];
-  string title = "gpg";
+  string title = "mgpg";
   argv[0] = (char*) title.c_str();
   for (int i = 1; i < argc; i++) {
     argv[i] = (char*) opts[i-1].c_str();
@@ -95,6 +95,11 @@ py::list evolve(string options, myeig::Mat &X, myeig::Vec &y) {
   // set training set
   g::fit_func->set_Xy(X, y);
   g::mse_func->set_Xy(X, y);
+
+
+  g::ea->set_X(g::fit_func->X_train);
+
+  g::ea->fit_func = g::fit_func;
   
   if(g::use_max_range){
     g::set_max_coeff_range();
@@ -117,7 +122,7 @@ py::list evolve(string options, myeig::Mat &X, myeig::Vec &y) {
   }
   py::list models;
   for (auto it: g::ea->MO_archive) {
-    string model_repr = it->human_repr(true);
+    string model_repr = it->human_repr(true, false);
     models.append(model_repr);
   }
 
@@ -127,8 +132,8 @@ py::list evolve(string options, myeig::Mat &X, myeig::Vec &y) {
   return models;
 }
 
-PYBIND11_MODULE(_pb_gpg, m) {
-  m.doc() = "pybind11-based interface for gpg"; // optional module docstring
-  m.def("evolve", &evolve, "Runs gpg evolution in C++");
-  m.def("evolve_val", &evolve_val, "Runs gpg evolution in C++");
+PYBIND11_MODULE(_pb_mgpg, m) {
+  m.doc() = "pybind11-based interface for mgpg"; // optional module docstring
+  m.def("evolve", &evolve, "Runs mgpg evolution in C++");
+  m.def("evolve_val", &evolve_val, "Runs mgpg evolution in C++");
 }

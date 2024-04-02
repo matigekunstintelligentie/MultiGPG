@@ -7,8 +7,8 @@ function(debug_message messages)
   message(STATUS "\n")
 endfunction()
 # Variables
-set(PROJECT_NAME gpg)
-set(PY_LIB_NAME _pb_gpg)
+set(PROJECT_NAME mgpg)
+set(PY_LIB_NAME _pb_mgpg)
 set(NUM_PRECISION 9)
 set(CMAKE_CXX_FLAGS_VALGRIND
     "${CMAKE_CXX_FLAGS_VALGRIND} -g -O0 -DDEBUG -Wall -Wconversion -pedantic ${CXX_EXTRA}")

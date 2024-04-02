@@ -1,45 +1,22 @@
-from pygpg.sk import GPGRegressor as GPGR
+from pymgpg.sk import MGPGRegressor as MGPGR
 import sympy as sp
 
 hyper_params = [
     { # 2
-     'd' : (4,), 'optimiser_choice' : ("lm", "bfgs",),
+     'd' : (4,),
     },
     { # 2
-     'd' : (5,), 'optimiser_choice' : ("lm", "bfgs",),
+     'd' : (5,),
     },
     { # 1
-     'd' : (6,), 'optimiser_choice' : ("lm","bfgs",),
+     'd' : (6,),
     },
     
 ]
 
-est = GPGR(t=600, g=-1, e=499500, tour=4, d=4, use_optim=True, optimiser_choice="lm",
-        disable_ims=True, pop=1024, feat_sel=-1, no_univ_exc_leaves_fos=False, bs_opt=256,
-        no_large_fos=False, 
-        finetune=True,
-        ff="lsmse",
-        use_ftol=False,
-        tol=1e-9,
-        use_mse_opt=False,
-        bs=2048,
-        cmp=0.,
-        log=False,
-        fset='+,-,*,/', rci=0.0,
-        random_state=1,
-        verbose=True
-        )
-
-est = GPGR(t=120, g=-1, e=-1, tour=4, d=4,  use_optim=True, optimiser_choice="lm",
-        disable_ims=True, pop=1024, nolink=False, feat_sel=-1,
-        no_large_fos=False, no_univ_exc_leaves_fos=False,
-        finetune=True, bs_opt=256,
-        bs=2048, random_accept_p=0.,
-        verbose=False, opt_per_gen=1, use_clip=False,
-        fset='+,-,*,/,sin,cos,log,exp,sqrt', cmp=0.0, rci=0.0, use_ftol=False, tol=1e-9, use_mse_opt=False, log=False, reinject_elite=True, ff="lsmse", use_local_search=False,
-        optimise_after=False, add_addition_multiplication=False, add_any=False, use_max_range=False, equal_p_coeffs=True,
-
-        random_state=1)  
+est = MGPGR(t=2*60*60, g=-1, e=-1, max_non_improve=-1, tour=4, d=4,use_optim=True, pop=100, bs_opt=256, bs=2048,
+verbose=True, opt_per_gen=1, use_clip=False,fset='+,-,*,/,sin,cos,log,sqrt',cmp=1.,use_mse_opt=False,log=False,ff='lsmse',use_max_range=True,equal_p_coeffs=True,MO_mode=True,use_adf=True,use_aro=False,
+n_clusters=5,max_coeffs=-1,discount_size=False,random_state=0,nr_multi_trees=4,balanced=False,donor_fraction=1.,accept_diversity=True,k2=True)
 
 def complexity(est):
   m = est.model

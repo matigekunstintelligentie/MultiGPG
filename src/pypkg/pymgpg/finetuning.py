@@ -1,4 +1,4 @@
-from pygpg import conversion as C
+from pymgpg import conversion as C
 import numpy as np
 import torch
 import sympy

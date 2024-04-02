@@ -37,6 +37,8 @@ namespace g {
   int pop_size;
   int max_generations;
   int max_time;
+  int max_evals;
+  int max_non_improve;
 
   bool MO_mode = false;
   bool use_adf = false;
@@ -287,6 +289,9 @@ namespace g {
     parser.set_optional<int>("pop", "population_size", 4096, "Population size");
     parser.set_optional<int>("g", "generations", 20, "Budget of generations (-1 for disabled)");
     parser.set_optional<int>("t", "time", -1, "Budget of time (-1 for disabled)");
+    parser.set_optional<int>("e", "evals", -1, "Budget of evals (-1 for disabled)");
+    parser.set_optional<int>("max_non_improve", "max_non_improve", -1, "Budget of non_improves (-1 for disabled)");
+
     // initialization
     parser.set_optional<string>("is", "initialization_strategy", "hh", "Strategy to sample the initial population");
     parser.set_optional<int>("d", "depth", 4, "Maximum depth that the trees can have");
@@ -333,7 +338,7 @@ namespace g {
     parser.set_optional<bool>("discount_size", "discount_size", false, "Whether the model size is discounted for re-use");
     parser.set_optional<bool>("balanced", "balanced", false, "Whether balanced k-leaders is used");
     parser.set_optional<bool>("k2", "k2", false, "Whether balanced k-2-leaders is used");
-    parser.set_optional<bool>("accept_diversity", "accept_diversity", true, "Whether non-dominated, but equal objective solution are accepted into the MO-archive");
+    parser.set_optional<bool>("accept_diversity", "accept_diversity", false, "Whether non-dominated, but equal objective solution are accepted into the MO-archive");
     parser.set_optional<float>("donor_fraction", "donor_fraction", 2., "What fraction of the closest full population is used as donor population");
     parser.set_optional<int>("n_clusters", "n_clusters", 7, "Number of clusters");
 
@@ -362,8 +367,10 @@ namespace g {
     pop_size = parser.get<int>("pop");
     print("pop. size: ",pop_size);
 
+    max_evals = parser.get<int>("e");
     max_generations = parser.get<int>("g");
     max_time = parser.get<int>("t");
+    max_non_improve = parser.get<int>("max_non_improve");
     print("budget: ",
        max_generations > -1 ? max_generations : INF, " generations, ",
        max_time > -1 ? max_time : INF, " time [s], "

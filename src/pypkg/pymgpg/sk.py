@@ -1,4 +1,4 @@
-from pygpg import conversion, imputing, complexity
+from pymgpg import conversion, imputing, complexity
 from sklearn.metrics import mean_squared_error
 from sklearn.base import BaseEstimator, RegressorMixin
 import sys, os
@@ -7,12 +7,12 @@ import numpy as np
 import sympy
 
 sys.path.insert(0, os.path.join(
-    os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'pygpg'))
+    os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'pymgpg'))
 
 # load cpp interface
-import _pb_gpg
+import _pb_mgpg
 
-class GPGRegressor(BaseEstimator, RegressorMixin):
+class MGPGRegressor(BaseEstimator, RegressorMixin):
 
   def __init__(self, **kwargs):
     # store parameters internally
@@ -20,8 +20,8 @@ class GPGRegressor(BaseEstimator, RegressorMixin):
       setattr(self, k, kwargs[k])
 
   #def __del__(self):
-  #  if hasattr(self, "_gpg_cpp"):
-  #    del self._gpg_cpp
+  #  if hasattr(self, "_mgpg_cpp"):
+  #    del self._mgpg_cpp
 
   def _create_cpp_option_string(self):
     # build string of options for cpp
@@ -76,7 +76,7 @@ class GPGRegressor(BaseEstimator, RegressorMixin):
       # fix non-contiguous memory block for SWIG
       X = X.copy()
 
-    models = _pb_gpg.evolve(cpp_options, X, y)
+    models = _pb_mgpg.evolve(cpp_options, X, y)
 
     # extract the model as a sympy and store it internally
     self.model = self._pick_best_model(X, y, models)
@@ -91,7 +91,7 @@ class GPGRegressor(BaseEstimator, RegressorMixin):
       # fix non-contiguous memory block for SWIG
       X = X.copy()
 
-    models = _pb_gpg.evolve_val(cpp_options, X, y, X_val, y_val)
+    models = _pb_mgpg.evolve_val(cpp_options, X, y, X_val, y_val)
 
     # extract the model as a sympy and store it internally
     self.model = self._pick_best_model(X, y, models)

@@ -46,7 +46,7 @@ struct Fitness {
       y = & this->y_batch;
 
     // update evaluations
-    evaluations += 1;
+    //evaluations += 1;
     return get_fitness_SO(n, *X, *y, change_fitness);
   }
 

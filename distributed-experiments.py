@@ -93,9 +93,9 @@ def run(experiment):
     subprocess.run(experiment.construct_string(), shell=True)
 
 log_pop = False
-verbose = True
-n_processes = 1
-duration = 3600*2
+verbose = False
+n_processes = 30
+duration = 60*60
 generations = -1
 popsize = 1024
 
@@ -155,24 +155,24 @@ for i in range(10):
 p = Pool(n_processes)
 p.map(run, experiments)
 
-# n_processes = 15
-#
-# result_dir = "./results/all"
-# for i in range(30):
-#     for dataset in ["synthetic_dataset"]:
-#         contains_train = "_train" in dataset
-#         directory = result_dir
-#         isExist = os.path.exists(directory)
-#         if not isExist:
-#             os.makedirs(directory)
-#         for exp in [
-#             gpgomea_experiment({"csv_name":"tree_42", "depth":  4, "dir": directory, "batch_size": 256, "ff": "mse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize*5, "n_clusters": 5, "max_coeffs": 0, "nr_multi_trees": 2,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": sin_fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":False,"balanced":False,"k2":True,"log_pop":log_pop,"donor_fraction":1.}),
-#             gpgomea_experiment({"csv_name":"tree_44", "depth":  4, "dir": directory, "batch_size": 256, "ff": "mse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize*5, "n_clusters": 5, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": sin_fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":False,"balanced":False,"k2":True,"log_pop":log_pop,"donor_fraction":1.}),
-#             gpgomea_experiment({"csv_name":"tree_7", "depth":  7, "dir": directory, "batch_size": 256, "ff": "mse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize*5, "n_clusters": 5, "max_coeffs": 0, "nr_multi_trees": 1,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": sin_fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":False,"balanced":False,"k2":True,"log_pop":log_pop,"donor_fraction":1.}),
-#         ]:
-#             experiments.append(exp)
-# p = Pool(n_processes)
-# p.map(run, experiments)
+n_processes = 15
+
+result_dir = "./results/all"
+for i in range(30):
+    for dataset in ["synthetic_dataset"]:
+        contains_train = "_train" in dataset
+        directory = result_dir
+        isExist = os.path.exists(directory)
+        if not isExist:
+            os.makedirs(directory)
+        for exp in [
+            gpgomea_experiment({"csv_name":"tree_42", "depth":  4, "dir": directory, "batch_size": 256, "ff": "mse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize*5, "n_clusters": 5, "max_coeffs": 0, "nr_multi_trees": 2,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": sin_fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":False,"balanced":False,"k2":True,"log_pop":log_pop,"donor_fraction":1.}),
+            gpgomea_experiment({"csv_name":"tree_44", "depth":  4, "dir": directory, "batch_size": 256, "ff": "mse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize*5, "n_clusters": 5, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": sin_fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":False,"balanced":False,"k2":True,"log_pop":log_pop,"donor_fraction":1.}),
+            gpgomea_experiment({"csv_name":"tree_7", "depth":  7, "dir": directory, "batch_size": 256, "ff": "mse", "seed": i, "coeff_p": 1., "MO_mode": True, "popsize":popsize*5, "n_clusters": 5, "max_coeffs": 0, "nr_multi_trees": 1,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": sin_fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": True, "discount_size":False,"balanced":False,"k2":True,"log_pop":log_pop,"donor_fraction":1.}),
+        ]:
+            experiments.append(exp)
+p = Pool(n_processes)
+p.map(run, experiments)
 
 
 
