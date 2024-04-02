@@ -77,7 +77,7 @@ struct IMS {
           if(g::max_non_improve>0 && generations_without_improvement >= g::max_non_improve){
               print("Stopping due to non improvements ", generations_without_improvement);
           }
-          if(best_train_mses[best_train_mses.size()-1]<1e-9){
+          if(best_train_mses.size()>0 && best_train_mses[best_train_mses.size()-1]<1e-9){
               print("Stopping due to finding expression with mse 0");
           }
 
@@ -163,8 +163,17 @@ struct IMS {
           MO_archive_strings.push_back(MO_archive_string);
       }
       else{
+          float best_train_mse = 9999999.;
+          for (auto ind: g::ea->MO_archive) {
+              float train_mse = g::fit_func->get_fitness_MO(ind, g::fit_func->X_train, g::fit_func->y_train, false)[0];
 
-          print(" ~ generation: ", macro_generations, " ", generations_without_improvement, " ", to_string(tock(start_time)), " ", g::ea->MO_archive.size(), " ", g::fit_func->evaluations);
+              if (best_train_mse > train_mse) {
+                  best_train_mse = train_mse;
+              }
+          }
+          best_train_mses.push_back(best_train_mse);
+
+          print(" ~ generation: ", macro_generations, " ", best_train_mses[best_train_mses.size()-1], "", generations_without_improvement, " ", to_string(tock(start_time)), " ", g::ea->MO_archive.size(), " ", g::fit_func->evaluations);
       }
     }
     // finished
@@ -261,7 +270,6 @@ struct IMS {
       csv_file.close();
     }
   }
-
 };
 
 
