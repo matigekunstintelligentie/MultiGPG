@@ -11,6 +11,11 @@ struct ElitistArchive{
     bool improved_this_gen = false;
     bool accept_diversity = false;
 
+    vector<float> min_objs = {0.,1.};
+    vector<float> max_objs = {100.,100.};
+
+    int num_boxes = 10;
+
     Mat X_train;
 
     ~ElitistArchive(){
@@ -37,7 +42,7 @@ struct ElitistArchive{
         return copy;
     }
 
-    bool nondominated(Individual* ind){
+    bool nondominated(Individual* individual){
         bool solution_is_dominated = false;
         bool identical_objectives_already_exist;
         bool diversity_added = false;
@@ -47,20 +52,42 @@ struct ElitistArchive{
         }
         for (size_t i = 0; i < MO_archive.size(); i++) {
             // check domination
-            solution_is_dominated = dominates(MO_archive[i], ind);
+            solution_is_dominated = dominates(MO_archive[i], individual);
             if (solution_is_dominated) {
                 break;
             }
 
+//            identical_objectives_already_exist = true;
+//            for (size_t j = 0; j < 2; j++) {
+//                if (ind->fitness[j] != MO_archive[i]->fitness[j]) {
+//                    identical_objectives_already_exist = false;
+//                    break;
+//                }
+//            }
+
+//            if (identical_objectives_already_exist) {
+//                if (diversityAdded(ind, i)) {
+//                    diversity_added = true;
+//                }
+//                break;
+//            }
+
+            // Rigid grid
             identical_objectives_already_exist = true;
-            for (size_t j = 0; j < 2; j++) {
-                if (ind->fitness[j] != MO_archive[i]->fitness[j]) {
+            for(int j=0; j<2; j++){
+                float epsilon = 1./num_boxes;
+                float difference = max_objs[j]-min_objs[j];
+                if(difference>0) {
+                    epsilon = difference/num_boxes;
+                }
+                if(int((individual->fitness[j] - min_objs[j])/epsilon) != int((MO_archive[i]->fitness[j]-min_objs[j])/epsilon)){
                     identical_objectives_already_exist = false;
                     break;
                 }
             }
+
             if (identical_objectives_already_exist) {
-                if (diversityAdded(ind, i)) {
+                if (dominates(individual, MO_archive[i])) {
                     diversity_added = true;
                 }
                 break;
@@ -129,50 +156,98 @@ struct ElitistArchive{
         for(int i = 0; i<MO_archive.size(); i++){
             // Check domination
             solution_is_dominated = dominates(MO_archive[i], individual);
-            // If solution is dominated then do not add
+            // If solution is dominated then discard
             if(solution_is_dominated){
                 break;
             }
 
+//            identical_objectives_already_exist = true;
+//            for(int j=0; j<2; j++){
+//                if(individual->fitness[j] != MO_archive[i]->fitness[j]){
+//                    identical_objectives_already_exist = false;
+//                    break;
+//                }
+//            }
+
+//            if(identical_objectives_already_exist && accept_diversity){
+//                if (diversityAdded(individual, i)) {
+//                    diversity_added = true;
+//                    MO_archive[i]->clear();
+//                    MO_archive[i] = nullptr;
+//                }
+//                break;
+//            }
+
+            // Rigid grid
             identical_objectives_already_exist = true;
             for(int j=0; j<2; j++){
-                if(individual->fitness[j] != MO_archive[i]->fitness[j]){
+                float epsilon;
+                float difference = max_objs[j]-min_objs[j];
+                if(difference>0) {
+                    epsilon = difference/num_boxes;
+                }
+                else{
+                    epsilon = max_objs[j]/num_boxes;
+                }
+
+//                if(int((individual->fitness[j] )/epsilon)>10 || int((MO_archive[i]->fitness[j])/epsilon)>10){
+//                    print(epsilon);
+//                    print(difference);
+//                    print(min_objs[j]);
+//                    print(max_objs[j]);
+//                    print(individual->fitness[j] - min_objs[j]);
+//                    print(MO_archive[i]->fitness[j] - min_objs[j]);
+//                    print(int((individual->fitness[j] )/epsilon));
+//                    print(int((MO_archive[i]->fitness[j] )/epsilon));
+//                    print("shouldnt happen");
+//                }
+
+                //print((individual->fitness[j])-(MO_archive[i]->fitness[j]), " ", int((individual->fitness[j] - min_objs[j])/epsilon), " ", int((MO_archive[i]->fitness[j] - min_objs[j])/epsilon));
+                if(int(floor((individual->fitness[j] - min_objs[j])/epsilon)) != int(floor((MO_archive[i]->fitness[j] - min_objs[j])/epsilon))){
                     identical_objectives_already_exist = false;
                     break;
                 }
             }
 
-            near_identical_objectives_already_exist = true;
-            for(int j=0; j<2; j++){
-                if(abs(individual->fitness[j] - MO_archive[i]->fitness[j])>1e-6){
-                    near_identical_objectives_already_exist = false;
-                    break;
-                }
-            }
+
+
 
             if(identical_objectives_already_exist && accept_diversity){
-                if (diversityAdded(individual, i)) {
+                if (dominates(individual, MO_archive[i])) {
                     diversity_added = true;
                     MO_archive[i]->clear();
                     MO_archive[i] = nullptr;
                 }
-                break;
             }
 
-            if(dominates(individual, MO_archive[i])){
-                MO_archive[i]->clear();
-                MO_archive[i] = nullptr;
-            }
+
         }
+
+        int size_before = MO_archive.size();
         MO_archive.erase(std::remove_if(MO_archive.begin(), MO_archive.end(), [](Individual *ind){return ind== nullptr;}), MO_archive.end());
 
-        if ((!solution_is_dominated && !identical_objectives_already_exist) || (diversity_added)) {
+        if(MO_archive.size()<size_before){
+            print("Shrink");
+        }
+
+        if ((!solution_is_dominated && !identical_objectives_already_exist) || (!solution_is_dominated && identical_objectives_already_exist && diversity_added)) {
             Individual *new_individual = individual->clone();
+
+//            // Update maxes for each objective
+//            for(int j=0; j<2; j++) {
+//                if (new_individual->fitness[j] > max_objs[j] && !isnan(new_individual->fitness[j]) && !isinf(new_individual->fitness[j])) {
+//                    max_objs[j] = new_individual->fitness[j];
+//                }
+//                if (new_individual->fitness[j] < min_objs[j] && !isnan(new_individual->fitness[j]) && !isinf(new_individual->fitness[j])) {
+//                    min_objs[j] = new_individual->fitness[j];
+//                }
+//            }
+
             MO_archive.push_back(new_individual);
         }
-        if ((!solution_is_dominated && !near_identical_objectives_already_exist)){
-            improved_this_gen = true;
-        }
+//        if ((!solution_is_dominated && !near_identical_objectives_already_exist)){
+//            improved_this_gen = true;
+//        }
     }
 };
 
