@@ -14,7 +14,7 @@ hyper_params = [
     
 ]
 
-est = MGPGR(t=2*60*60, g=-1, e=-1, max_non_improve=5, tour=4, d=4,use_optim=True, pop=100, bs_opt=256, bs=2048,
+est = MGPGR(t=2*60*60, g=25, e=-1, max_non_improve=5, tour=4, d=4,use_optim=True, pop=1024, bs_opt=256, bs=2048,
 verbose=True, opt_per_gen=1, use_clip=False,fset='+,-,*,/,sin,cos,log,sqrt',cmp=1.,use_mse_opt=False,log=False,ff='lsmse',use_max_range=True,equal_p_coeffs=True,MO_mode=True,use_adf=True,use_aro=False,
 n_clusters=5,max_coeffs=-1,discount_size=False,random_state=0,nr_multi_trees=4,balanced=False,donor_fraction=1.,accept_diversity=True,k2=True)
 

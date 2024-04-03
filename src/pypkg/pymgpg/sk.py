@@ -131,9 +131,7 @@ class MGPGRegressor(BaseEstimator, RegressorMixin):
 
   def _pick_best_model(self, X, y, models):
     backup_txt_models = models
-    # simplify (with stopping)
-    if hasattr(self, "verbose") and self.verbose:
-      print(f"simplifying {len(models)} models...")
+
     simplified_models = list()
     for m in models:
       simpl_m = conversion.timed_simplify(m, ratio=1.0, timeout=5)
@@ -147,9 +145,6 @@ class MGPGRegressor(BaseEstimator, RegressorMixin):
     models = [conversion.model_cleanup(m, timeout=5) for m in models]
     models = [m for m in models if m is not None]
 
-    # finetune  
-    if hasattr(self, "finetune") and self.finetune:
-      self._finetune_multiple_models(models, X, y)
         
     # pick best
     errs = list()
@@ -173,6 +168,10 @@ class MGPGRegressor(BaseEstimator, RegressorMixin):
       best_idx = complexity.determine_rci_best(errs, compls, self.rci)
     else:
       best_idx = np.argmin(errs)
+
+    print(models)
+    print(errs)
+    print(models[best_idx])
 
     self.txt_models = backup_txt_models[best_idx]
     
