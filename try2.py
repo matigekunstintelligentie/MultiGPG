@@ -5,13 +5,6 @@ hyper_params = [
     { # 2
      'd' : (4,),
     },
-    { # 2
-     'd' : (5,),
-    },
-    { # 1
-     'd' : (6,),
-    },
-    
 ]
 
 est = MGPGR(t=2*60*60, g=25, e=-1, max_non_improve=5, tour=4, d=4,use_optim=True, pop=1024, bs_opt=256, bs=2048,

@@ -13,6 +13,8 @@ struct Individual {
   vector<float> fitness = {9999999,9999999};
   int clusterid;
   int NIS = 0;
+  float add = 0.;
+  float mul = 1.;
 
   
   Individual(){
@@ -29,6 +31,8 @@ struct Individual {
       }
       ind->fitness = this->fitness;
       ind->NIS = this->NIS;
+      ind->add = this->add;
+      ind->mul = this->mul;
       return ind;
   }
 

@@ -11,6 +11,11 @@ struct ElitistArchive{
     bool improved_this_gen = false;
     bool accept_diversity = false;
 
+    vector<float> min_objs = {0.,0.};
+    vector<float> max_objs = {10000.,200.};
+
+    int num_boxes = 100;
+
     Mat X_train;
 
     ~ElitistArchive(){
@@ -124,7 +129,6 @@ struct ElitistArchive{
         bool solution_is_dominated = false;
         bool diversity_added = false;
         bool identical_objectives_already_exist = false;
-        bool near_identical_objectives_already_exist = false;
 
         for(int i = 0; i<MO_archive.size(); i++){
             // Check domination
@@ -134,27 +138,37 @@ struct ElitistArchive{
                 break;
             }
 
+//            identical_objectives_already_exist = true;
+//            for(int j=0; j<2; j++){
+//                if(individual->fitness[j] != MO_archive[i]->fitness[j]){
+//                    identical_objectives_already_exist = false;
+//                    break;
+//                }
+//            }
+
+            // Rigid grid
             identical_objectives_already_exist = true;
             for(int j=0; j<2; j++){
-                if(individual->fitness[j] != MO_archive[i]->fitness[j]){
+                float epsilon;
+                float difference = max_objs[j]-min_objs[j];
+                if(difference>0) {
+                    epsilon = difference/num_boxes;
+                }
+                else{
+                    epsilon = 1./num_boxes;
+                }
+
+                if(int((individual->fitness[j] - min_objs[j])/epsilon) != int((MO_archive[i]->fitness[j] - min_objs[j])/epsilon)){
                     identical_objectives_already_exist = false;
                     break;
                 }
             }
 
-            near_identical_objectives_already_exist = true;
-            for(int j=0; j<2; j++){
-                if(abs(individual->fitness[j] - MO_archive[i]->fitness[j])>1e-6){
-                    near_identical_objectives_already_exist = false;
-                    break;
-                }
-            }
-
-            if(identical_objectives_already_exist && accept_diversity){
-                if (diversityAdded(individual, i)) {
-                    diversity_added = true;
+            if(identical_objectives_already_exist){
+                if(dominates(individual, MO_archive[i])){
                     MO_archive[i]->clear();
                     MO_archive[i] = nullptr;
+                    diversity_added = true;
                 }
                 break;
             }
@@ -163,15 +177,42 @@ struct ElitistArchive{
                 MO_archive[i]->clear();
                 MO_archive[i] = nullptr;
             }
+
+
         }
         MO_archive.erase(std::remove_if(MO_archive.begin(), MO_archive.end(), [](Individual *ind){return ind== nullptr;}), MO_archive.end());
 
-        if ((!solution_is_dominated && !identical_objectives_already_exist) || (diversity_added)) {
+        // !identical_objectives_already_exist means hypercube not filled
+        if ((!solution_is_dominated && !identical_objectives_already_exist) || diversity_added) {
             Individual *new_individual = individual->clone();
             MO_archive.push_back(new_individual);
-        }
-        if ((!solution_is_dominated && !near_identical_objectives_already_exist)){
+
+//            // Update maxes for each objective
+//            for(int j=0; j<2; j++) {
+//                if (new_individual->fitness[j] > max_objs[j] && !isnan(new_individual->fitness[j]) && !isinf(new_individual->fitness[j])) {
+//                    max_objs[j] = new_individual->fitness[j];
+//                }
+//                if (new_individual->fitness[j] < min_objs[j] && !isnan(new_individual->fitness[j]) && !isinf(new_individual->fitness[j])) {
+//                    min_objs[j] = new_individual->fitness[j];
+//                }
+//            }
+
             improved_this_gen = true;
+        }
+    }
+
+    void update_minmax(){
+        min_objs = {999999999.,999999999.};
+        max_objs = {-999999999.,-999999999.};
+        for(int i = 0; i<MO_archive.size(); i++){
+            for(int j = 0; j<2; j++) {
+                if (isfinite(MO_archive[i]->fitness[j]) && MO_archive[i]->fitness[j] < min_objs[j]) {
+                    min_objs[j] = MO_archive[i]->fitness[j];
+                }
+                if (isfinite(MO_archive[i]->fitness[j]) && MO_archive[i]->fitness[j] > max_objs[j]) {
+                    max_objs[j] = MO_archive[i]->fitness[j];
+                }
+            }
         }
     }
 };

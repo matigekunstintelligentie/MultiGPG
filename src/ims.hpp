@@ -57,7 +57,11 @@ struct IMS {
       // update mini batch
       g::fit_func->update_batch(g::batch_size);
 
-      if ((g::max_generations > 0 && macro_generations == g::max_generations) ||
+      bool expression_found = false;
+      if(best_train_mses.size()>0){
+          expression_found = best_train_mses[best_train_mses.size()-1]<1e-9;
+      }
+      if (expression_found || (g::max_generations > 0 && macro_generations == g::max_generations) ||
           (g::max_time > 0 && tock(start_time) >= g::max_time) || (g::max_evals > 0 && g::fit_func->evaluations>=g::max_evals) || (g::max_non_improve>0 && generations_without_improvement >= g::max_non_improve)) {
           stop = true;
 
@@ -72,6 +76,9 @@ struct IMS {
           }
           if(g::max_non_improve>0 && generations_without_improvement >= g::max_non_improve){
               print("Stopping due to non improvements ", generations_without_improvement);
+          }
+          if(best_train_mses.size()>0 && best_train_mses[best_train_mses.size()-1]<1e-9){
+              print("Stopping due to finding expression with mse 0");
           }
 
           break;
@@ -127,7 +134,7 @@ struct IMS {
                   best_size = size;
                   best_size_discount = ind->get_num_nodes(true, true);
                   best_stri = ind->human_repr(true);
-                  best_string = best_stri;
+                  best_string = "(" + to_string(ind->add) + "+(" + to_string(ind->mul) + "*"  + best_stri + ")" + ")";
 
                   vector<string> best_substrings_tmp;
                   for(int y=0; y<g::nr_multi_trees; y++){
@@ -141,7 +148,9 @@ struct IMS {
               else{
                   add_comma = true;
               }
-              MO_archive_string = MO_archive_string + "[" + to_string(train_mse) + "," + to_string(val_mse) + "," + to_string(ind->get_num_nodes(true)) + "," + to_string(ind->get_num_nodes(true, true)) + "," + ind->human_repr(true) + "]";
+
+              string str_ind = "(" + to_string(ind->add) + "+(" + to_string(ind->mul) + "*"  + ind->human_repr(true) + ")" + ")";
+              MO_archive_string = MO_archive_string + "[" + to_string(train_mse) + "," + to_string(val_mse) + "," + to_string(ind->get_num_nodes(true)) + "," + to_string(ind->get_num_nodes(true, true)) + "," + str_ind + "]";
           }
           MO_archive_string += "}";
 
@@ -156,11 +165,24 @@ struct IMS {
           MO_archive_strings.push_back(MO_archive_string);
       }
       else{
+          float best_train_mse = 9999999.;
+          for (auto ind: g::ea->MO_archive) {
+              float train_mse = g::fit_func->get_fitness_MO(ind, g::fit_func->X_train, g::fit_func->y_train, false)[0];
 
-          print(" ~ generation: ", macro_generations, " ", generations_without_improvement, " ", to_string(tock(start_time)), " ", g::ea->MO_archive.size(), " ", g::fit_func->evaluations);
+              if (best_train_mse > train_mse) {
+                  best_train_mse = train_mse;
+              }
+          }
+          best_train_mses.push_back(best_train_mse);
+
+          print(" ~ generation: ", macro_generations, " ", best_train_mses[best_train_mses.size()-1], "", generations_without_improvement, " ", to_string(tock(start_time)), " ", g::ea->MO_archive.size(), " ", g::fit_func->evaluations);
       }
     }
     // finished
+
+    for(int i=0;i<g::ea->MO_archive.size();i++){
+        append_linear_scaling(g::ea->MO_archive[i]);
+    }
 
     if(g::log){
       ofstream csv_file;
@@ -254,7 +276,6 @@ struct IMS {
       csv_file.close();
     }
   }
-
 };
 
 
