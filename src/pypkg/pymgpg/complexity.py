@@ -28,6 +28,8 @@ def determine_rci_best(errors, complexities, rci=0.1) -> int:
   rang_c = max_c - min_c
 
   rel_accuracies = [1.0-(e - min_e)/rang_e for e in errors]
+  #rel_simplicities = [np.round(-np.log(c)/np.log(5), 1) for c in complexities]
+
   rel_simplicities = [1.0-(c - min_c)/rang_c for c in complexities]
 
   best_score = -np.inf

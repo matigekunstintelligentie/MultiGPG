@@ -194,9 +194,13 @@ struct LSMSEFitness : Fitness {
 
     if (intc_slope.second == 0){
         out = intc_slope.first + out;
+        n->add = intc_slope.first;
+        n->mul = 1.;
     }
     else{
         out = intc_slope.first + intc_slope.second*out;
+        n->add = intc_slope.first;
+        n->mul = intc_slope.first;
     }
 
     float fitness = (y-out).square().mean();
@@ -217,9 +221,13 @@ struct LSMSEFitness : Fitness {
 
         if (intc_slope.second == 0){
             out = intc_slope.first + out;
+            n->add = intc_slope.first;
+            n->mul = 1.;
         }
         else{
             out = intc_slope.first + intc_slope.second*out;
+            n->add = intc_slope.first;
+            n->mul = intc_slope.first;
         }
 
 

@@ -134,7 +134,7 @@ struct IMS {
                   best_size = size;
                   best_size_discount = ind->get_num_nodes(true, true);
                   best_stri = ind->human_repr(true);
-                  best_string = best_stri;
+                  best_string = "(" + to_string(ind->add) + "+(" + to_string(ind->mul) + "*"  + best_stri + ")" + ")";
 
                   vector<string> best_substrings_tmp;
                   for(int y=0; y<g::nr_multi_trees; y++){
@@ -148,7 +148,9 @@ struct IMS {
               else{
                   add_comma = true;
               }
-              MO_archive_string = MO_archive_string + "[" + to_string(train_mse) + "," + to_string(val_mse) + "," + to_string(ind->get_num_nodes(true)) + "," + to_string(ind->get_num_nodes(true, true)) + "," + ind->human_repr(true) + "]";
+
+              string str_ind = "(" + to_string(ind->add) + "+(" + to_string(ind->mul) + "*"  + ind->human_repr(true) + ")" + ")";
+              MO_archive_string = MO_archive_string + "[" + to_string(train_mse) + "," + to_string(val_mse) + "," + to_string(ind->get_num_nodes(true)) + "," + to_string(ind->get_num_nodes(true, true)) + "," + str_ind + "]";
           }
           MO_archive_string += "}";
 
@@ -177,6 +179,10 @@ struct IMS {
       }
     }
     // finished
+
+    for(int i=0;i<g::ea->MO_archive.size();i++){
+        append_linear_scaling(g::ea->MO_archive[i]);
+    }
 
     if(g::log){
       ofstream csv_file;
