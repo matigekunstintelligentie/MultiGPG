@@ -162,7 +162,6 @@ class MGPGRegressor(BaseEstimator, RegressorMixin):
     # adjust errs
     errs = [err if not np.isnan(err) else max_err + 1e-6 for err in errs]
 
-    self.rci = 0.1
     if hasattr(self, "rci") and len(models) > 1:
       complexity_metric = "node_count" if not hasattr(self, "compl") else self.compl
       compls = [complexity.compute_complexity(m, complexity_metric) for m in models]

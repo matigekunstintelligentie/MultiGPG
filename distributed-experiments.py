@@ -86,16 +86,22 @@ class gpgomea_experiment(experiment):
             self.experiment_dict[key] = value
 
 
+skip_duplicates = True
 
 def run(experiment):
     experiment.check_dict()
     print(experiment.construct_string())
-    subprocess.run(experiment.construct_string(), shell=True)
+
+    filename = f'{experiment.experiment_dict["dir"]}/{int(experiment.experiment_dict["seed"])+1}_{experiment.experiment_dict["csv_name"]}_{experiment.experiment_dict["dataset"]}.csv'
+    if os.path.isfile(filename) and skip_duplicates:
+        print("Skipping", filename)
+    else:
+        subprocess.run(experiment.construct_string(), shell=True)
 
 log_pop = False
 verbose = False
-n_processes = 30
-duration = 60*60
+n_processes = 1
+duration = 60
 generations = -1
 popsize = 1024
 
