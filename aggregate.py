@@ -82,8 +82,8 @@ experiments = [
     #['MO_equalclustersize_balanced_frac1','MO_equalclustersize_k2_frac1','SO'],
     #['MO_equalclustersize_k2_frac1_noadf, MO_equalclustersize_k2_frac1'],
     #['MO_equalclustersize_balanced_discount','MO_equalclustersize_k2_frac1','SO','MO_equalclustersize_balanced_frac1_discount'],
-    ['MO_equalclustersize_k2_noadf','MO_equalclustersize_k2'],
-    #['tree_7','tree_42','tree_44'],
+    #['MO_equalclustersize_k2_noadf','MO_equalclustersize_k2'],
+    ['tree_7','tree_42','tree_44'],
     #["MO","MO_nocluster"]
     ]
 
@@ -161,12 +161,14 @@ def make_plots(d, folder, x_index, appendix):
 
 #
 
-for dataset in ["air", "bike", "concrete","dowchemical","tower", "synthetic_dataset"]:
+#for dataset in ["air", "bike", "concrete","dowchemical","tower", "synthetic_dataset"]:
+for dataset in ["synthetic_dataset"]:
+
     d = defaultdict(lambda: defaultdict(list))
     c = defaultdict(int)
     time = defaultdict(float)
 
-    folder = "all"
+    folder = "erc"
     dir = "./results/" + folder
     for filename in sorted(glob.glob(dir + "/*.csv")):
         nr = filename.split("/")[-1].split("_")[0]
@@ -215,13 +217,14 @@ for dataset in ["air", "bike", "concrete","dowchemical","tower", "synthetic_data
                 try: 
                     time[d_key] += float((df.iloc[-1][15]).split(",")[[str(best_mse).rstrip("0") for best_mse in df.iloc[-1][8].split(",")].index(str(df.iloc[-1][1]).rstrip("0"))])
                     print(d_key, df.iloc[-1][1],df.iloc[-1][15].split(",")[-1], len(df.iloc[-1][15].split(",")), float(df.iloc[-1][15].split(",")[-1])-float(df.iloc[-1][15].split(",")[-2]))
-                except:
+                except Exception as e:
+                    print(e)
                     pass
             except Exception as e:
                 print(traceback.format_exc())
                 quit()
                 pass
-
+    print("Times FOUND")
     for k in c.keys():
         print(k, c[k], time[k]/30.)
     # print("DATASET", dataset) 
