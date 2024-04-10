@@ -19,7 +19,7 @@ struct Test {
 // ============================================================================
 //     depth();
     // subtree();
-    // is_intron();
+    is_intron();
 //     gen_tree();
 //     operators();
 //     node_output();
@@ -158,23 +158,15 @@ struct Test {
     }
 
     void is_intron(){
-        Node * first_tree = new Node(new Sin());
-        Node * z = new Node(new Cos());
-        first_tree->append(z);
-        Node * any = new Node(new AnyOp(0));
-        z->append(any);
-
-        Node * x = new Node(new FunctionTree(0));
-        Node * y = new Node(new Const(0.5));
-        Node * y2 = new Node(new Const(0.6));
-        x->append(y);
-        y->append(y2);
+        Node * first = new Node(new Const(5));
+        Node * second = new Node(new Const(6));
 
         Individual * ind = new Individual();
-        ind->trees.push_back(first_tree);
-        ind->trees.push_back(x);
+        ind->trees.push_back(first);
+        ind->trees.push_back(second);
 
-        assert(y2->is_intron()==true);
+        assert(ind->is_intron(first)==true);
+        assert(ind->is_intron(second)==false);
 
         ind->clear();
     }

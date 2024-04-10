@@ -437,6 +437,7 @@ Individual * efficient_gom_MO_FI(Individual * og_parent, vector<pair<vector<int>
     bool changed = false;
 
     for(int fos_idx = 0; fos_idx < fos.size(); fos_idx++){
+
         int mt = fos[random_fos_order[fos_idx]].second;
 
         auto crossover_mask = fos[random_fos_order[fos_idx]].first;
@@ -468,7 +469,8 @@ Individual * efficient_gom_MO_FI(Individual * og_parent, vector<pair<vector<int>
         // check if at least one change was meaningful
         for(int i : effectively_changed_indices) {
             Node * n = offspring_nodes[i];
-            if (!n->is_intron()) {
+            if (!parent->is_intron(n)) {
+            //if (!n->is_intron()) {
                 change_is_meaningful = true;
                 break;
             }
@@ -539,6 +541,7 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & do
     bool changed = false;
     bool ever_improved = false;
 
+
     for(int fos_idx = 0; fos_idx < fos.size(); fos_idx++){
         int mt = fos[random_fos_order[fos_idx]].second;
 
@@ -571,7 +574,8 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & do
         // check if at least one change was meaningful
         for(int i : effectively_changed_indices) {
             Node * n = offspring_nodes[i];
-            if (!n->is_intron()) {
+
+            if (!parent->is_intron(n)) {
                 change_is_meaningful = true;
                 break;
             }
