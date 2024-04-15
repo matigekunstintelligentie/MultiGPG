@@ -47,6 +47,15 @@ struct Individual {
   vector<Node*> subtree(bool check_introns){
       return  trees[trees.size()-1]->subtree(this->trees, check_introns);
   }
+
+  bool is_intron(Node * node){
+      for(Node * n: this->subtree(false)){
+          if(n == node){
+              return false;
+          }
+      }
+      return true;
+  }
   
   int get_num_nodes(bool excl_introns, bool discount=false){
 
