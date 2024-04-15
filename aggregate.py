@@ -10,9 +10,11 @@ import seaborn as sns
 from pymoo.indicators.hv import HV
 import os
 import scikit_posthocs as sp
+import traceback
 
 plt.style.use('seaborn')
 
+max_expr_size = None
 max_gen = None
 max_size = 10
 
@@ -71,19 +73,41 @@ def statistics(hv_list, el, dataset, appendix):
         print("#"*20)
         return x
     except Exception as e:
-        print(e)
+        print("stats", e)
         pass
 
+translation_dict = {
+"SO":"SO",
+"MO": "MO",
+"MO_equalclustersize": "5 x population size",
+"MO_balanced": "Balanced k-leader",
+"MO_k2": "Balanced k-2-Leader",
+"MO_frac1": "Restricted Donor Population",
+"MO_equalclustersize_balanced_frac1": "",
+"MO_equalclustersize_k2_frac1": "Balanced k-2-Leader restricted donor population",
+"MO_equalclustersize_k2_frac1_noadf":"",
+"MO_equalclustersize_balanced_discount":"",
+"MO_equalclustersize_balanced_frac1_discount":"",
+"MO_equalclustersize_k2_noadf":"",
+"MO_equalclustersize_k2":"",
+"MO_equalclustersize_balanced":"",
+"MO_equalclustersize_frac1":"",
+"tree_7":"",
+"tree_42":"",
+"tree_44":"",
+"MO_nocluster": "MO without clustering"
+}
+
 experiments = [
-    #['SO','MO'],
-    #['MO_equalclustersize', 'MO_balanced', 'MO_k2', 'MO_frac1'], 
-    #['MO_equalclustersize_frac1', 'MO_equalclustersize_balanced', 'MO_equalclustersize_k2'], 
-    #['MO_equalclustersize_balanced_frac1','MO_equalclustersize_k2_frac1','SO'],
-    #['MO_equalclustersize_k2_frac1_noadf, MO_equalclustersize_k2_frac1'],
-    #['MO_equalclustersize_k2_frac1_discount','MO_equalclustersize_k2_frac1','SO','SO_discount'],
-    #['MO_equalclustersize_k2_frac1_noadf','MO_equalclustersize_k2_frac1'],
-    ['tree_7','tree_42','tree44'],
-    #["MO","MO_nocluster"]
+    ['SO','MO'],
+    ['MO_equalclustersize', 'MO_balanced', 'MO_k2', 'MO_frac1'], 
+    ['MO_equalclustersize_frac1', 'MO_equalclustersize_balanced', 'MO_equalclustersize_k2'], 
+    ['MO_equalclustersize_balanced_frac1','MO_equalclustersize_k2_frac1','SO'],
+    ['MO_equalclustersize_k2_frac1_noadf, MO_equalclustersize_k2_frac1'],
+    ['MO_equalclustersize_balanced_discount','MO_equalclustersize_k2_frac1','SO','MO_equalclustersize_balanced_frac1_discount'],
+    ['MO_equalclustersize_k2_noadf','MO_equalclustersize_k2'],
+    ['tree_7','tree_42','tree_44'],
+    ["MO","MO_nocluster"]
     ]
 
 big_list = []
@@ -102,11 +126,11 @@ def make_plots(d, folder, x_index, appendix):
 
         for key in d.keys():
             if key in el:
-                print(key)
+                #print(key)
                 x = d[key][x_index]
                 y = d[key][1]
 
-                gens = np.min(d[key][2])
+                gens = np.mean(d[key][2])
 
                 hvs = calc_hv(dataset_filename_fronts, dataset, key, x_index, max_size)
 
@@ -123,8 +147,8 @@ def make_plots(d, folder, x_index, appendix):
                 # Plot scatter plot and line plot
                 color = sns.color_palette()[int(el.index(key))]  # Get color from tab10 colormap
                 marker = markers[int(el.index(key))]
-                plt.scatter(x, y, alpha=0.5, s=25, label=key + " Average HV={0:.3f}, Average gens={1:.1f}".format(np.mean(hvs), gens), color=color, marker=marker)
-                plt.plot(x_fit, y_fit, c=color, alpha=0.5)
+                plt.scatter(x, y, alpha=0.4, s=18, label=translation_dict[key] + " Average HV={0:.3f}, \n Average generations={1:.1f}".format(np.mean(hvs), gens), color=color, marker=marker)
+                #plt.plot(x_fit, y_fit, c=color, alpha=0.5)
 
                 # Commented out, because extreme slow
                 # print("nondom")
@@ -136,13 +160,13 @@ def make_plots(d, folder, x_index, appendix):
 
         if(len(x)>0):
             plt.xlim(0.5,None)
-            plt.xlabel(r'$r^2$')
-            plt.ylabel('Model size')
+            plt.xlabel(r'$R^2$')
+            plt.ylabel('Expression size')
             # plt.yscale('log', base=5)
             plt.legend()
-            fig.set_size_inches(32, 18)
+            fig.set_size_inches(10, 10)
 
-
+            #plt.gca().set_aspect('equal')
 
             directory = "./results/plots/" + folder
             isExist = os.path.exists(directory)
@@ -150,9 +174,9 @@ def make_plots(d, folder, x_index, appendix):
                 os.makedirs(directory)
 
             if max_gen is None:
-                plt.savefig(directory + "/{}_{}.pdf".format(dataset + "".join(el), appendix), dpi=300, bbox_inches='tight')
+                plt.savefig(directory + "/{}_{}.png".format(dataset + "".join(el), appendix), dpi=600, bbox_inches='tight')
             else:
-                plt.savefig(directory + "/{}_{}gen_{}.pdf".format(dataset + "".join(el), max_gen, appendix), dpi=300, bbox_inches='tight')
+                plt.savefig(directory + "/{}_{}gen_{}.png".format(dataset + "".join(el), max_gen, appendix), dpi=600, bbox_inches='tight')
         plt.close()
 
 
@@ -161,11 +185,13 @@ def make_plots(d, folder, x_index, appendix):
 #
 
 for dataset in ["air", "bike", "concrete","dowchemical","tower", "synthetic_dataset"]:
+#for dataset in ["Concrete"]:
+
     d = defaultdict(lambda: defaultdict(list))
     c = defaultdict(int)
     time = defaultdict(float)
 
-    folder = "ADF"
+    folder = "cmp"
     dir = "./results/" + folder
     for filename in sorted(glob.glob(dir + "/*.csv")):
         nr = filename.split("/")[-1].split("_")[0]
@@ -195,6 +221,10 @@ for dataset in ["air", "bike", "concrete","dowchemical","tower", "synthetic_data
 
                 for el in df.iloc[-1][13].split(";")[mg].split("],"):
                     rep = el.replace("[","").replace("{","").split(",")
+                    
+                    if max_expr_size is not None:
+                        if float(rep[2])>max_expr_size:
+                            continue
                     scatter_x.append(1. - float(rep[0])/float(df.iloc[-1][6]))
                     scatter_y.append(float(rep[2]))
                     scatter_x_val.append(1. - float(rep[0])/float(df.iloc[-1][7]))
@@ -209,15 +239,22 @@ for dataset in ["air", "bike", "concrete","dowchemical","tower", "synthetic_data
                 d[d_key][2].append(gens)
                 d[d_key][3].extend(scatter_x_val)
                 d[d_key][4].append(df.iloc[-1][1])
-                c[d_key] += df.iloc[-1][1]<0.01
+                c[d_key] += df.iloc[-1][1]<0.001
                 
-                time[d_key] += float((df.iloc[-1][15]).split(",")[[str(best_mse).rstrip("0") for best_mse in df.iloc[-1][8].split(",")].index(str(df.iloc[-1][1]).rstrip("0"))])
-                print(d_key, df.iloc[-1][1],df.iloc[-1][15].split(",")[-1], len(df.iloc[-1][15].split(",")), float(df.iloc[-1][15].split(",")[-1])-float(df.iloc[-1][15].split(",")[-2]))
+                try:
+                    
+                    mse_list = [str("{:.6f}".format(float(val))) for val in df.iloc[-1][15].split(",")]
+                    
+                    time[d_key] += float(mse_list[[str(best_mse).rstrip("0") for best_mse in df.iloc[-1][8].split(",")].index(str("{:.6f}".format(float(df.iloc[-1][1]))).rstrip("0"))])
+                    #print(d_key, df.iloc[-1][1],df.iloc[-1][15].split(",")[-1], len(df.iloc[-1][15].split(",")), float(df.iloc[-1][15].split(",")[-1])-float(df.iloc[-1][15].split(",")[-2]))
+                except Exception as e:
+                    print(e)
+                    pass
             except Exception as e:
-                print(e)
+                print(traceback.format_exc())
                 quit()
                 pass
-
+    print("Times FOUND")
     for k in c.keys():
         print(k, c[k], time[k]/30.)
     # print("DATASET", dataset) 
