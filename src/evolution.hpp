@@ -853,6 +853,8 @@ struct Evolution {
 
           offspring->clusterid = i;
           offspring_population.push_back(offspring);
+
+          print(x, " ", g::fit_func->evaluations);
           g::ea->updateMOArchive(offspring);
       }
 

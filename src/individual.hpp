@@ -87,6 +87,11 @@ struct Individual {
       return trees[trees.size()-1]->get_output(X, this->trees);
   }
 
+  float get_complexity_kommenda(){
+      vector<float> X;
+    return trees[trees.size()-1]->get_complexity_kommenda(X, this->trees);
+  }
+
   pair<Vec, Vec> get_output_der(const Mat & X){
     return trees[trees.size()-1]->get_output_der(X, this->trees);
   }

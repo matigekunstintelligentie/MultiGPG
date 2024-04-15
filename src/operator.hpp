@@ -39,6 +39,10 @@ struct Op {
     throw runtime_error("Not implemented arity");
   }
 
+    virtual float complexity_kommenda(vector<float> child_complexities) {
+        throw runtime_error("Not implemented complexity");
+    }
+
   virtual string sym() {
     throw runtime_error("Not implemented sym");
   }
@@ -124,6 +128,10 @@ struct Add : Fun {
     return 2;
   }
 
+    float complexity_kommenda(vector<float> child_complexities) override {
+        return child_complexities[0] + child_complexities[1];
+    }
+
   string sym() override {
     return "+";
   }
@@ -164,6 +172,10 @@ struct Neg : Fun {
     return "¬";
   }
 
+    float complexity_kommenda(vector<float> child_complexities) override {
+        return child_complexities[0] + 1.;
+    }
+
   Vec apply(const Mat & X) override {
     return -X.col(0);
   }
@@ -194,6 +206,10 @@ struct Sub : Fun {
   int arity() override {
     return 2;
   }
+
+    float complexity_kommenda(vector<float> child_complexities) override {
+        return child_complexities[0] + child_complexities[1];
+    }
 
   string sym() override {
     return "-";
@@ -229,6 +245,10 @@ struct Mul : Fun {
   int arity() override {
     return 2;
   }
+
+    float complexity_kommenda(vector<float> child_complexities) override {
+        return (child_complexities[0] + 1.)*(child_complexities[1] + 1.);
+    }
 
   string sym() override {
     return "*";
@@ -269,6 +289,9 @@ struct Inv : Fun {
     return "1/";
   }
 
+    float complexity_kommenda(vector<float> child_complexities) override {
+        return (child_complexities[0] + 1.)*(child_complexities[1] + 1.);
+    }
   
   Vec apply(const Mat & X) override {
     // division by 0 is undefined thus conver to NAN
@@ -311,6 +334,10 @@ struct Div : Fun {
     return "/";
   }
 
+    float complexity_kommenda(vector<float> child_complexities) override {
+        return child_complexities[0] * child_complexities[1] + 1.;
+    }
+
   Vec apply(const Mat & X) override {
     // division by 0 is undefined thus convert to NAN
     Vec denom = X.col(1);
@@ -347,6 +374,10 @@ struct Sin : Fun {
     return 1;
   }
 
+    float complexity_kommenda(vector<float> child_complexities) override {
+        return pow(2.,child_complexities[0]);
+    }
+
   string sym() override {
     return "sin";
   }
@@ -382,6 +413,11 @@ struct Abs : Fun {
   int arity() override {
     return 1;
   }
+
+
+    float complexity_kommenda(vector<float> child_complexities) override {
+        return child_complexities[0] + 1.;
+    }
 
   string sym() override {
     return "abs";
@@ -422,6 +458,10 @@ struct Exp : Fun {
     return 1;
   }
 
+    float complexity_kommenda(vector<float> child_complexities) override {
+        return pow(2.,child_complexities[0]);
+    }
+
   string sym() override {
     return "exp";
   }
@@ -459,7 +499,12 @@ struct Pow : Fun {
     return 2;
   }
 
-  string sym() override {
+    float complexity_kommenda(vector<float> child_complexities) override {
+        return pow(2.,child_complexities[0]);
+    }
+
+
+    string sym() override {
     return "pow";
   }
 
@@ -496,7 +541,12 @@ struct Max : Fun {
     return 2;
   }
 
-  string sym() override {
+    float complexity_kommenda(vector<float> child_complexities) override {
+        return child_complexities[0] + child_complexities[1];
+    }
+
+
+    string sym() override {
     return "max";
   }
 
@@ -532,6 +582,10 @@ struct Min : Fun {
   int arity() override {
     return 2;
   }
+
+    float complexity_kommenda(vector<float> child_complexities) override {
+        return child_complexities[0] + child_complexities[1];
+    }
 
   string sym() override {
     return "min";
@@ -571,6 +625,10 @@ struct Cos : Fun {
     return 1;
   }
 
+    float complexity_kommenda(vector<float> child_complexities) override {
+        return pow(2.,child_complexities[0]);
+    }
+
   string sym() override {
     return "cos";
   }
@@ -606,6 +664,10 @@ struct Log : Fun {
   int arity() override {
     return 1;
   }
+
+    float complexity_kommenda(vector<float> child_complexities) override {
+        return pow(2.,child_complexities[0]);
+    }
 
   string sym() override {
     return "log";
@@ -646,6 +708,10 @@ struct Sqrt : Fun {
     return 1;
   }
 
+    float complexity_kommenda(vector<float> child_complexities) override {
+        return child_complexities[0]*child_complexities[0]*child_complexities[0];
+    }
+
   string sym() override {
     return "sqrt";
   }
@@ -683,6 +749,11 @@ struct Square : Fun {
   int arity() override {
     return 1;
   }
+
+
+    float complexity_kommenda(vector<float> child_complexities) override {
+        return child_complexities[0]*child_complexities[0];
+    }
 
   string sym() override {
     return "**2";
@@ -723,6 +794,10 @@ struct Cube : Fun {
 
   int arity() override {
     return 1;
+  }
+
+  float complexity_kommenda(vector<float> child_complexities) override {
+    return child_complexities[0]*child_complexities[0];
   }
 
   string sym() override {
@@ -770,6 +845,10 @@ struct Feat : Term {
 
   int arity() override {
     return 0;
+  }
+
+  float complexity_kommenda(vector<float> child_complexities) override {
+    return 2.;
   }
 
   string sym() override {
@@ -834,6 +913,10 @@ struct Const : Term {
 
   int arity() override {
     return 0;
+  }
+
+  float complexity_kommenda(vector<float> child_complexities) override{
+      return 1.;
   }
 
   string sym() override {

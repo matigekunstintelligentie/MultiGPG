@@ -14,12 +14,13 @@ using namespace myeig;
 struct Test {
 
   void run_all(){
+      complexity_kommenda();
       //funcs();
     // num_nodes();
 // ============================================================================
 //     depth();
     // subtree();
-    is_intron();
+//    is_intron();
 //     gen_tree();
 //     operators();
 //     node_output();
@@ -169,6 +170,50 @@ struct Test {
         assert(ind->is_intron(second)==false);
 
         ind->clear();
+    }
+
+    void complexity_kommenda(){
+//        Node * e = new Node(new Exp());
+//        Node * sin = new Node(new Sin());
+//        Node * sqrt1 = new Node(new Sqrt());
+//        Node * x = new Node(new Feat(0));
+//
+//        sqrt1->append(x);
+//        sin->append(sqrt1);
+//        e->append(sin);
+//
+//        Individual * ind1 = new Individual();
+//        ind1->trees.push_back(e);
+//
+//        print(ind1->get_complexity_kommenda());
+//
+//        assert(abs(ind1->get_complexity_kommenda()-65536.)<1e-6);
+
+        Node * p1 = new Node(new Add());
+        Node * p2 = new Node(new Add());
+        Node * c5 = new Node(new Const(5.));
+        Node * x2 = new Node(new Feat(0));
+        Node * mul1 =  new Node(new Mul());
+        Node * mul2 = new Node(new Mul());
+        Node * sqrt = new Node(new Square());
+
+        sqrt->append(x2);
+        mul1->append(sqrt);
+        mul1->append(c5);
+
+        mul2->append(x2);
+        mul2->append(c5);
+
+        p2->append(mul1);
+        p2->append(mul2);
+        p1->append(p2);
+        p1->append(c5);
+
+        Individual * ind2 = new Individual();
+        ind2->trees.push_back(p1);
+
+        print(ind2->get_complexity_kommenda());
+        assert(abs(ind2->get_complexity_kommenda()-17.)<1e-6);
     }
 
   void num_nodes(){

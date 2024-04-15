@@ -175,7 +175,7 @@ struct IMS {
           }
           best_train_mses.push_back(best_train_mse);
 
-          print(" ~ generation: ", macro_generations, " ", best_train_mses[best_train_mses.size()-1], "", generations_without_improvement, " ", to_string(tock(start_time)), " ", g::ea->MO_archive.size(), " ", g::fit_func->evaluations);
+          print(" ~ generation: ", macro_generations, " evals ", g::fit_func->evaluations," ", best_train_mses[best_train_mses.size()-1], "", generations_without_improvement, " ", to_string(tock(start_time)), " ", g::ea->MO_archive.size(), " ", g::fit_func->evaluations);
       }
     }
     // finished

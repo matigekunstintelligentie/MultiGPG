@@ -173,6 +173,8 @@ struct Node {
       return n_nodes;
   }
 
+
+
   void _height_recursive(int & max_child_depth) {
     if (op->arity() == 0) {
       int d = this->depth();
@@ -293,6 +295,49 @@ struct Node {
     return op->apply(C);
     //return (op->apply(C) * pow(10.0, NUM_PRECISION)) / (float) pow(10.0,NUM_PRECISION);
   }
+
+    float get_complexity_kommenda(vector<float> X, vector<Node*> & fun_children, const vector<Node*> & trees) {
+        if(op->type()==OpType::otPlaceholder){
+            return trees[((OutputTree*) op)->id]->get_complexity_kommenda(X, fun_children, trees);
+        }
+        else if(op->type()==OpType::otFunction){
+            return trees[((FunctionTree*) op)->id]->get_complexity_kommenda(X, this->children, trees);
+        }
+        else if(op->type()==OpType::otAny){
+            return fun_children[((AnyOp*) op)->id]->get_complexity_kommenda(X, trees);
+        }
+        int a = op->arity();
+        if (a == 0) {
+            return op->complexity_kommenda(X);
+        }
+
+        vector<float> C;
+        for(int i = 0; i < a; i++) {
+            C.push_back(children[i]->get_complexity_kommenda(X, fun_children, trees));
+        }
+
+        return op->complexity_kommenda(C);
+    }
+
+    float get_complexity_kommenda(vector<float> X, const vector<Node*> & trees) {
+        if(op->type()==OpType::otPlaceholder){
+            return trees[((OutputTree*) op)->id]->get_complexity_kommenda(X, trees);
+        }
+        else if(op->type()==OpType::otFunction){
+            return trees[((FunctionTree*) op)->id]->get_complexity_kommenda(X, this->children, trees);
+        }
+
+        int a = op->arity();
+        if (a == 0)
+            return op->complexity_kommenda(X);
+
+        vector<float> C;
+        for(int i = 0; i < a; i++) {
+            C.push_back(children[i]->get_complexity_kommenda(X, trees));
+        }
+
+        return op->complexity_kommenda(C);
+    }
 
     pair<Vec, Vec> get_output_der(const Mat & X, vector<Node*> & fun_children, const vector<Node*> & trees) {
         if(op->type()==OpType::otPlaceholder){
