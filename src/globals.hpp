@@ -45,6 +45,7 @@ namespace g {
   bool use_aro = false;
 
   int n_clusters = 7;
+  int nr_objs = 2;
 
     float cmut_eps;
     float cmut_prob;
@@ -99,6 +100,7 @@ namespace g {
   Fitness * mse_func = NULL;
 
   ElitistArchive * ea = new ElitistArchive();
+
 
   string path_to_training_set;
   string path_to_validation_set;
@@ -342,6 +344,7 @@ namespace g {
     parser.set_optional<float>("donor_fraction", "donor_fraction", 2., "What fraction of the closest full population is used as donor population");
     parser.set_optional<float>("rci", "rci", 1., "Relative complexity importance");
     parser.set_optional<int>("n_clusters", "n_clusters", 7, "Number of clusters");
+      parser.set_optional<int>("nr_objs", "nr_objs", 2, "Number of objs, hardcoded to be mse, size, complexity measure");
 
     // set options
     parser.run_and_exit_if_error();
@@ -472,6 +475,8 @@ namespace g {
     donor_fraction = parser.get<float>("donor_fraction");
 
     n_clusters = parser.get<int>("n_clusters");
+    nr_objs = parser.get<int>("nr_objs");
+    ea->nr_objs = nr_objs;
     use_max_range = parser.get<bool>("use_max_range");
     equal_p_coeffs = parser.get<bool>("equal_p_coeffs");
     max_coeffs = parser.get<int>("max_coeffs");

@@ -10,7 +10,7 @@ using namespace std;
 
 struct Individual {
   vector<Node*> trees;
-  vector<float> fitness = {9999999,9999999};
+  vector<float> fitness = {9999999,9999999,9999999};
   int clusterid;
   int NIS = 0;
   float add = 0.;

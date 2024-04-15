@@ -533,6 +533,9 @@ Individual * efficient_gom_MO_FI(Individual * og_parent, vector<pair<vector<int>
 }
 
 Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & donor_population, vector<pair<vector<int>, int>> & fos, int macro_generations, int objective, bool extrema, int NIS_const) {
+    if(objective==2){
+        print("Objective 2");
+    }
     Individual * parent = og_parent->clone();
 
     auto random_fos_order = Rng::rand_perm(fos.size());

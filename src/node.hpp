@@ -15,7 +15,7 @@ struct Node {
   Node * parent = NULL;
   vector<Node*> children;
   Op * op = NULL;
-  vector<float> fitness = {9999999,9999999};
+  vector<float> fitness = {9999999,9999999,9999999};
 
   Node(Op * op) {
     this->op = op;
@@ -325,6 +325,9 @@ struct Node {
         }
         else if(op->type()==OpType::otFunction){
             return trees[((FunctionTree*) op)->id]->get_complexity_kommenda(X, this->children, trees);
+        }
+        else if(op->type()==OpType::otAny){
+            return 99999999.;
         }
 
         int a = op->arity();

@@ -10,9 +10,10 @@ struct ElitistArchive{
     Fitness * fit_func;
     bool improved_this_gen = false;
     bool accept_diversity = false;
+    int nr_objs = 2;
 
-    vector<float> min_objs = {0.,0.};
-    vector<float> max_objs = {10000.,200.};
+    vector<float> min_objs = {0.,0.,0.};
+    vector<float> max_objs = {10000.,200.,999999999999999999999.};
 
     int num_boxes = 100;
 
@@ -58,7 +59,7 @@ struct ElitistArchive{
             }
 
             identical_objectives_already_exist = true;
-            for (size_t j = 0; j < 2; j++) {
+            for (size_t j = 0; j < nr_objs; j++) {
                 if (ind->fitness[j] != MO_archive[i]->fitness[j]) {
                     identical_objectives_already_exist = false;
                     break;
@@ -76,7 +77,7 @@ struct ElitistArchive{
 
     bool dominates(Individual * ind1, Individual * ind2){
         bool strictly_better_somewhere = false;
-        for(int i = 0; i<2; i++){
+        for(int i = 0; i<nr_objs; i++){
             if(ind1->fitness[i] < ind2->fitness[i]){
                 strictly_better_somewhere = true;
             }
@@ -98,7 +99,7 @@ struct ElitistArchive{
     }
 
     void initSOArchive(vector<Individual*> population){
-        SO_archive = vector<Individual*>(2, nullptr);
+        SO_archive = vector<Individual*>(nr_objs, nullptr);
         for(Individual *ind: population){
             updateSOArchive(ind);
         }
@@ -111,7 +112,7 @@ struct ElitistArchive{
     }
 
     void updateSOArchive(Individual * individual){
-        for(int i=0; i<2; i++){
+        for(int i=0; i<nr_objs; i++){
             if(SO_archive[i] == nullptr){
                 Individual *new_individual = individual->clone();
                 SO_archive[i] = new_individual;
@@ -148,7 +149,7 @@ struct ElitistArchive{
 
             // Rigid grid
             identical_objectives_already_exist = true;
-            for(int j=0; j<2; j++){
+            for(int j=0; j<nr_objs; j++){
                 float epsilon;
                 float difference = max_objs[j]-min_objs[j];
                 if(difference>0) {
@@ -202,10 +203,10 @@ struct ElitistArchive{
     }
 
     void update_minmax(){
-        min_objs = {999999999.,999999999.};
-        max_objs = {-999999999.,-999999999.};
+        min_objs = {999999999.,999999999.,999999999.};
+        max_objs = {-999999999.,-999999999.,-999999999.};
         for(int i = 0; i<MO_archive.size(); i++){
-            for(int j = 0; j<2; j++) {
+            for(int j = 0; j<nr_objs; j++) {
                 if (isfinite(MO_archive[i]->fitness[j]) && MO_archive[i]->fitness[j] < min_objs[j]) {
                     min_objs[j] = MO_archive[i]->fitness[j];
                 }
