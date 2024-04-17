@@ -122,6 +122,38 @@ Node * generate_tree(int max_depth, int mt, vector<Node *> &trees, string init_t
 
 }
 
+void mutate(Individual * parent) {
+    bool effectively_changed = false;
+    while(!effectively_changed){
+        vector<int> random_tree_order = Rng::rand_perm(g::nr_multi_trees);
+        for(int mt: random_tree_order ){
+            vector<Node *> subtree = parent->trees[mt]->subtree();
+            int r = Rng::randi(subtree.size()-1);
+            string orig_op = subtree[r]->op->sym();
+            bool is_intron = parent->is_intron(subtree[r]);
+            delete subtree[r]->op;
+
+
+            if(subtree[r]->children.size()>0){
+                if(Rng::randu()<0.25){
+                    subtree[r]->op = _sample_terminal(mt, parent->trees);
+                }
+                else{
+                    subtree[r]->op = _sample_function(mt, parent->trees);
+                }
+            }
+            else{
+                subtree[r]->op = _sample_terminal(mt, parent->trees);
+            }
+
+            if(is_intron && orig_op!=subtree[r]->op->sym()){
+                effectively_changed = true;
+            }
+        }
+    }
+
+}
+
 Individual * generate_individuals(int max_depth, string init_strategy, int nr_multi_trees){
     Individual * individual = new Individual();
     individual->trees.reserve(nr_multi_trees);

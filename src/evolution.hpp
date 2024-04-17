@@ -748,15 +748,29 @@ struct Evolution {
               Individual * k = population[i]->clone();
               keep.push_back(k);
           }
+          else{
+              Individual * indi = population[i]->clone();
+              mutate(indi);
+
+             g::fit_func->get_fitness_MO(indi);
+             keep.push_back(indi);
+          }
       }
 
-      int remaining = pop_size-keep.size();
-      for(int i=0; i<remaining; i++){
-          Individual * ind = generate_individuals(g::max_depth, g::init_strategy, g::nr_multi_trees);
-          g::fit_func->get_fitness_MO(ind);
-          keep.push_back(g::ea->ReturnCopyRandomMOMember());
-          //keep.push_back(ind);
-      }
+//      int remaining = pop_size-keep.size();
+//      for(int i=0; i<remaining; i++){
+//          //Individual * ind = generate_individuals(g::max_depth, g::init_strategy, g::nr_multi_trees);
+//
+//
+//          Individual * ind = population;
+//
+//          mutate(ind);
+//
+//          g::fit_func->get_fitness_MO(ind);
+//
+//          //keep.push_back(ind);
+//          //keep.push_back(g::ea->ReturnCopyRandomMOMember());
+//      }
 
       for(int i=0; i<population.size(); i++){
           population[i]->clear();
@@ -918,7 +932,7 @@ struct Evolution {
 
 
       // TODO: !!!!!!!!!!!!
-      //assert(offspring_population.size()==pop_size);
+      assert(offspring_population.size()==pop_size);
 
       for(int i=0; i<population.size(); i++){
           population[i]->clear();

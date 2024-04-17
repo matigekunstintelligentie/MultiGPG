@@ -29,10 +29,14 @@ def process_row(row, max_mse, max_len, max_complexity, df_var, data, update_max=
         # Split each coordinate string by ',' to get x, y, z values
         if(grid):
             x, y, z, z1, z2, z3, _ = coord_str.replace("inf","-1").split(',')
-            coordinates.append((float(z), float(y), float(z), float(z1), float(z2), float(z3)))
+            coordinates.append((float(x), float(y), float(z), float(z1), float(z2), float(z3)))
         else:
             x, y, z, z1, z2, z3 = coord_str.replace("inf","-1").split(',')
-            coordinates.append((1. - float(x)/float(df_var), float(y), float(z), int(z1), int(z2), int(z3)))
+            if x!="-1":
+                x = (1. - float(x)/float(df_var))
+            coordinates.append((max(float(x),0.), float(y), float(z), int(z1), int(z2), int(z3)))
+
+
 
         if update_max:
             if 1. - float(x)/float(df_var)<max_mse and int(float(x)) !=-1:
@@ -56,6 +60,7 @@ def process_rows(df, df_var):
     processed_minmax = []
     for index, row in df.iterrows():
         if index%5==0:
+            # fitness mse, fitness size, fitness kommenda, cluster_id, cluster type, cluster size
             max_mse, max_len, max_complexity = process_row(row, max_mse, max_len, max_complexity, df_var, processed_data, update_max=True)
         if index%5==1:
             process_row(row, max_mse, max_len, max_complexity, df_var, processed_cluster_data, update_max=False)
@@ -125,7 +130,7 @@ def update(frame):
     # ax.set_ylim(0,200)
     # ax.set_xlim(0,4000)
 
-    print(best_mse_ind)
+
     ax.scatter(best_mse_ind[x_idx],best_mse_ind[y_idx],marker='x', label=f'Cluster id={best_mse_ind[4]}, Objective={obj_names[int(best_mse_ind[4])]}')
     ax.scatter(best_size_ind[x_idx],best_size_ind[y_idx],marker='x', label=f'Cluster id={best_size_ind[4]}, Objective={obj_names[int(best_size_ind[4])]}')
     ax.scatter(best_complexity_ind[x_idx],best_complexity_ind[y_idx],marker='x', label=f'Cluster id={best_complexity_ind[4]}, Objective={obj_names[int(best_complexity_ind[4])]}')
