@@ -174,6 +174,8 @@ struct Evolution {
             top_clusters[random_obj] = extreme_cluster;
         }
 
+
+
         for(int i=0; i<nr_objs; i++){
             float min;
             bool min_initialised = false;
@@ -254,7 +256,7 @@ struct Evolution {
         //#unordered_set<int> new_remaining_solutions(range.begin(), range.end());
         unordered_set<int> new_remaining_solutions = remaining_solutions;
 
-        //print(new_remaining_solutions.size());
+
         while(new_remaining_solutions.size()>0){
             auto random_cluster_order = Rng::rand_perm(k-nr_objs);
             for(int j = 0; j<k-nr_objs; j++){
@@ -315,13 +317,11 @@ struct Evolution {
             clustered_population[clustertags_kmeans[i]].push_back(population[i]);
         }
 
-        clustered_population[clustered_population.size()-nr_objs] = top_clusters[0];
-        clustered_population_equal[clustered_population.size()-nr_objs] = top_clusters[0];
-        clusternr[clusternr.size()-2] = rand_obj_perm_extrema[0];
-
-        clustered_population[clustered_population.size()-1] = top_clusters[1];
-        clustered_population_equal[clustered_population.size()-1] = top_clusters[1];
-        clusternr[clusternr.size()-1] = rand_obj_perm_extrema[1];
+        for(int i=0; i<nr_objs; i++){
+            clustered_population[clustered_population.size()-(nr_objs-i)] = top_clusters[i];
+            clustered_population_equal[clustered_population.size()-(nr_objs-i)] = top_clusters[i];
+            clusternr[clusternr.size()-(nr_objs-i)] = rand_obj_perm_extrema[i];
+        }
 
 
         return make_pair(make_pair(clustered_population, clustered_population_equal), clusternr);
@@ -698,6 +698,7 @@ struct Evolution {
           clusternr[am] = i;
       }
 
+
       // if not yet assigned solution in equal size clustering, assign to closest. if multiple are assigned, assign to random of multiple center
       for (int i = 0; i < pop_size; i++) {
           if(!clustertags_equal[i].empty()){
@@ -722,7 +723,56 @@ struct Evolution {
       return make_pair(make_pair(clustered_population, clustered_population_equal), clusternr);
   }
 
+  void prune_duplicates(){
+      vector<Individual *> keep;
+      keep.reserve(pop_size);
+      keep.push_back(population[0]->clone());
+
+      for(int i=1; i<pop_size;i++){
+          bool add = true;
+          for(auto ind:keep){
+              bool all_same = true;
+              for(int j=0;j<g::nr_objs;j++){
+                  if(ind->fitness[j]!=population[i]->fitness[j]){
+                      all_same = false;
+                      break;
+                  }
+              }
+              if(all_same){
+                  add = false;
+                  break;
+              }
+
+          }
+          if(add) {
+              Individual * k = population[i]->clone();
+              keep.push_back(k);
+          }
+      }
+
+      int remaining = pop_size-keep.size();
+      for(int i=0; i<remaining; i++){
+          Individual * ind = generate_individuals(g::max_depth, g::init_strategy, g::nr_multi_trees);
+          g::fit_func->get_fitness_MO(ind);
+          keep.push_back(g::ea->ReturnCopyRandomMOMember());
+          //keep.push_back(ind);
+      }
+
+      for(int i=0; i<population.size(); i++){
+          population[i]->clear();
+          population[i] = nullptr;
+      }
+
+
+      // This should be needed
+      population.erase(std::remove_if(population.begin(), population.end(), [](Individual *ind){return ind== nullptr;}), population.end());
+
+      population = keep;
+  }
+
   void gomea_generation_MO(int macro_generation){
+      prune_duplicates();
+
       vector<Individual*> offspring_population;
 
       int nr_objectives = g::nr_objs;
@@ -744,11 +794,10 @@ struct Evolution {
           output = K_leader_means(population);
       }
 
-
-
       vector<vector<Individual *>> clustered_population = output.first.first;
       vector<vector<Individual *>> clustered_donor_population = output.first.second;
       vector<int> clusternr = output.second;
+
 
 
       // Per cluster, one FOS
@@ -787,9 +836,9 @@ struct Evolution {
       for(int i=0;i<clustered_population.size();i++){
           for(int j=0;j<clustered_population[i].size();j++){
               idx.emplace_back(i, j);
+              clustered_population[i][j]->clusterid = i;
           }
       }
-
 
       if(g::log_pop && macro_generation>0){
           ofstream csv_file;
@@ -842,6 +891,10 @@ struct Evolution {
       }
 
 
+
+
+
+
       for(int x=0; x<idx.size(); x++){
           int &i = idx[x].first;
           int &j = idx[x].second;
@@ -854,17 +907,18 @@ struct Evolution {
               offspring = efficient_gom_MO(clustered_population[i][j], clustered_donor_pop[i], FOSs[i], macro_generation,clusternr[i], clusternr[i] < nr_objectives, NIS_const);
           }
 
-          offspring->clusterid = i;
           offspring_population.push_back(offspring);
-
 
           g::ea->updateMOArchive(offspring);
       }
 
-      g::ea->update_minmax();
+
+
+
+
 
       // TODO: !!!!!!!!!!!!
-      assert(offspring_population.size()==pop_size);
+      //assert(offspring_population.size()==pop_size);
 
       for(int i=0; i<population.size(); i++){
           population[i]->clear();
@@ -877,6 +931,9 @@ struct Evolution {
       population.erase(std::remove_if(population.begin(), population.end(), [](Individual *ind){return ind== nullptr;}), population.end());
 
 
+
+
+      g::ea->update_minmax();
 
   }
 

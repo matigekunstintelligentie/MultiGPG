@@ -27,7 +27,6 @@ def process_row(row, max_mse, max_len, max_complexity, df_var, data, update_max=
     coordinate_strings = row[0].split(';')
     for coord_str in coordinate_strings:
         # Split each coordinate string by ',' to get x, y, z values
-
         if(grid):
             x, y, z, z1, z2, z3, _ = coord_str.replace("inf","-1").split(',')
             coordinates.append((float(z), float(y), float(z), float(z1), float(z2), float(z3)))
@@ -71,7 +70,7 @@ def process_rows(df, df_var):
 
 
 def update(frame):
-    obj_names = {0:"MSE", 1:"expression size", 3:"complexity", 4:"MO", -1:"None"}
+    obj_names = {0:"MSE", 1:"expression size", 2:"complexity", 4:"MO", -1:"None"}
     ax.clear()
 
     best_mse_ind = (0,999999,999999,-1)
@@ -79,6 +78,8 @@ def update(frame):
     best_complexity_ind = (0,999999,999999,-1)
 
     row = data[frame]
+
+
 
     # min_0, min_1, max_0, max_1, num_box = minmax[frame][0]
     # linspace_0 = np.linspace(min_0,max_0,num_box)
@@ -109,22 +110,25 @@ def update(frame):
       if(len(row)>0):
           x_vals = [coord[x_idx] for coord in row]
           y_vals = [coord[y_idx] for coord in row]
+
+
           ax.scatter(x_vals, y_vals, label=f'Cluster id={z_val} Objective={obj_names[int(row[0][3])]} Cluster size={row[0][4]}', alpha=0.5)
 
           for coord in row:
               if coord[0]>best_mse_ind[0]:
-                best_mse_ind = (coord[0],coord[1],z_val,row[0][2],row[0][3])
+                best_mse_ind = (coord[0],coord[1],coord[2],z_val,row[0][3],row[0][4])
               if coord[1]<=best_size_ind[1]:
-                best_size_ind = (coord[0],coord[1],z_val,row[0][2],row[0][3])
-              if coord[2]<best_size_ind[2]:
-                  best_complexity_ind = (coord[0],coord[1],coord[2],z_val,row[0][2],row[0][3])
+                best_size_ind = (coord[0],coord[1],coord[2],z_val,row[0][3],row[0][4])
+              if coord[2]<best_complexity_ind[2]:
+                  best_complexity_ind = (coord[0],coord[1],coord[2],z_val,row[0][3],row[0][4])
 
     # ax.set_ylim(0,200)
     # ax.set_xlim(0,4000)
-    
-    ax.scatter(best_mse_ind[x_idx],best_mse_ind[y_idx],marker='x', label=f'Cluster id={best_mse_ind[3]}, Objective={obj_names[int(best_mse_ind[4])]}')
-    ax.scatter(best_size_ind[x_idx],best_size_ind[y_idx],marker='x', label=f'Cluster id={best_size_ind[3]}, Objective={obj_names[int(best_size_ind[4])]}')
-    ax.scatter(best_complexity_ind[x_idx],best_complexity_ind[y_idx],marker='x', label=f'Cluster id={best_complexity_ind[3]}, Objective={obj_names[int(best_complexity_ind[4])]}')
+
+    print(best_mse_ind)
+    ax.scatter(best_mse_ind[x_idx],best_mse_ind[y_idx],marker='x', label=f'Cluster id={best_mse_ind[4]}, Objective={obj_names[int(best_mse_ind[4])]}')
+    ax.scatter(best_size_ind[x_idx],best_size_ind[y_idx],marker='x', label=f'Cluster id={best_size_ind[4]}, Objective={obj_names[int(best_size_ind[4])]}')
+    ax.scatter(best_complexity_ind[x_idx],best_complexity_ind[y_idx],marker='x', label=f'Cluster id={best_complexity_ind[4]}, Objective={obj_names[int(best_complexity_ind[4])]}')
 
 
 

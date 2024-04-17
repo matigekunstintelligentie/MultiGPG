@@ -30,6 +30,7 @@ struct Individual {
           ind->trees.push_back(tree->clone());
       }
       ind->fitness = this->fitness;
+      ind->clusterid = this->clusterid;
       ind->NIS = this->NIS;
       ind->add = this->add;
       ind->mul = this->mul;
