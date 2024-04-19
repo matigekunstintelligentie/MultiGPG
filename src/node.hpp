@@ -49,51 +49,6 @@ struct Node {
     c->parent = this;
   }
 
-  vector<Node*>::iterator detach(Node * c){
-    auto it = children.begin();
-    for(auto it = children.begin(); it < children.end(); it++){
-      if ((*it)==c){
-        break;
-      }
-    }
-    assert(it != children.end());
-    children.erase(it);
-    c->parent = NULL;
-    return it;
-  }
-
-  Node * detach(int idx) {
-    assert(idx < children.size());
-    auto it = children.begin() + idx;
-    Node * c = children[idx];
-    children.erase(it);
-    c->parent = NULL;
-    return c;
-  }
-
-  void insert(Node * c, vector<Node*>::iterator it) {
-    children.insert(it, c);
-    c->parent = this;
-  }
-
-  int depth() {
-    int depth = 0;
-    auto * curr = this;
-    while(curr->parent) {
-      depth++;
-      curr = curr->parent;
-    }
-    return depth;
-  }
-
-  int height() {
-    int max_child_depth = 0;
-    _height_recursive(max_child_depth);
-    int h = max_child_depth - depth();
-    assert(h >= 0);
-    return h;
-  }
-
   int position_among_siblings() {
     if (!parent)
       return 0;
@@ -173,17 +128,53 @@ struct Node {
       return n_nodes;
   }
 
+  int get_height(vector<Node*> &trees, vector<Node*> &fun_children){
+      int height = 0;
+      if(op->type()==OpType::otPlaceholder){
+          height += trees[((OutputTree*) op)->id]->get_height(trees, fun_children);
+      }
+      else if(op->type()==OpType::otFunction){
+          height += trees[((FunctionTree*) op)->id]->get_height(trees, this->children);
+      }
+      else if(op->type()==OpType::otAny){
+          height += fun_children[((AnyOp*) op)->id]->get_num_nodes(trees);
+      }
+      else {
+          height += 1;
+          int arity = op->arity();
+          int max_height = 0;
+          for (int i = 0; i < arity; i++) {
+              int h = children[i]->get_height(trees);
+              if(h>max_height){
+                  max_height = h;
+              }
+          }
+          height += max_height;
+      }
+      return height;
+  }
 
-
-  void _height_recursive(int & max_child_depth) {
-    if (op->arity() == 0) {
-      int d = this->depth();
-      if (d > max_child_depth)
-        max_child_depth = d;
-    }
-
-    for (int i = 0; i < op->arity(); i++)
-      children[i]->_height_recursive(max_child_depth);
+  int get_height(vector<Node*> &trees){
+      int height = 0;
+      if(op->type()==OpType::otPlaceholder){
+          height += trees[((OutputTree*) op)->id]->get_height(trees);
+      }
+      else if(op->type()==OpType::otFunction){
+          height += trees[((FunctionTree*) op)->id]->get_height(trees, this->children);
+      }
+      else {
+          height += 1;
+          int arity = op->arity();
+          int max_height = 0;
+          for (int i = 0; i < arity; i++) {
+              int h = children[i]->get_height(trees);
+              if(h>max_height){
+                  max_height = h;
+              }
+          }
+          height += max_height;
+      }
+      return height;
   }
 
   // Needed for deleting trees

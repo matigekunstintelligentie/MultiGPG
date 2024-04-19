@@ -57,6 +57,10 @@ struct Individual {
       }
       return true;
   }
+
+  int get_height(){
+      return trees[trees.size()-1]->get_height(this->trees);
+  }
   
   int get_num_nodes(bool excl_introns, bool discount=false){
 

@@ -84,6 +84,9 @@ namespace g {
   int max_coeffs;
   bool discount_size=false;
 
+  bool remove_duplicates = false;
+  string replacement_strategy;
+
   // representation
   int max_depth;
   string init_strategy;
@@ -329,6 +332,10 @@ namespace g {
     parser.set_optional<string>("csv_file", "csv_file", "required.csv", "CSV file that is written to.");
     parser.set_optional<string>("csv_file_pop", "csv_file_pop", "required_pop.csv", "CSV file that pop cluster information is written to.");
 
+    parser.set_optional<bool>("remove_duplicates", "remove_duplicates", false, "Whether duplicates are removed.");
+    parser.set_optional<string>("replacement_strategy", "replacement_strategy", "mutate", "Replacement strategy for when removing duplicates.");
+
+
     // coefficients and range
     parser.set_optional<bool>("use_max_range", "use_max_range", false, "Whether the max or 10 is used as initalisation range");
     parser.set_optional<bool>("equal_p_coeffs", "equal_p_coeffs", false, "Whether the leafs are sampled with equal probability");
@@ -344,6 +351,7 @@ namespace g {
     parser.set_optional<float>("donor_fraction", "donor_fraction", 2., "What fraction of the closest full population is used as donor population");
     parser.set_optional<float>("rci", "rci", 1., "Relative complexity importance");
     parser.set_optional<int>("n_clusters", "n_clusters", 7, "Number of clusters");
+
       parser.set_optional<int>("nr_objs", "nr_objs", 2, "Number of objs, hardcoded to be mse, size, complexity measure");
 
     // set options
@@ -481,6 +489,8 @@ namespace g {
     equal_p_coeffs = parser.get<bool>("equal_p_coeffs");
     max_coeffs = parser.get<int>("max_coeffs");
     //joe
+    remove_duplicates = parser.get<bool>("remove_duplicates");
+    replacement_strategy = parser.get<string>("replacement_strategy");
     use_clip = parser.get<bool>("use_clip");
     use_optimiser = parser.get<bool>("use_optim");
     use_ftol = parser.get<bool>("use_ftol");

@@ -18,7 +18,7 @@ struct Test {
       //funcs();
     // num_nodes();
 // ============================================================================
-//     depth();
+     height();
     // subtree();
 //    is_intron();
 //     gen_tree();
@@ -239,6 +239,32 @@ struct Test {
       assert(ind->get_num_nodes(true, true)==3);
   }
 
+    void height(){
+        Node * first_tree = new Node(new Sin());
+        Node * z = new Node(new Mul());
+        Node * z2 = new Node(new Mul());
+        Node * any = new Node(new AnyOp(0));
+        z->append(any);
+        z2->append(any);
+        z2->append(any);
+        z->append(z2);
+        first_tree->append(z);
+
+        Node * x = new Node(new FunctionTree(0));
+        Node * y = new Node(new Const(0.5));
+        Node * y2 = new Node(new Const(0.6));
+        x->append(y);
+        y->append(y2);
+
+        Individual * ind = new Individual();
+        ind->trees.push_back(first_tree);
+        ind->trees.push_back(x);
+
+        print(ind->human_repr(true));
+        print(ind->get_height());
+        assert(ind->get_height()==4);
+    }
+
   void subtree(){
       Node * first_tree = new Node(new Sin());
       Node * z = new Node(new Cos());
@@ -285,18 +311,7 @@ struct Test {
 //     return mul_node;
 //   }
 // 
-//   void depth() {
-//     Node n1(new Add());
-//     Node n2(new Add());
-//     Node n3(new Add());
-// 
-//     n3.parent = &n2;
-//     n2.parent = &n1;
-// 
-//     assert(n1.depth() == 0);
-//     assert(n2.depth() == 1);
-//     assert(n3.depth() == 2);
-//   }
+//
 // 
 //   void subtree() {
 //     Node n1(new Add()), n2(new Add()), n3(new Add()), n4(new Add()), n5(new Add());

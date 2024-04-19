@@ -749,11 +749,27 @@ struct Evolution {
               keep.push_back(k);
           }
           else{
-              Individual * indi = population[i]->clone();
-              mutate(indi);
+              if(g::replacement_strategy=="mutate") {
+                  Individual * indi = population[i]->clone();
+                  mutate(indi);
+                  g::fit_func->get_fitness_MO(indi);
+                  keep.push_back(indi);
+              }
+              else if(g::replacement_strategy=="archive"){
+                  Individual * indi = g::ea->ReturnCopyRandomMOMember();
+                  keep.push_back(indi);
+              }
+              else if(g::replacement_strategy=="sample"){
+                  Individual * indi = generate_individuals(g::max_depth, g::init_strategy, g::nr_multi_trees);
+                  g::fit_func->get_fitness_MO(indi);
+                  keep.push_back(indi);
+              }
+              else{
+                  throw std::invalid_argument( "Invalid replacement strategy");
+              }
 
-             g::fit_func->get_fitness_MO(indi);
-             keep.push_back(indi);
+
+
           }
       }
 
@@ -785,7 +801,10 @@ struct Evolution {
   }
 
   void gomea_generation_MO(int macro_generation){
-      prune_duplicates();
+      if(g::remove_duplicates){
+          prune_duplicates();
+      }
+
 
       vector<Individual*> offspring_population;
 
