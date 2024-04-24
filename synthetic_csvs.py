@@ -102,13 +102,9 @@ def generate_dataset_2(num_rows, primes):
 
         stri += stri + "np.sin(" +  str(dataset[i, 2]) + "*" + str(dataset[i, 3]) + ")"
 
-        if i ==0:
-            print(stri)
         # Target column calculation (example: sum of x variables)
         dataset[i, -1] = eval(stri)
 
-    print(dataset)
-    quit()
     return dataset
 
 # Function to generate dataset: summation of 4 sqrt(abs(sin(2/pi +xi)))
@@ -143,10 +139,9 @@ def generate_dataset_4(num_rows, primes):
         stri = "np.sin(" + "np.cos(" + str(dataset[i, 0]) + " * " + str(dataset[i, 1]) + ")" + " + " + "np.cos(" + str(dataset[i, 2]) + " * " + str(dataset[i, 3]) + ")" + ") + "
         stri += "np.sin(" + "np.cos(" + str(dataset[i, 4]) + " * " + str(dataset[i, 5]) + ")" + " + " + "np.cos(" + str(dataset[i, 6]) + " * " + str(dataset[i, 7]) + ")" + ") + "
         stri += "np.cos(" + "np.sin(" + str(dataset[i, 0]) + " + " + str(dataset[i, 1]) + ")" + " * " + "np.sin(" + str(dataset[i, 2]) + " + " + str(dataset[i, 3]) + ")" + ") + "
-        stri += "np.cos(" + "np.sin(" + str(dataset[i, 4]) + " + " + str(dataset[i, 5]) + ")" + " * " + "np.sin(" + str(dataset[i, 6]) + " + " + str(dataset[i, 7]) + ")" + ") + "
+        stri += "np.cos(" + "np.sin(" + str(dataset[i, 4]) + " + " + str(dataset[i, 5]) + ")" + " * " + "np.sin(" + str(dataset[i, 6]) + " + " + str(dataset[i, 7]) + ")" + ")"
 
-        if i ==0:
-            print(stri)
+       
         # Target column calculation (example: sum of x variables)
         dataset[i, -1] = eval(stri)
 

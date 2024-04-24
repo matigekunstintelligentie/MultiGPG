@@ -114,7 +114,7 @@ g = MGPGRegressor(t=args.t, g=args.g, tour=args.tour, d=args.depth,
         accept_diversity=args.accept_diversity, k2=args.k2,
         nr_objs=args.nr_objs,
                   replacement_strategy=args.replacement_strategy,
-                  remove_duplicates=args.remove_duplicates)
+                  remove_duplicates=args.remove_duplicates, max_non_improve=10)
 
 #+,-,*,/,¬,log,pow,max,min,abs,exp,sqrt,sin,cos
 if not args.contains_train:
