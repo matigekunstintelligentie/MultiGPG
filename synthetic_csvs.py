@@ -28,7 +28,7 @@ def make_csv(dataset, title):
         writer = csv.writer(csvfile)
         
         # Write header
-        header = ['x_' + str(i) for i in range(num_cols+1)] + ['target']
+        header = ['x_' + str(i) for i in range(len(dataset[0])-1)] + ['target']
         writer.writerow(header)
         
         # Write data

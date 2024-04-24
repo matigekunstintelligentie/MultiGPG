@@ -192,7 +192,8 @@ for i in range(30):
 p = Pool(n_processes)
 p.map(run, experiments)
 
-
+datasets = ["synthetic_1", "synthetic_2", "synthetic_3", "synthetic_4", "synthetic_5"]
+n_processes = 10
 duration = 3600*6
 
 for i in range(30):
