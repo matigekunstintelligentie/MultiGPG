@@ -198,10 +198,11 @@ for i in range(30):
 
             experiments.append(exp)
 
-p = Pool(n_processes)
-p.map(run, experiments)
+# p = Pool(n_processes)
+# p.map(run, experiments)
 
-datasets = ["synthetic_1", "synthetic_2", "synthetic_3", "synthetic_4", "synthetic_5"]
+experiments = []
+datasets = ["synthetic_1"]
 n_processes = 10
 duration = 3600*6
 
@@ -220,9 +221,9 @@ for i in range(30):
             os.makedirs(directory_pop)
 
         for exp in [
-            gpgomea_experiment({"csv_name":"SO_4_4_1024", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": False, "popsize":1024, "n_clusters": 1, "max_coeffs": -1, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False, "discount_size":False,"balanced":False,"log_pop":log_pop,"nr_objs": nr_objs, "remove_duplicates":False, "replacement_strategy":"sample"}),
-            gpgomea_experiment({"csv_name":"SO_4_4_65336", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": False, "popsize":65336, "n_clusters": 1, "max_coeffs": -1, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False, "discount_size":False,"balanced":False,"log_pop":log_pop,"nr_objs": nr_objs, "remove_duplicates":False, "replacement_strategy":"sample"}),
-            gpgomea_experiment({"csv_name":"SO_4_4_8192", "depth": 4, "dir": directory, "batch_size": 256, "ff": "lsmse", "seed": i, "coeff_p": 1., "MO_mode": False, "popsize":8192, "n_clusters": 1, "max_coeffs": -1, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False, "discount_size":False,"balanced":False,"log_pop":log_pop,"nr_objs": nr_objs, "remove_duplicates":False, "replacement_strategy":"sample"})
+            gpgomea_experiment({"csv_name":"SO_4_4_1024", "depth": 4, "dir": directory, "batch_size": 256, "ff": "mse", "seed": i, "coeff_p": 1., "MO_mode": False, "popsize":1024, "n_clusters": 1, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False, "discount_size":False,"balanced":False,"log_pop":log_pop,"nr_objs": nr_objs, "remove_duplicates":False, "replacement_strategy":"sample"}),
+            gpgomea_experiment({"csv_name":"SO_4_4_65336", "depth": 4, "dir": directory, "batch_size": 256, "ff": "mse", "seed": i, "coeff_p": 1., "MO_mode": False, "popsize":65336, "n_clusters": 1, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False, "discount_size":False,"balanced":False,"log_pop":log_pop,"nr_objs": nr_objs, "remove_duplicates":False, "replacement_strategy":"sample"}),
+            gpgomea_experiment({"csv_name":"SO_4_4_8192", "depth": 4, "dir": directory, "batch_size": 256, "ff": "mse", "seed": i, "coeff_p": 1., "MO_mode": False, "popsize":8192, "n_clusters": 1, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False, "discount_size":False,"balanced":False,"log_pop":log_pop,"nr_objs": nr_objs, "remove_duplicates":False, "replacement_strategy":"sample"})
         ]:
 
             experiments.append(exp)
