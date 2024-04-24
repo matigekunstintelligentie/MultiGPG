@@ -106,8 +106,114 @@ struct Evolution {
         population.push_back(individual);
     }
 
-    g::ea->initMOArchive(population);
-    g::ea->initSOArchive(population);
+//    Individual * ind = new Individual();
+//
+//    Node * p0 = new Node(new Add());
+//
+//    Node * p1 = new Node(new Add());
+//    Node * p2 = new Node(new Add());
+//
+//    Node * p3 = new Node(new Add());
+//    Node * p4 = new Node(new Add());
+//    Node * p5 = new Node(new Add());
+//    Node * p6 = new Node(new Add());
+//
+//    Node * s7 = new Node(new Sin());
+//    Node * p7 = new Node(new Mul());
+//    Node * s8 = new Node(new Sin());
+//    Node * p8 = new Node(new Mul());
+//    Node * s9 = new Node(new Sin());
+//    Node * p9 = new Node(new Mul());
+//    Node * s10 = new Node(new Sin());
+//    Node * p10 = new Node(new Mul());
+//    Node * s11 = new Node(new Sin());
+//    Node * p11 = new Node(new Mul());
+//    Node * s12 = new Node(new Sin());
+//    Node * p12 = new Node(new Mul());
+//    Node * s13 = new Node(new Sin());
+//    Node * p13 = new Node(new Mul());
+//    Node * s14 = new Node(new Sin());
+//    Node * p14 = new Node(new Mul());
+//
+//    Node * f0 = new Node(new Feat(0));
+//
+//    Node * f1 = new Node(new Feat(1));
+//    Node * f2 = new Node(new Feat(2));
+//    Node * f3 = new Node(new Feat(3));
+//    Node * f4 = new Node(new Feat(4));
+//    Node * f5 = new Node(new Feat(5));
+//    Node * f6 = new Node(new Feat(6));
+//    Node * f7 = new Node(new Feat(7));
+//    Node * f8 = new Node(new Feat(8));
+//
+//    p7->append(f0);
+//    p7->append(f1);
+//    s7->append(p7);
+//    p8->append(f0);
+//    p8->append(f2);
+//    s8->append(p8);
+//    p3->append(s7);
+//    p3->append(s8);
+//
+//    p9->append(f0);
+//    p9->append(f3);
+//    s9->append(p9);
+//    p10->append(f0);
+//    p10->append(f4);
+//    s10->append(p10);
+//    p4->append(s9);
+//    p4->append(s10);
+//
+//    p1->append(p3);
+//    p1->append(p4);
+//
+//    p11->append(f0);
+//    p11->append(f5);
+//    s11->append(p11);
+//    p12->append(f0);
+//    p12->append(f6);
+//    s12->append(p12);
+//    p5->append(s11);
+//    p5->append(s12);
+//
+//    p13->append(f0);
+//    p13->append(f7);
+//    s13->append(p13);
+//    p14->append(f0);
+//    p14->append(f8);
+//    s14->append(p14);
+//    p6->append(s13);
+//    p6->append(s14);
+//
+//    p2->append(p5);
+//    p2->append(p6);
+//
+//    p0->append(p1);
+//    p0->append(p2);
+//
+//    ind->trees.push_back(p0);
+//
+//      g::fit_func->get_fitness_MO(ind);
+//      g::fit_func->get_fitness_SO(ind);
+//
+//    print(ind->human_repr());
+//    print(to_string(ind->fitness[0]));
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//    population[0] = ind;
+//
+//    g::ea->initMOArchive(population);
+//    g::ea->initSOArchive(population);
 
   }
 

@@ -62,7 +62,7 @@ def generate_dataset_1(num_rows, num_cols, primes):
             prime = primes[prime_idx]
             dataset[i, j] = prime * np.random.rand()  # Sample from distribution
 
-            stri = stri + "np.sin(" +  str(dataset[i, j]) + "*" + str(2./np.pi) + ")"
+            stri = stri + "np.sin(" +  str(dataset[i, j]) + "*" + str(dataset[i,0])  + ")"
             if(j!=num_cols):
                 stri += "+"
 
