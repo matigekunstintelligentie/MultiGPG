@@ -461,6 +461,7 @@ check_changes_MO(Individual *offspring, bool FI, vector<float> back_obj){
 }
 
 Individual * efficient_gom_MO_FI(Individual * og_parent, vector<pair<vector<int>, int>> & fos, int objective, bool extrema) {
+    print("FI");
     Individual * parent = og_parent->clone();
 
     auto random_fos_order = Rng::rand_perm(fos.size());
@@ -565,6 +566,10 @@ Individual * efficient_gom_MO_FI(Individual * og_parent, vector<pair<vector<int>
 }
 
 Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & donor_population, vector<pair<vector<int>, int>> & fos, int macro_generations, int objective, bool extrema, int NIS_const) {
+
+
+
+
     Individual * parent = og_parent->clone();
 
     auto random_fos_order = Rng::rand_perm(fos.size());
@@ -630,8 +635,8 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & do
                 if(check_changes.second){
                     ever_improved = true;
                 }
-                g::ea->updateMOArchive(parent);
                 g::ea->updateSOArchive(parent);
+                g::ea->updateMOArchive(parent);
             }
             else{
                 for(int i = 0; i < effectively_changed_indices.size(); i++) {
@@ -694,8 +699,8 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & do
                 ever_improved = true;
                 changed = true;
                 backup_fitness = parent->fitness;
-                g::ea->updateMOArchive(parent);
                 g::ea->updateSOArchive(parent);
+                g::ea->updateMOArchive(parent);
             }
 
             // discard backup ops
@@ -717,8 +722,8 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & do
               parent->clear();
               parent = offspring;
               parent->fitness = fitness_after;
-              g::ea->updateMOArchive(parent);
               g::ea->updateSOArchive(parent);
+              g::ea->updateMOArchive(parent);
               ever_improved = true;
           }
           else{

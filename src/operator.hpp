@@ -831,6 +831,49 @@ struct Cube : Fun {
   }
 };
 
+struct Nothing : Fun {
+    Op * clone() override {
+        return new Nothing();
+    }
+
+    int arity() override {
+        return 1;
+    }
+
+    float complexity_kommenda(vector<float> child_complexities) override {
+        return child_complexities[0]*child_complexities[0];
+    }
+
+    string sym() override {
+        return "nthg";
+    }
+
+    // string human_repr(vector<string> & args) override {
+    //   return _human_repr_unary_after(args);
+    // }
+
+    Vec apply(const Mat & X) override {
+        return X;
+    }
+
+    pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
+        return make_pair(apply(X), D);
+    }
+
+    string human_repr(vector<string> & args) override {
+
+        return "nthg(" + args[0] + ")";
+    }
+
+    string np_repr(vector<string> & args) override {
+        return args[0];
+    }
+
+    string torch_repr(vector<string> & args) override {
+        return args[0];
+    }
+};
+
 
 struct Feat : Term {
 
@@ -979,7 +1022,8 @@ struct AnyOp : Term {
     }
 
     Vec apply(const Mat & X) override {
-        Vec c_vec = Vec::Constant(X.rows(), NAN);
+        //Vec c_vec = Vec::Constant(X.rows(), NAN);
+        Vec c_vec = Vec::Random(X.rows());
         return c_vec;
     }
 

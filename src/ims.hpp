@@ -105,6 +105,7 @@ struct IMS {
       macro_generations += 1;
 
 
+
       if(g::log){
 
           float best_train_mse = 9999999.;
@@ -159,7 +160,17 @@ struct IMS {
           }
           MO_archive_string += "}";
 
-          print(" ~ generation: ", macro_generations, " ", generations_without_improvement, " ", to_string(tock(start_time)), ", curr. best fit: ", best_train_mse, " ", best_size, " ", best_size_discount, " ", best_kommenda_complexity, " ", best_stri);
+          float avg_mse = 0.;
+          float avg_mse_count = 0.;
+          for(auto ind: evolution->population){
+              if(isfinite(ind->fitness[0])){
+                  avg_mse += ind->fitness[0];
+                  avg_mse_count += 1.;
+              }
+          }
+          print(to_string(avg_mse/avg_mse_count));
+
+          print(" ~ generation: ",macro_generations, " ", generations_without_improvement, " ", to_string(tock(start_time)), ", curr. best fit: ", best_train_mse, " r2 " , to_string(1. - best_train_mse/(g::fit_func->y_train - g::fit_func->y_train.mean()).square().mean()), " ", best_size, " ", best_size_discount, " ", best_kommenda_complexity, " ", best_stri);
 
           consecutive_non_improvements.push_back(generations_without_improvement);
           best_train_mses.push_back(best_train_mse);

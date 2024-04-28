@@ -24,7 +24,7 @@ namespace g {
   vector<Op*> all_operators = {
     new Add(), new Sub(), new Neg(), new Mul(), new Div(), new Inv(), 
     new Square(), new Sqrt(), new Cube(),
-    new Sin(), new Cos(), 
+    new Sin(), new Cos(), new Nothing(),
     new Log(), new Pow(), new Max(), new Min(), new Exp(), new Abs()
   };
 
@@ -303,7 +303,7 @@ namespace g {
     parser.set_optional<int>("nr_multi_trees", "nr_multi_trees", 2, "Nr of multi trees in individual");
     // problem & representation
     parser.set_optional<string>("ff", "fitness_function", "lsmse", "Fitness function");
-    parser.set_optional<string>("fset", "function_set", "+,-,*,/,sin,cos,log", "Function set");
+    parser.set_optional<string>("fset", "function_set", "+,-,*,/,sin,cos,log,nthg", "Function set");
     parser.set_optional<string>("tset", "terminal_set", "auto", "Terminal set");
     parser.set_optional<string>("train", "training_set", "./train.csv", "Path to the training set (needed only if calling as CLI)");
     parser.set_optional<string>("val", "validation_set", "./val.csv", "Path to the validation set (needed only if calling as CLI)");
@@ -403,8 +403,10 @@ namespace g {
             all_operators.push_back(new FunctionTree(i));
         }
     }
-    all_operators.push_back(new AnyOp(0));
-    all_operators.push_back(new AnyOp(1));
+    if(use_adf) {
+        all_operators.push_back(new AnyOp(0));
+        all_operators.push_back(new AnyOp(1));
+    }
 
     print("max. depth: ", max_depth);
     

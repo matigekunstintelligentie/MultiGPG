@@ -62,7 +62,7 @@ def generate_dataset_1(num_rows, num_cols, primes):
             prime = primes[prime_idx]
             dataset[i, j] = prime * np.random.rand()  # Sample from distribution
 
-            stri = stri + "np.sin(" +  str(dataset[i, j]) + "*" + str(dataset[i,0])  + ")"
+            stri = stri + "np.sin(" +  str(dataset[i, j]) + "+" + str(dataset[i,0])  + ")"
             if(j!=num_cols):
                 stri += "+"
 
@@ -70,6 +70,9 @@ def generate_dataset_1(num_rows, num_cols, primes):
         # Target column calculation (example: sum of x variables)
         dataset[i, -1] = eval(stri)
 
+    func = lambda x: (np.sin(x[:,1] + x[:,0]) + np.sin(x[:,2] + x[:,0]) + np.sin(x[:,3] + x[:,0]) + np.sin(x[:,4] + x[:,0]) +
+                      np.sin(x[:,5] + x[:,0]) + np.sin(x[:,6] + x[:,0]) + np.sin(x[:,7] + x[:,0]) + np.sin(x[:,8] + x[:,0]))
+    assert np.sum(func(dataset[:,:-1]) - dataset[:,-1])==0
 
     return dataset
 
@@ -94,16 +97,23 @@ def generate_dataset_2(num_rows, primes):
 
     for i in range(num_rows):
         stri = ""
-        for j in range(1,num_cols):
+        for j in range(1, 8):
 
             stri = stri + "np.sin(" +  str(dataset[i, 0]) + "*" + str(dataset[i, 1]) + ")"
 
             stri += "+"
 
-        stri += stri + "np.sin(" +  str(dataset[i, 2]) + "*" + str(dataset[i, 3]) + ")"
+        stri += "np.sin(" +  str(dataset[i, 2]) + "*" + str(dataset[i, 3]) + ")"
+
 
         # Target column calculation (example: sum of x variables)
         dataset[i, -1] = eval(stri)
+
+
+    func = lambda x: (np.sin(x[:,0] * x[:,1]) + np.sin(x[:,0] * x[:,1]) + np.sin(x[:,0] * x[:,1]) + np.sin(x[:,0] * x[:,1]) +
+                          np.sin(x[:,0] * x[:,1]) + np.sin(x[:,0] * x[:,1]) + np.sin(x[:,0] * x[:,1]) + np.sin(x[:,2] * x[:,3]))
+
+    assert np.sum(func(dataset[:,:-1]) - dataset[:,-1])==0
 
     return dataset
 
@@ -121,12 +131,16 @@ def generate_dataset_3(num_rows, primes):
             prime = primes[prime_idx]
             dataset[i, j] = prime * np.random.rand()  # Sample from distribution
 
-            stri = stri + "np.sqrt(abs(np.sin(" +  str(dataset[i, j]) + "*" + str(dataset[i, 0]) + ")))"
+            stri += "np.sqrt(abs(np.sin(" +  str(dataset[i, j]) + "*" + str(dataset[i, 0]) + ")))"
             if(j!=4):
                 stri += "+"
 
         # Target column calculation (example: sum of x variables)
         dataset[i, -1] = eval(stri)
+
+    func = lambda x: np.sqrt(abs(np.sin(x[:,1] * x[:,0]))) + np.sqrt(abs(np.sin(x[:,2] * x[:,0]))) + np.sqrt(abs(np.sin(x[:,3] * x[:,0]))) + np.sqrt(abs(np.sin(x[:,4] * x[:,0])))
+
+    assert np.sum(func(dataset[:,:-1]) - dataset[:,-1])==0
 
     return dataset
 
@@ -145,6 +159,10 @@ def generate_dataset_4(num_rows, primes):
         # Target column calculation (example: sum of x variables)
         dataset[i, -1] = eval(stri)
 
+    func = lambda x: np.sin(np.cos(x[:,0] * x[:,1]) + np.cos(x[:,2] * x[:,3])) + np.sin(np.cos(x[:,4] * x[:,5]) + np.cos(x[:,6] * x[:,7])) + np.cos(np.sin(x[:,0] + x[:,1]) * np.sin(x[:,2] + x[:,3])) + np.cos(np.sin(x[:,4] + x[:,5]) * np.sin(x[:,6] + x[:,7]))
+
+    assert np.sum(func(dataset[:,:-1]) - dataset[:,-1])==0
+
     return dataset
 
 # Function to generate dataset: summation of 4 sqrt(abs(sin(2/pi +xi)))
@@ -161,6 +179,60 @@ def generate_dataset_5(num_rows, primes):
 
         # Target column calculation (example: sum of x variables)
         dataset[i, -1] = eval(stri)
+
+    func = lambda x: np.cos(x[:,0] * np.sin(x[:,1] + x[:,2])) + np.cos(x[:,0] * np.sin(x[:,2] + x[:,1])) + np.cos(x[:,1] * np.sin(x[:,0] + x[:,2])) + np.cos(x[:,1] * np.sin(x[:,2] + x[:,0]))
+
+    assert np.sum(func(dataset[:,:-1]) - dataset[:,-1])==0
+
+    return dataset
+
+# Function to generate dataset: summation of 8 sin(2pi + xi), where xi are the 8 prime numbers
+def generate_dataset_6(num_rows, primes):
+    dataset = np.zeros((num_rows, 4 + 2))  # +1 for the target column + 1 for fixed column
+    prime_idx = 0
+    prime = primes[prime_idx]
+    dataset[:,0] = prime * np.random.rand(num_rows)
+    for i in range(num_rows):
+        stri = ""
+        for j in range(1,4+1):
+            prime_idx = j % len(primes)  # Wrap around primes list if necessary
+            prime = primes[prime_idx]
+            dataset[i, j] = prime * np.random.rand()  # Sample from distribution
+
+            stri = stri + "np.sin(" +  str(dataset[i, j]) + "+" + str(dataset[i,0])  + ")"
+            if(j!=4):
+                stri += "+"
+
+
+        # Target column calculation (example: sum of x variables)
+        dataset[i, -1] = eval(stri)
+
+
+    return dataset
+
+# Function to generate dataset: summation of 8 sin(2pi + xi), where xi are the 8 prime numbers
+def generate_dataset_7(num_rows, primes):
+    dataset = np.zeros((num_rows, 4))  # +1 for the target column + 1 for fixed column
+    prime_idx = 0
+    prime = primes[prime_idx]
+    dataset[:, 0] = prime * np.random.rand(num_rows)
+    for i in range(num_rows):
+        stri = ""
+        for j in range(1, 3):
+            prime_idx = j % len(primes)  # Wrap around primes list if necessary
+            prime = primes[prime_idx]
+            dataset[i, j] = prime * np.random.rand()  # Sample from distribution
+
+            stri = stri + "np.sin(" +  str(dataset[i, j]) + "+" + str(dataset[i,0])  + ")"
+            if(j!=2):
+                stri += "+"
+
+
+        # Target column calculation (example: sum of x variables)
+        dataset[i, -1] = eval(stri)
+
+    func = lambda x: np.sin(x[:,1] + x[:,0]) + np.sin(x[:,2] + x[:,0])
+    assert np.sum(func(dataset[:,:-1]) - dataset[:,-1])==0
 
     return dataset
 
@@ -195,3 +267,13 @@ make_csv(dataset, "synthetic_4")
 dataset = generate_dataset_5(num_rows, primes)
 check_nans_infs(dataset)
 make_csv(dataset, "synthetic_5")
+
+# Generate dataset 6
+dataset = generate_dataset_6(num_rows, primes)
+check_nans_infs(dataset)
+make_csv(dataset, "synthetic_6")
+
+# Generate dataset 7
+dataset = generate_dataset_7(num_rows, primes)
+check_nans_infs(dataset)
+make_csv(dataset, "synthetic_7")

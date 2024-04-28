@@ -73,8 +73,12 @@ struct Evolution {
     int init_attempts = 0;
 
     if(g::use_adf) {
-        g::terminals.push_back(new AnyOp(0));
-        g::terminals.push_back(new AnyOp(1));
+        int size_terminals = g::terminals.size();
+
+        for(int i =0;i<int(1);i++) {
+            g::terminals.push_back(new AnyOp(0));
+            g::terminals.push_back(new AnyOp(1));
+        }
     }
 
     for(int i = 0; i<g::nr_multi_trees - 1;i++){
@@ -103,117 +107,189 @@ struct Evolution {
         g::fit_func->get_fitness_MO(individual);
         g::fit_func->get_fitness_SO(individual);
 
+
         population.push_back(individual);
+
     }
 
-//    Individual * ind = new Individual();
+//      Individual * ind = new Individual();
 //
-//    Node * p0 = new Node(new Add());
+//      Node * sinf = new Node(new Sin());
+//      Node * pf = new Node(new Add());
+//      Node * any0 = new Node(new AnyOp(0));
+//      Node * any1 = new Node(new AnyOp(1));
 //
-//    Node * p1 = new Node(new Add());
-//    Node * p2 = new Node(new Add());
+//      Node * pa0 = new Node(new Add());
+//      Node * pa1 = new Node(new Add());
+//      Node * pa2 = new Node(new Add());
+//      Node * pa3 = new Node(new Add());
 //
-//    Node * p3 = new Node(new Add());
-//    Node * p4 = new Node(new Add());
-//    Node * p5 = new Node(new Add());
-//    Node * p6 = new Node(new Add());
+//      Node * f11 = new Node(new Feat(0));
+//      Node * f12 = new Node(new Feat(0));
+//      Node * f13 = new Node(new Feat(0));
+//      Node * f14 = new Node(new Feat(0));
+//      Node * f15 = new Node(new Feat(0));
+//      Node * f16 = new Node(new Feat(0));
+//      Node * f17 = new Node(new Feat(0));
+//      Node * f18 = new Node(new Feat(0));
 //
-//    Node * s7 = new Node(new Sin());
-//    Node * p7 = new Node(new Mul());
-//    Node * s8 = new Node(new Sin());
-//    Node * p8 = new Node(new Mul());
-//    Node * s9 = new Node(new Sin());
-//    Node * p9 = new Node(new Mul());
-//    Node * s10 = new Node(new Sin());
-//    Node * p10 = new Node(new Mul());
-//    Node * s11 = new Node(new Sin());
-//    Node * p11 = new Node(new Mul());
-//    Node * s12 = new Node(new Sin());
-//    Node * p12 = new Node(new Mul());
-//    Node * s13 = new Node(new Sin());
-//    Node * p13 = new Node(new Mul());
-//    Node * s14 = new Node(new Sin());
-//    Node * p14 = new Node(new Mul());
+//      pa0->append(f11);
+//      pa0->append(f12);
+//      pa1->append(f13);
+//      pa1->append(f14);
+//      pa2->append(f15);
+//      pa2->append(f16);
+//      pa3->append(f17);
+//      pa3->append(f18);
 //
-//    Node * f0 = new Node(new Feat(0));
+//      any0->append(pa0);
+//      any0->append(pa1);
+//      any1->append(pa2);
+//      any1->append(pa3);
 //
-//    Node * f1 = new Node(new Feat(1));
-//    Node * f2 = new Node(new Feat(2));
-//    Node * f3 = new Node(new Feat(3));
-//    Node * f4 = new Node(new Feat(4));
-//    Node * f5 = new Node(new Feat(5));
-//    Node * f6 = new Node(new Feat(6));
-//    Node * f7 = new Node(new Feat(7));
-//    Node * f8 = new Node(new Feat(8));
+//      pf->append(any0);
+//      pf->append(any1);
+//      sinf->append(pf);
 //
-//    p7->append(f0);
-//    p7->append(f1);
-//    s7->append(p7);
-//    p8->append(f0);
-//    p8->append(f2);
-//    s8->append(p8);
-//    p3->append(s7);
-//    p3->append(s8);
 //
-//    p9->append(f0);
-//    p9->append(f3);
-//    s9->append(p9);
-//    p10->append(f0);
-//    p10->append(f4);
-//    s10->append(p10);
-//    p4->append(s9);
-//    p4->append(s10);
+//      Node * psin0 = new Node(new Add());
+//      Node * psin1 = new Node(new Add());
+//      Node * psin2 = new Node(new Add());
 //
-//    p1->append(p3);
-//    p1->append(p4);
+//      Node * psin3 = new Node(new Add());
+//      Node * psin4 = new Node(new Add());
+//      Node * psin5 = new Node(new Add());
+//      Node * psin6 = new Node(new Add());
 //
-//    p11->append(f0);
-//    p11->append(f5);
-//    s11->append(p11);
-//    p12->append(f0);
-//    p12->append(f6);
-//    s12->append(p12);
-//    p5->append(s11);
-//    p5->append(s12);
+//      Node * s11 = new Node(new Feat(0));
+//      Node * s12 = new Node(new Feat(0));
+//      Node * s13 = new Node(new Feat(0));
+//      Node * s14 = new Node(new Feat(0));
+//      Node * s15 = new Node(new Feat(0));
+//      Node * s16 = new Node(new Feat(0));
+//      Node * s17 = new Node(new Feat(0));
+//      Node * s18 = new Node(new Feat(0));
 //
-//    p13->append(f0);
-//    p13->append(f7);
-//    s13->append(p13);
-//    p14->append(f0);
-//    p14->append(f8);
-//    s14->append(p14);
-//    p6->append(s13);
-//    p6->append(s14);
+//      psin3->append(s11);
+//      psin3->append(s12);
+//      psin4->append(s13);
+//      psin4->append(s14);
+//      psin5->append(s15);
+//      psin5->append(s16);
+//      psin6->append(s17);
+//      psin6->append(s18);
 //
-//    p2->append(p5);
-//    p2->append(p6);
+//      psin1->append(psin3);
+//      psin1->append(psin4);
+//      psin2->append(psin5);
+//      psin2->append(psin6);
 //
-//    p0->append(p1);
-//    p0->append(p2);
+//      psin0->append(psin1);
+//      psin0->append(psin2);
 //
-//    ind->trees.push_back(p0);
 //
-//      g::fit_func->get_fitness_MO(ind);
+//
+//      sinf->append(psin0);
+//
+//
+//
+//      ind->trees.push_back(sinf);
+//
+//
+//      Node * p0 = new Node(new Add());
+//
+//      Node * p1 = new Node(new Add());
+//      Node * p2 = new Node(new Add());
+//
+//      Node * p3 = new Node(new Add());
+//      Node * p4 = new Node(new Add());
+//      Node * p5 = new Node(new Add());
+//      Node * p6 = new Node(new Add());
+//
+//      Node * ft1 = new Node(new FunctionTree(0));
+//      Node * ft2 = new Node(new FunctionTree(0));
+//      Node * ft3 = new Node(new FunctionTree(0));
+//      Node * ft4 = new Node(new FunctionTree(0));
+//      Node * ft5 = new Node(new FunctionTree(0));
+//      Node * ft6 = new Node(new FunctionTree(0));
+//      Node * ft7 = new Node(new FunctionTree(0));
+//      Node * ft8 = new Node(new FunctionTree(0));
+//
+//      Node * f01 = new Node(new Feat(0));
+//      Node * f02 = new Node(new Feat(0));
+//      Node * f03 = new Node(new Feat(0));
+//      Node * f04 = new Node(new Feat(0));
+//      Node * f05 = new Node(new Feat(0));
+//      Node * f06 = new Node(new Feat(0));
+//      Node * f07 = new Node(new Feat(0));
+//      Node * f08 = new Node(new Feat(0));
+//
+//      Node * f1 = new Node(new Feat(1));
+//      Node * f2 = new Node(new Feat(2));
+//      Node * f3 = new Node(new Feat(3));
+//      Node * f4 = new Node(new Feat(4));
+//      Node * f5 = new Node(new Feat(5));
+//      Node * f6 = new Node(new Feat(6));
+//      Node * f7 = new Node(new Feat(7));
+//      Node * f8 = new Node(new Feat(7));
+//
+//      ft1->append(f01);
+//      ft1->append(f1);
+//      ft2->append(f02);
+//      ft2->append(f2);
+//      ft3->append(f03);
+//      ft3->append(f3);
+//      ft4->append(f04);
+//      ft4->append(f4);
+//      ft5->append(f05);
+//      ft5->append(f5);
+//      ft6->append(f06);
+//      ft6->append(f6);
+//      ft7->append(f07);
+//      ft7->append(f7);
+//      ft8->append(f08);
+//      ft8->append(f8);
+//
+//      p3->append(ft1);
+//      p3->append(ft2);
+//      p4->append(ft3);
+//      p4->append(ft4);
+//      p5->append(ft5);
+//      p5->append(ft6);
+//      p6->append(ft7);
+//      p6->append(ft8);
+//
+//      p1->append(p3);
+//      p1->append(p4);
+//      p2->append(p5);
+//      p2->append(p6);
+//
+//      p0->append(p1);
+//      p0->append(p2);
+//
+//      ind->trees.push_back(p0);
+//
 //      g::fit_func->get_fitness_SO(ind);
+//      g::fit_func->get_fitness_MO(ind);
 //
-//    print(ind->human_repr());
-//    print(to_string(ind->fitness[0]));
+//      ind->clone();
+//      population[0] = ind->clone();
 //
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//    population[0] = ind;
-//
-//    g::ea->initMOArchive(population);
-//    g::ea->initSOArchive(population);
+//      print(ind->fitness[0]);
+
+
+
+
+
+
+
+
+
+
+
+
+      g::ea->initMOArchive(population);
+    g::ea->initSOArchive(population);
 
   }
 
@@ -834,6 +910,9 @@ struct Evolution {
       keep.reserve(pop_size);
       keep.push_back(population[0]->clone());
 
+      int duplicates = 0;
+      vector<string> stris;
+
       for(int i=1; i<pop_size;i++){
           bool add = true;
           for(auto ind:keep){
@@ -846,15 +925,20 @@ struct Evolution {
               }
               if(all_same){
                   add = false;
+
+                  duplicates++;
                   break;
               }
 
           }
+
+
           if(add) {
               Individual * k = population[i]->clone();
               keep.push_back(k);
           }
           else{
+              stris.push_back(population[i]->human_repr());
               if(g::replacement_strategy=="mutate") {
                   Individual * indi = population[i]->clone();
                   mutate(indi);
@@ -878,6 +962,8 @@ struct Evolution {
 
           }
       }
+
+      print("DUPLICATES: ", duplicates);
 
 //      int remaining = pop_size-keep.size();
 //      for(int i=0; i<remaining; i++){
@@ -1048,6 +1134,7 @@ struct Evolution {
 
           offspring_population.push_back(offspring);
 
+          g::ea->updateSOArchive(offspring);
           g::ea->updateMOArchive(offspring);
       }
 
