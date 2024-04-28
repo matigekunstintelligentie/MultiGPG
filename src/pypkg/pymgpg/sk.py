@@ -169,10 +169,6 @@ class MGPGRegressor(BaseEstimator, RegressorMixin):
     else:
       best_idx = np.argmin(errs)
 
-    print(models)
-    print(errs)
-    print(compls)
-    print(models[best_idx])
 
     self.txt_models = backup_txt_models[best_idx]
     

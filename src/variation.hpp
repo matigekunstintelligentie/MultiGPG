@@ -502,8 +502,8 @@ Individual * efficient_gom_MO_FI(Individual * og_parent, vector<pair<vector<int>
         // check if at least one change was meaningful
         for(int i : effectively_changed_indices) {
             Node * n = offspring_nodes[i];
-            if (!parent->is_intron(n)) {
-            //if (!n->is_intron()) {
+            //if (!parent->is_intron(n)) {
+            if (!n->is_intron()) {
                 change_is_meaningful = true;
                 break;
             }
@@ -612,7 +612,8 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & do
         for(int i : effectively_changed_indices) {
             Node * n = offspring_nodes[i];
 
-            if (!parent->is_intron(n)) {
+            //if (!parent->is_intron(n)) {
+            if (!n->is_intron()) {
                 change_is_meaningful = true;
                 break;
             }

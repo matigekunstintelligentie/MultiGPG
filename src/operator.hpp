@@ -1022,8 +1022,8 @@ struct AnyOp : Term {
     }
 
     Vec apply(const Mat & X) override {
-        //Vec c_vec = Vec::Constant(X.rows(), NAN);
-        Vec c_vec = Vec::Random(X.rows());
+        Vec c_vec = Vec::Constant(X.rows(), NAN);
+        //Vec c_vec = Vec::Random(X.rows());
         return c_vec;
     }
 
