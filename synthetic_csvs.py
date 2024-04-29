@@ -146,20 +146,17 @@ def generate_dataset_3(num_rows, primes):
 
 # Function to generate dataset: summation of 4 sqrt(abs(sin(2/pi +xi)))
 def generate_dataset_4(num_rows, primes):
-    dataset = np.zeros((num_rows, 9))  # +1 for the target column
-    dataset[:,0:8] = np.random.randn(num_rows, 8)
+    dataset = np.zeros((num_rows, 5))  # +1 for the target column
+    dataset[:,0:4] = np.random.randn(num_rows, 4)
     for i in range(num_rows):
 
         stri = "np.sin(" + "np.cos(" + str(dataset[i, 0]) + " * " + str(dataset[i, 1]) + ")" + " + " + "np.cos(" + str(dataset[i, 2]) + " * " + str(dataset[i, 3]) + ")" + ") + "
-        stri += "np.sin(" + "np.cos(" + str(dataset[i, 4]) + " * " + str(dataset[i, 5]) + ")" + " + " + "np.cos(" + str(dataset[i, 6]) + " * " + str(dataset[i, 7]) + ")" + ") + "
-        stri += "np.cos(" + "np.sin(" + str(dataset[i, 0]) + " + " + str(dataset[i, 1]) + ")" + " * " + "np.sin(" + str(dataset[i, 2]) + " + " + str(dataset[i, 3]) + ")" + ") + "
-        stri += "np.cos(" + "np.sin(" + str(dataset[i, 4]) + " + " + str(dataset[i, 5]) + ")" + " * " + "np.sin(" + str(dataset[i, 6]) + " + " + str(dataset[i, 7]) + ")" + ")"
-
+        stri += "np.cos(" + "np.sin(" + str(dataset[i, 0]) + " + " + str(dataset[i, 1]) + ")" + " * " + "np.sin(" + str(dataset[i, 2]) + " + " + str(dataset[i, 3]) + ")" + ")"
        
         # Target column calculation (example: sum of x variables)
         dataset[i, -1] = eval(stri)
 
-    func = lambda x: np.sin(np.cos(x[:,0] * x[:,1]) + np.cos(x[:,2] * x[:,3])) + np.sin(np.cos(x[:,4] * x[:,5]) + np.cos(x[:,6] * x[:,7])) + np.cos(np.sin(x[:,0] + x[:,1]) * np.sin(x[:,2] + x[:,3])) + np.cos(np.sin(x[:,4] + x[:,5]) * np.sin(x[:,6] + x[:,7]))
+    func = lambda x: np.sin(np.cos(x[:,0] * x[:,1]) + np.cos(x[:,2] * x[:,3])) + np.cos(np.sin(x[:,0] + x[:,1]) * np.sin(x[:,2] + x[:,3]))
 
     assert np.sum(func(dataset[:,:-1]) - dataset[:,-1])==0
 

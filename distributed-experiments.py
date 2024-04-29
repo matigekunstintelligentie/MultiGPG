@@ -111,8 +111,8 @@ nr_objs = 2
 
 experiments = []
 
-fset = '+,-,*,/,sin,cos,log,sqrt'
-extra_fset = '+,-,*,/,sin,cos,log,sqrt,max,min,exp,**2,1/'
+fset = '+,-,*,/,sin,cos,log,sqrt,abs'
+extra_fset = '+,-,*,/,sin,cos,log,sqrt,max,min,exp,**2,1/,abs'
 arithmetic_fset = '+,-,*,/'
 
 sin_fset = "+,sin"
