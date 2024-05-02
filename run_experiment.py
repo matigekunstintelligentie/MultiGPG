@@ -67,6 +67,8 @@ parser.add_argument('--donor_fraction', type=float)
 parser.add_argument('--nr_objs', type=int)
 parser.add_argument('--replacement_strategy', type=str)
 parser.add_argument('--remove_duplicates', type=str2bool)
+parser.add_argument('--use_GP', type=str2bool)
+parser.add_argument('--true_intron_checking', type=str2bool)
 
 args = parser.parse_args()
 
@@ -114,7 +116,7 @@ g = MGPGRegressor(t=args.t, g=args.g, tour=args.tour, d=args.depth,
         accept_diversity=args.accept_diversity, k2=args.k2,
         nr_objs=args.nr_objs,
                   replacement_strategy=args.replacement_strategy,
-                  remove_duplicates=args.remove_duplicates, max_non_improve=100)
+                  remove_duplicates=args.remove_duplicates, max_non_improve=100, use_GP=args.use_GP, true_intron_checking=args.true_intron_checking)
 
 #+,-,*,/,¬,log,pow,max,min,abs,exp,sqrt,sin,cos
 if not args.contains_train:

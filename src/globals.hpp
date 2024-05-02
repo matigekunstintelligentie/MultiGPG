@@ -45,7 +45,7 @@ namespace g {
   bool use_aro = false;
 
   bool use_GP = false;
-  bool force_mutation = false;
+  bool true_intron_checking = false;
 
   int n_clusters = 7;
   int nr_objs = 2;
@@ -350,7 +350,7 @@ namespace g {
     parser.set_optional<bool>("use_GP", "use_GP", false, "Whether GP or GOMEA is used");
 
 
-    parser.set_optional<bool>("force_mutation", "force_mutation", false, "Whether a change in the mutation is forced");
+    parser.set_optional<bool>("true_intron_checking", "true_intron_checking", false, "Whether the true intron is checked during GOM");
     parser.set_optional<bool>("discount_size", "discount_size", false, "Whether the model size is discounted for re-use");
     parser.set_optional<bool>("balanced", "balanced", false, "Whether balanced k-leaders is used");
     parser.set_optional<bool>("k2", "k2", false, "Whether balanced k-2-leaders is used");
@@ -482,7 +482,7 @@ namespace g {
     use_adf = parser.get<bool>("use_adf");
     use_aro = parser.get<bool>("use_aro");
     use_GP = parser.get<bool>("use_GP");
-    force_mutation = parser.get<bool>("force_mutation");
+    true_intron_checking = parser.get<bool>("true_intron_checking");
 
     discount_size = parser.get<bool>("discount_size");
     balanced = parser.get<bool>("balanced");
@@ -545,7 +545,7 @@ namespace g {
       + " MO mode " + std::to_string(MO_mode)
       + " n clusters " + std::to_string(n_clusters)
       + "GP mode " + std::to_string(use_GP)
-      + "force_mutation " + std::to_string(force_mutation)
+      + "true_intron_checking " + std::to_string(true_intron_checking)
       + " use aro " + std::to_string(use_aro)
       + " use adf " + std::to_string(use_adf)
       + " balanced " + std::to_string(balanced)
