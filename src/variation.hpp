@@ -122,7 +122,7 @@ Node * generate_tree(int max_depth, int mt, vector<Node *> &trees, string init_t
 
 }
 
-void mutate(Individual * parent) {
+void mutate(Individual * parent, bool force_mutation) {
     bool effectively_changed = false;
     while(!effectively_changed){
         vector<int> random_tree_order = Rng::rand_perm(g::nr_multi_trees);
@@ -130,6 +130,7 @@ void mutate(Individual * parent) {
             vector<Node *> subtree = parent->trees[mt]->subtree();
             int r = Rng::randi(subtree.size()-1);
             string orig_op = subtree[r]->op->sym();
+
             bool is_intron = parent->is_intron(subtree[r]);
             delete subtree[r]->op;
 
@@ -146,7 +147,10 @@ void mutate(Individual * parent) {
                 subtree[r]->op = _sample_terminal(mt, parent->trees);
             }
 
-            if(is_intron && orig_op!=subtree[r]->op->sym()){
+            if(!is_intron && orig_op!=subtree[r]->op->sym() && force_mutation){
+                effectively_changed = true;
+            }
+            else{
                 effectively_changed = true;
             }
         }
@@ -365,8 +369,70 @@ Individual * coeff_opt_lm(Individual * parent, bool return_copy=true){
   return tree;
 }
 
+vector<int> _sample_crossover_mask(int num_nodes) {
+    auto crossover_mask = Rng::rand_perm(num_nodes);
+    int k = 1+sqrt(num_nodes)*abs(Rng::randn());
+    k = min(k, num_nodes);
+    crossover_mask.erase(crossover_mask.begin() + k, crossover_mask.end());
+    assert(crossover_mask.size() == k);
+    return crossover_mask;
+}
+
+Individual * crossover(Individual * parent, Individual * donor) {
+    Individual * offspring = parent->clone();
+    auto nodes = offspring->all_nodes();
+    auto d_nodes = donor->all_nodes();
+
+    // sample a crossover mask
+    auto crossover_mask = _sample_crossover_mask(nodes.size());
+    for(int i : crossover_mask) {
+        delete nodes[i]->op;
+        nodes[i]->op = d_nodes[i]->op->clone();
+    }
+
+    return offspring;
+}
+
+Individual * coeff_mut_ind(Individual * parent, bool return_copy=true, vector<int> * changed_indices = NULL, vector<Op*> * backup_ops = NULL) {
+    Individual * tree = parent;
+
+    if (return_copy) {
+        tree = parent->clone();
+    }
+
+    if (g::cmut_prob > 0 && g::cmut_temp > 0) {
+        // apply coeff mut to all nodes that are constants
+        vector<Node*> nodes = tree->subtree(true);
+        for(int i = 0; i < nodes.size(); i++) {
+            Node * n = nodes[i];
+            if (n->op->type() == OpType::otConst && Rng::randu() < g::cmut_prob) {
+
+                float prev_c = ((Const*)n->op)->c;
+                float std = g::cmut_temp*abs(prev_c);
+
+                // cmut_eps = 0;
+                if (std < g::cmut_eps){
+                    std = g::cmut_eps;
+                }
+                float mutated_c = prev_c + Rng::randn()*std;
+                ((Const*)n->op)->c = mutated_c;
+                if (changed_indices != NULL) {
+                    changed_indices->push_back(i);
+                    backup_ops->push_back(new Const(prev_c));
+                    if (find(changed_indices->begin(), changed_indices->end(), i) == changed_indices->end()) {
+                        changed_indices->push_back(i);
+                        backup_ops->push_back(new Const(prev_c));
+                    };
+                }
+            }
+        }
+    }
+
+    return tree;
+}
+
 Node * coeff_mut(Node * parent, bool return_copy=true, vector<int> * changed_indices = NULL, vector<Op*> * backup_ops = NULL) {
-  Node * tree = parent;
+   Node * tree = parent;
 
    if (return_copy) {
      tree = parent->clone();

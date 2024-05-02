@@ -45,6 +45,17 @@ struct Individual {
 
   }
 
+  vector<Node*> all_nodes(){
+      vector<Node*> all_nodes;
+      for(auto tree: trees){
+          vector<Node*> subtree = tree->subtree();
+          for(auto node: subtree){
+              all_nodes.push_back(node);
+          }
+      }
+      return all_nodes;
+  }
+
   vector<Node*> subtree(bool check_introns){
       return  trees[trees.size()-1]->subtree(this->trees, check_introns);
   }

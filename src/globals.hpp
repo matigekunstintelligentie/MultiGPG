@@ -44,6 +44,9 @@ namespace g {
   bool use_adf = false;
   bool use_aro = false;
 
+  bool use_GP = false;
+  bool force_mutation = false;
+
   int n_clusters = 7;
   int nr_objs = 2;
 
@@ -343,7 +346,11 @@ namespace g {
 
     parser.set_optional<bool>("MO_mode", "MO_mode", false, "Whether Multi objective mode is activated");
     parser.set_optional<bool>("use_adf", "use_adf", false, "Whether Automatically Defined Functions are used");
-    parser.set_optional<bool>("use_aro", "use_aro", false, "Whether Automatically Defined Functions are used");
+    parser.set_optional<bool>("use_aro", "use_aro", false, "Whether Automatically Re-used outputs are used");
+    parser.set_optional<bool>("use_GP", "use_GP", false, "Whether GP or GOMEA is used");
+
+
+    parser.set_optional<bool>("force_mutation", "force_mutation", false, "Whether a change in the mutation is forced");
     parser.set_optional<bool>("discount_size", "discount_size", false, "Whether the model size is discounted for re-use");
     parser.set_optional<bool>("balanced", "balanced", false, "Whether balanced k-leaders is used");
     parser.set_optional<bool>("k2", "k2", false, "Whether balanced k-2-leaders is used");
@@ -396,10 +403,7 @@ namespace g {
     nr_multi_trees = parser.get<int>("nr_multi_trees");
 
     for(int i =0;i<nr_multi_trees-1;i++){
-        if(use_aro){
-            all_operators.push_back(new OutputTree(i));
-        }
-        if(use_adf) {
+        if(use_adf || use_aro) {
             all_operators.push_back(new FunctionTree(i));
         }
     }
@@ -477,6 +481,9 @@ namespace g {
     MO_mode = parser.get<bool>("MO_mode");
     use_adf = parser.get<bool>("use_adf");
     use_aro = parser.get<bool>("use_aro");
+    use_GP = parser.get<bool>("use_GP");
+    force_mutation = parser.get<bool>("force_mutation");
+
     discount_size = parser.get<bool>("discount_size");
     balanced = parser.get<bool>("balanced");
     k2 = parser.get<bool>("k2");
@@ -537,6 +544,8 @@ namespace g {
       + " nr multi trees " + std::to_string(nr_multi_trees)
       + " MO mode " + std::to_string(MO_mode)
       + " n clusters " + std::to_string(n_clusters)
+      + "GP mode " + std::to_string(use_GP)
+      + "force_mutation " + std::to_string(force_mutation)
       + " use aro " + std::to_string(use_aro)
       + " use adf " + std::to_string(use_adf)
       + " balanced " + std::to_string(balanced)

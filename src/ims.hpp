@@ -88,10 +88,12 @@ struct IMS {
       // perform generation
 
 
-
-      evolution->gomea_generation_MO(macro_generations);
-
-
+      if(g::use_GP){
+          evolution->ga_generation(macro_generations);
+      }
+      else{
+          evolution->gomea_generation_MO(macro_generations);
+      };
 
       if(g::ea->improved_this_gen){
           g::ea->improved_this_gen = false;

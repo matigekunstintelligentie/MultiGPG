@@ -1041,43 +1041,6 @@ struct AnyOp : Term {
     }
 };
 
-struct OutputTree : Term {
-
-    int id;
-    OutputTree(int id) {
-        this->id = id;
-    }
-
-    Op * clone() override {
-        return new OutputTree(this->id);
-    }
-
-    int arity() override {
-        return 0;
-    }
-
-    string sym() override {
-        return "p_"+to_string(id);
-    }
-
-    OpType type() override {
-        return OpType::otPlaceholder;
-    }
-
-    string human_repr(vector<string> & args) override {
-
-        return "Placeholder_"+to_string(id);
-    }
-
-    string np_repr(vector<string> & args) override {
-        return "Placeholder_"+to_string(id);
-    }
-
-    string torch_repr(vector<string> & args) override {
-        return "Placeholder_"+to_string(id);
-    }
-};
-
 struct FunctionTree : Fun {
 
     int id;
