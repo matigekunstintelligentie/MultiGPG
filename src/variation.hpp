@@ -34,7 +34,7 @@ Op * _sample_operator(vector<Op *> & operators, Vec & cumul_probs) {
 Op * _sample_function(int mt, vector<Node *> &trees) {
     auto first = g::functions.begin();
     auto last = g::functions.end();
-    if(g::use_adf) {
+    if(g::use_adf || g::use_aro) {
         last = g::functions.end() - (g::nr_multi_trees - mt - 1);
     }
 
