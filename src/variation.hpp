@@ -34,7 +34,7 @@ Op * _sample_operator(vector<Op *> & operators, Vec & cumul_probs) {
 Op * _sample_function(int mt, vector<Node *> &trees) {
     auto first = g::functions.begin();
     auto last = g::functions.end();
-    if(g::use_adf || g::use_aro) {
+    if(g::use_adf) {
         last = g::functions.end() - (g::nr_multi_trees - mt - 1);
     }
 
@@ -52,7 +52,10 @@ Op * _sample_function(int mt, vector<Node *> &trees) {
 
 Op * _sample_terminal(int mt, vector<Node *> &trees) {
     auto first = g::terminals.begin();
-    auto last = g::terminals.end()-(g::nr_multi_trees-mt-1);
+    auto last = g::terminals.end();
+    if(g::use_aro){
+        last = g::terminals.end()-(g::nr_multi_trees-mt-1);
+    }
     vector<Op *> AB(first, last);
      
      Vec cumul_tset_probs(AB.size());
@@ -676,7 +679,6 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & do
             backup_ops.push_back(replaced_op);
             effectively_changed_indices.push_back(idx);
         }
-
         // check if at least one change was meaningful
         for(int i : effectively_changed_indices) {
             Node * n = offspring_nodes[i];
@@ -690,12 +692,14 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & do
                 break;
             }
         }
-
         // assume nothing changed
         if (change_is_meaningful) {
             //parent->trees[mt] = offspring;
 
+
             g::fit_func->get_fitness_MO(parent);
+
+
 
             // TODO check all below
             std::pair<bool, bool> check_changes = extrema ? check_changes_SO(parent, backup_fitness,  false, objective)

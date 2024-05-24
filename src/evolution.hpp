@@ -81,9 +81,13 @@ struct Evolution {
         }
     }
 
+
     for(int i = 0; i<g::nr_multi_trees - 1;i++){
-        if(g::use_adf || g::use_aro) {
+        if(g::use_adf) {
             g::functions.push_back(new FunctionTree(i));
+        }
+        if(g::use_aro){
+            g::terminals.push_back(new OutputTree(i));
         }
     }
 
@@ -975,8 +979,10 @@ struct Evolution {
 
 
       for(int x=0; x<idx.size(); x++){
+
           int &i = idx[x].first;
           int &j = idx[x].second;
+
 
           Individual *offspring;
           if(clustered_population[i].size()>1){

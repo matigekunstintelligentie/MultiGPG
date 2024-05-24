@@ -53,6 +53,7 @@ struct IMS {
     float previous_fitness = -1.;
 
     while(!stop) {
+
       // macro generation
 
       // update mini batch

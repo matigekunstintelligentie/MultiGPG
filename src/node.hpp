@@ -80,6 +80,9 @@ struct Node {
         if(op->type()==OpType::otFunction){
             n_nodes += trees[((FunctionTree*) op)->id]->get_num_nodes(trees, this->children ,excl_introns);
         }
+        else if(op->type()==OpType::otPlaceholder){
+            n_nodes += trees[((OutputTree*) op)->id]->get_num_nodes(trees, fun_children ,excl_introns);
+        }
         else if(op->type()==OpType::otAny){
             n_nodes += fun_children[((AnyOp*) op)->id]->get_num_nodes(trees, excl_introns);
         }
@@ -105,6 +108,9 @@ struct Node {
       if(op->type()==OpType::otFunction){
           n_nodes += trees[((FunctionTree*) op)->id]->get_num_nodes(trees, this->children, excl_introns);
       }
+      else if(op->type()==OpType::otPlaceholder){
+          n_nodes += trees[((OutputTree*) op)->id]->get_num_nodes(trees, excl_introns);
+      }
       else {
           n_nodes = 1;
           int arity = op->arity();
@@ -126,6 +132,9 @@ struct Node {
       int height = 0;
       if(op->type()==OpType::otFunction){
           height += trees[((FunctionTree*) op)->id]->get_height(trees, this->children);
+      }
+      else if(op->type()==OpType::otPlaceholder){
+          height += trees[((OutputTree*) op)->id]->get_height(trees, fun_children);
       }
       else if(op->type()==OpType::otAny){
           height += fun_children[((AnyOp*) op)->id]->get_num_nodes(trees);
@@ -149,6 +158,9 @@ struct Node {
       int height = 0;
       if(op->type()==OpType::otFunction){
           height += trees[((FunctionTree*) op)->id]->get_height(trees, this->children);
+      }
+      else if(op->type()==OpType::otPlaceholder){
+          height += trees[((OutputTree*) op)->id]->get_height(trees);
       }
       else {
           height += 1;
@@ -189,6 +201,9 @@ struct Node {
         if(op->type()==OpType::otFunction){
             trees[((FunctionTree*) op)->id]->_subtree_recursive(subtree, trees, this->children, check_introns);
         }
+        else if(op->type()==OpType::otPlaceholder){
+            trees[((OutputTree*) op)->id]->_subtree_recursive(subtree, trees, fun_children, check_introns);
+        }
         else if(op->type()==OpType::otAny){
             fun_children[((AnyOp*) op)->id]->_subtree_recursive(subtree, trees, check_introns);
         }
@@ -211,6 +226,9 @@ struct Node {
       if(op->type()==OpType::otFunction){
           trees[((FunctionTree*) op)->id]->_subtree_recursive(subtree, trees, this->children, check_introns);
       }
+      else if(op->type()==OpType::otPlaceholder){
+          trees[((OutputTree*) op)->id]->_subtree_recursive(subtree, trees, check_introns);
+      }
       else {
           subtree.push_back(this);
           if(!check_introns){
@@ -229,6 +247,9 @@ struct Node {
     Vec get_output(const Mat & X, vector<Node*> & fun_children, const vector<Node*> & trees) {
         if(op->type()==OpType::otFunction){
             return trees[((FunctionTree*) op)->id]->get_output(X, this->children, trees);
+        }
+        else if(op->type()==OpType::otPlaceholder){
+            return trees[((OutputTree*) op)->id]->get_output(X, fun_children, trees);
         }
         else if(op->type()==OpType::otAny){
             return fun_children[((AnyOp*) op)->id]->get_output(X, trees);
@@ -250,6 +271,9 @@ struct Node {
     if(op->type()==OpType::otFunction){
          return trees[((FunctionTree*) op)->id]->get_output(X, this->children, trees);
     }
+    else if(op->type()==OpType::otPlaceholder){
+        return trees[((OutputTree*) op)->id]->get_output(X, trees);
+    }
 
     int a = op->arity();
     if (a == 0)
@@ -266,6 +290,9 @@ struct Node {
     float get_complexity_kommenda(vector<float> X, vector<Node*> & fun_children, const vector<Node*> & trees) {
         if(op->type()==OpType::otFunction){
             return trees[((FunctionTree*) op)->id]->get_complexity_kommenda(X, this->children, trees);
+        }
+        else if(op->type()==OpType::otPlaceholder){
+            return trees[((OutputTree*) op)->id]->get_complexity_kommenda(X, fun_children, trees);
         }
         else if(op->type()==OpType::otAny){
             return fun_children[((AnyOp*) op)->id]->get_complexity_kommenda(X, trees);
@@ -287,6 +314,9 @@ struct Node {
         if(op->type()==OpType::otFunction){
             return trees[((FunctionTree*) op)->id]->get_complexity_kommenda(X, this->children, trees);
         }
+        if(op->type()==OpType::otPlaceholder){
+            return trees[((OutputTree*) op)->id]->get_complexity_kommenda(X, trees);
+        }
         else if(op->type()==OpType::otAny){
             return 99999999.;
         }
@@ -306,6 +336,9 @@ struct Node {
     pair<Vec, Vec> get_output_der(const Mat & X, vector<Node*> & fun_children, const vector<Node*> & trees) {
         if(op->type()==OpType::otFunction){
             return trees[((FunctionTree*) op)->id]->get_output_der(X, this->children, trees);
+        }
+        else if(op->type()==OpType::otPlaceholder){
+            return trees[((OutputTree*) op)->id]->get_output_der(X, fun_children, trees);
         }
         else if(op->type()==OpType::otAny){
             return fun_children[((AnyOp*) op)->id]->get_output_der(X, trees);
@@ -327,6 +360,9 @@ struct Node {
   pair<Vec, Vec> get_output_der(const Mat & X, const vector<Node*> & trees) {
     if(op->type()==OpType::otFunction){
         return trees[((FunctionTree*) op)->id]->get_output_der(X, this->children, trees);
+    }
+    else if(op->type()==OpType::otPlaceholder){
+        return trees[((OutputTree*) op)->id]->get_output_der(X, trees);
     }
     int a = op->arity();
     if (a == 0){
@@ -381,6 +417,12 @@ struct Node {
                 expr = "func[" + expr + "]";
             }
         }
+        else if(op->type()==OpType::otPlaceholder){
+            trees[((OutputTree*) op)->id]->_human_repr_recursive(trees,  fun_children, expr, add_ofa);
+            if(add_ofa) {
+                expr = "out[" + expr + "]";
+            }
+        }
         else if(op->type()==OpType::otAny){
             fun_children[((AnyOp*) op)->id]->_human_repr_recursive(trees, expr, add_ofa);
             if(add_ofa) {
@@ -405,6 +447,13 @@ struct Node {
           trees[((FunctionTree*) op)->id]->_human_repr_recursive(trees, this->children, expr, add_ofa);
           if(add_ofa) {
               expr = "func[" + expr + "]";
+          }
+      }
+      else if(op->type()==OpType::otPlaceholder){
+
+          trees[((OutputTree*) op)->id]->_human_repr_recursive(trees, expr, add_ofa);
+          if(add_ofa) {
+              expr = "out[" + expr + "]";
           }
       }
       else if(op->type()==OpType::otAny){
