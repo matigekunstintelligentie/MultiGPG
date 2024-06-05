@@ -49,32 +49,6 @@ struct Node {
     c->parent = this;
   }
 
-  int position_among_siblings() {
-    if (!parent)
-      return 0;
-    int i = 0;
-    for (Node * s : parent->children) {
-      if (s == this)
-        return i;
-      i++;
-    }
-    throw runtime_error("Unreachable code");
-  }
-
-  bool is_intron() {
-    Node * p = parent;
-    if(!p)
-      return false;
-    Node * n = this;
-    while (p) {
-      if (n->position_among_siblings() >= p->op->arity())
-        return true;
-      n = p;
-      p = n->parent;
-    }
-    return false;
-  }
-
     int get_num_nodes(vector<Node*> &trees, vector<Node*> &fun_children, bool excl_introns=false) {
         int n_nodes = 0;
         if(op->type()==OpType::otFunction){

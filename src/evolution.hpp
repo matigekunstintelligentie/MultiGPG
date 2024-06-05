@@ -824,28 +824,47 @@ struct Evolution {
 
 
         for(int i = 0; i < pop_size; i++) {
-            auto * cr_offspring = crossover(population[i], population[Rng::randu()*population.size()]);
-            mutate(cr_offspring, false);
+            vector<int> effectively_changed_indices;
+            effectively_changed_indices.reserve(pow(g::max_depth + 1,2)-1 * g::nr_multi_trees);
 
-            cr_offspring = coeff_mut_ind(cr_offspring, false);
-            // compute fitness
-            g::fit_func->get_fitness_MO(cr_offspring);
-            g::fit_func->get_fitness_SO(cr_offspring);
+            vector<Op*> backup_ops;
+            backup_ops.reserve(pow(g::max_depth + 1,2)-1 * g::nr_multi_trees);
+
+            auto * cr_offspring = crossover(population[i], population[Rng::randu()*population.size()], &effectively_changed_indices, &backup_ops);
+            mutate(cr_offspring, false, &effectively_changed_indices, &backup_ops);
+
+
+            cr_offspring = coeff_mut_ind(cr_offspring, false, &effectively_changed_indices, &backup_ops);
+
+            bool change_is_meaningful = false;
+            vector<Node*> offspring_nodes = cr_offspring->all_nodes();
+            for(int x : effectively_changed_indices){
+                Node * n = offspring_nodes[x];
+                if (!cr_offspring->is_intron(n)) {
+                    change_is_meaningful = true;
+                    break;
+                }
+            }
+
+            if(change_is_meaningful) {
+                // compute fitness
+                g::fit_func->get_fitness_MO(cr_offspring);
+                g::fit_func->get_fitness_SO(cr_offspring);
+            }
+
             g::ea->updateSOArchive(cr_offspring);
             g::ea->updateMOArchive(cr_offspring);
 
             // add to off pop
             offspring_population.push_back(cr_offspring);
-
-
         }
 
 
-        // selection
+        // popwise tournament selection on offspring + original population
+        offspring_population.insert(offspring_population.end(), population.begin(), population.end());
         auto selection = popwise_tournament(offspring_population, pop_size, g::tournament_size, false);
 
         // clean up
-        clear_population(population);
         clear_population(offspring_population);
         population = selection;
     }
