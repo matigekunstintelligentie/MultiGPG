@@ -27,7 +27,7 @@ struct IMS {
   vector<float> best_val_mses;
   vector<float> times;
   string best_string;
-  vector<string> best_substrings;
+  vector<string> best_strings;
   vector<string> MO_archive_strings;
   vector<int> consecutive_non_improvements;
 
@@ -116,7 +116,7 @@ struct IMS {
           float best_size = 9999999.;
           float best_size_discount = 999999999.;
           float best_kommenda_complexity = 999999999.;
-          string best_stri = "";
+          string best_substring = "";
 
           string MO_archive_string = "{";
 
@@ -142,14 +142,10 @@ struct IMS {
                   best_size = size;
                   best_kommenda_complexity = k_complexity;
                   best_size_discount = ind->get_num_nodes(true, true);
-                  best_stri = ind->human_repr(true);
-                  best_string = "(" + to_string(ind->add) + "+(" + to_string(ind->mul) + "*"  + best_stri + ")" + ")";
 
-                  vector<string> best_substrings_tmp;
-                  for(int y=0; y<g::nr_multi_trees; y++){
-                      best_substrings_tmp.push_back(ind->trees[y]->human_repr());
-                  }
-                  best_substrings = best_substrings_tmp;
+                  best_string = "(" + to_string(ind->add) + "+(" + to_string(ind->mul) + "*"  + ind->human_repr(true) + ")" + ")";
+
+
               }
               if(add_comma){
                   MO_archive_string = MO_archive_string + ",";
@@ -163,12 +159,13 @@ struct IMS {
           }
           MO_archive_string += "}";
 
-          print(" ~ generation: ",macro_generations, " ", generations_without_improvement, " ", to_string(tock(start_time)), ", curr. best fit: ", best_train_mse, " r2 " , to_string(1. - best_train_mse/(g::fit_func->y_train - g::fit_func->y_train.mean()).square().mean()), " ", best_size, " ", best_size_discount, " ", best_kommenda_complexity, " ", best_stri);
+          print(" ~ generation: ",macro_generations, " ", generations_without_improvement, " ", to_string(tock(start_time)), ", curr. best fit: ", best_train_mse, " r2 " , to_string(1. - best_train_mse/(g::fit_func->y_train - g::fit_func->y_train.mean()).square().mean()), " ", best_size, " ", best_size_discount, " ", best_kommenda_complexity, " ", best_string);
 
           consecutive_non_improvements.push_back(generations_without_improvement);
           best_train_mses.push_back(best_train_mse);
           best_val_mses.push_back(best_val_mse);
           best_sizes.push_back(best_size);
+          best_strings.push_back(best_string);
           best_kommenda_complexities.push_back(best_kommenda_complexity);
           best_sizes_discount.push_back(best_size_discount);
           times.push_back(tock(start_time));
@@ -255,10 +252,10 @@ struct IMS {
 
         // 13 best substrings over time
         str = "";
-        for(int i=0;i<best_substrings.size()-1;i++){
-            str += best_substrings[i] + ";";
-        }
-        str += best_substrings[best_substrings.size()-1]+"\t";
+//        for(int i=0;i<best_substrings.size()-1;i++){
+//            str += best_substrings[i] + ";";
+//        }
+        str += "redundant\t";
         csv_file << str;
 
       // 14 MO over time

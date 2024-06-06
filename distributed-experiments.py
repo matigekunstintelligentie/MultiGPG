@@ -84,7 +84,7 @@ class gpgomea_experiment(experiment):
             "remove_duplicates": None,
             "replacement_strategy": None,
             "use_GP": False,
-            "true_intron_checking": False,
+            "drift": False,
         }
 
         for key, value in experiment_dict.items():
@@ -114,12 +114,13 @@ nr_objs = 2
 experiments = []
 
 fset = '+,-,*,/,sin,cos,log,sqrt,abs'
+fset_nthg = '+,-,*,/,sin,cos,log,sqrt,abs,nthg'
 extra_fset = '+,-,*,/,sin,cos,log,sqrt,max,min,exp,**2,1/,abs'
 arithmetic_fset = '+,-,*,/'
 
 sin_fset = "+,sin"
 
-result_dir = "./results/arobug"
+result_dir = "./results/final"
 
 
 
@@ -159,12 +160,18 @@ for i in range(30):
 
             gpgomea_experiment({"csv_name":"GP_7_1_32768", "depth": 7, "dir": directory, "batch_size": 256, "ff": "mse", "seed": i, "coeff_p": 1., "MO_mode": False, "popsize":32768, "n_clusters": 1, "max_coeffs": 0, "nr_multi_trees": 1,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False, "discount_size":False,"balanced":False,"log_pop":log_pop,"nr_objs": nr_objs, "remove_duplicates":False, "replacement_strategy":"sample", "use_GP": True}),
             gpgomea_experiment({"csv_name":"GP_4_4_32768", "depth": 4, "dir": directory, "batch_size": 256, "ff": "mse", "seed": i, "coeff_p": 1., "MO_mode": False, "popsize":32768, "n_clusters": 1, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False, "discount_size":False,"balanced":False,"log_pop":log_pop,"nr_objs": nr_objs, "remove_duplicates":False, "replacement_strategy":"sample", "use_GP": True}),
+
+            gpgomea_experiment({"csv_name":"SO_4_4_16384_drift", "depth": 4, "dir": directory, "batch_size": 256, "ff": "mse", "seed": i, "coeff_p": 1., "MO_mode": False, "popsize":16384, "n_clusters": 1, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False, "discount_size":False,"balanced":False,"log_pop":log_pop,"nr_objs": nr_objs, "remove_duplicates":False, "replacement_strategy":"sample", "drift": True}),
+            gpgomea_experiment({"csv_name":"SO_4_4_16384_nthg", "depth": 4, "dir": directory, "batch_size": 256, "ff": "mse", "seed": i, "coeff_p": 1., "MO_mode": False, "popsize":16384, "n_clusters": 1, "max_coeffs": 0, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset_nthg, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False, "discount_size":False,"balanced":False,"log_pop":log_pop,"nr_objs": nr_objs, "remove_duplicates":False, "replacement_strategy":"sample"}),
+
+
         ]:
 
             experiments.append(exp)
 
-p = Pool(n_processes)
-p.map(run, experiments)
+# p = Pool(n_processes)
+# p.map(run, experiments)
+#experiments = []
 
 
 datasets = ["dowchemical","tower", "air", "concrete", "bike", "synthetic_1", "synthetic_2", "synthetic_3", "synthetic_4", "synthetic_5"]
@@ -187,9 +194,9 @@ for i in range(30):
 
         ff = "lsmse"
         max_coeffs = -1
-        # if "synthetic" in dataset:
-        #     ff = "mse"
-        #     max_coeffs = 0
+        if "synthetic" in dataset:
+            ff = "mse"
+            max_coeffs = 0
 
         for exp in [
             gpgomea_experiment({"csv_name":"SO_7_1", "depth": 7, "dir": directory, "batch_size": 256, "ff": ff, "seed": i, "coeff_p": 1., "MO_mode": False, "popsize":popsize, "n_clusters": 1, "max_coeffs": max_coeffs, "nr_multi_trees": 1,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False, "discount_size":False,"balanced":False,"log_pop":log_pop,"nr_objs": nr_objs, "remove_duplicates":False, "replacement_strategy":"sample"}),
@@ -213,8 +220,6 @@ for i in range(30):
             gpgomea_experiment({"csv_name":"SO_5_5", "depth": 5, "dir": directory, "batch_size": 256, "ff": ff, "seed": i, "coeff_p": 1., "MO_mode": False, "popsize":popsize, "n_clusters": 1, "max_coeffs": max_coeffs, "nr_multi_trees": 5,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False, "discount_size":False,"balanced":False,"log_pop":log_pop,"nr_objs": nr_objs, "remove_duplicates":False, "replacement_strategy":"sample"}),
             gpgomea_experiment({"csv_name":"SO_4_5", "depth": 4, "dir": directory, "batch_size": 256, "ff": ff, "seed": i, "coeff_p": 1., "MO_mode": False, "popsize":popsize, "n_clusters": 1, "max_coeffs": max_coeffs, "nr_multi_trees": 5,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False, "discount_size":False,"balanced":False,"log_pop":log_pop,"nr_objs": nr_objs, "remove_duplicates":False, "replacement_strategy":"sample"}),
             gpgomea_experiment({"csv_name":"SO_3_5", "depth": 3, "dir": directory, "batch_size": 256, "ff": ff, "seed": i, "coeff_p": 1., "MO_mode": False, "popsize":popsize, "n_clusters": 1, "max_coeffs": max_coeffs, "nr_multi_trees": 5,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False, "discount_size":False,"balanced":False,"log_pop":log_pop,"nr_objs": nr_objs, "remove_duplicates":False, "replacement_strategy":"sample"}),
-
-            gpgomea_experiment({"csv_name":"SO_4_4_drift", "depth": 4, "dir": directory, "batch_size": 256, "ff": ff, "seed": i, "coeff_p": 1., "MO_mode": False, "popsize":popsize, "n_clusters": 1, "max_coeffs": max_coeffs, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset, "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False, "discount_size":False,"balanced":False,"log_pop":log_pop,"nr_objs": nr_objs, "remove_duplicates":False, "replacement_strategy":"sample", "drift": True}),
 
 
             # # Why clustering is necessary

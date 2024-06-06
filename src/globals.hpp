@@ -306,7 +306,7 @@ namespace g {
     parser.set_optional<int>("nr_multi_trees", "nr_multi_trees", 2, "Nr of multi trees in individual");
     // problem & representation
     parser.set_optional<string>("ff", "fitness_function", "lsmse", "Fitness function");
-    parser.set_optional<string>("fset", "function_set", "+,-,*,/,sin,cos,log,nthg", "Function set");
+    parser.set_optional<string>("fset", "function_set", "+,-,*,/,sin,cos,log", "Function set");
     parser.set_optional<string>("tset", "terminal_set", "auto", "Terminal set");
     parser.set_optional<string>("train", "training_set", "./train.csv", "Path to the training set (needed only if calling as CLI)");
     parser.set_optional<string>("val", "validation_set", "./val.csv", "Path to the validation set (needed only if calling as CLI)");
