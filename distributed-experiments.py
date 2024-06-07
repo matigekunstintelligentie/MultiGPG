@@ -252,11 +252,8 @@ for i in range(30):
 
             experiments.append(exp)
 
-print(n_processes)
-print(len(experiments))
-
-# p = Pool(n_processes)
-# p.map(run, experiments)
+p = Pool(n_processes)
+p.map(run, experiments)
 
 
 
