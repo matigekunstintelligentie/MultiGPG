@@ -14,11 +14,11 @@ using namespace myeig;
 struct Test {
 
   void run_all(){
-      complexity_kommenda();
+      //complexity_kommenda();
       //funcs();
     // num_nodes();
 // ============================================================================
-     height();
+     //height();
     // subtree();
 //    is_intron();
 //     gen_tree();
@@ -214,6 +214,8 @@ struct Test {
 
         print(ind2->get_complexity_kommenda());
         assert(abs(ind2->get_complexity_kommenda()-17.)<1e-6);
+
+        ind2->clear();
     }
 
   void num_nodes(){
@@ -263,6 +265,8 @@ struct Test {
         print(ind->human_repr(true));
         print(ind->get_height());
         assert(ind->get_height()==4);
+
+        ind->clear();
     }
 
   void subtree(){

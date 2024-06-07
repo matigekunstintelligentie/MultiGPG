@@ -852,8 +852,11 @@ struct Evolution {
                 g::fit_func->get_fitness_SO(cr_offspring);
             }
 
-            g::ea->updateSOArchive(cr_offspring);
-            g::ea->updateMOArchive(cr_offspring);
+            // discard backup
+            for(Op * op : backup_ops) {
+                delete op;
+            }
+
 
             // add to off pop
             offspring_population.push_back(cr_offspring);
@@ -1032,7 +1035,7 @@ struct Evolution {
 
       population = offspring_population;
 
-      // This should be needed
+      // This should not be needed
       population.erase(std::remove_if(population.begin(), population.end(), [](Individual *ind){return ind== nullptr;}), population.end());
 
 

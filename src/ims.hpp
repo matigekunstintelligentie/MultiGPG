@@ -104,6 +104,13 @@ struct IMS {
           generations_without_improvement++;
       }
 
+    if (generations_without_improvement != 0){
+
+        if(generations_without_improvement % 5 == 0) {
+            g::cmut_temp *= 0.1;
+        }
+    }
+
       // update macro gen
       macro_generations += 1;
 

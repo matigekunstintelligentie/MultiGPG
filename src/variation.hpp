@@ -440,12 +440,15 @@ Individual * coeff_mut_ind(Individual * parent, bool return_copy=true, vector<in
                 float mutated_c = prev_c + Rng::randn()*std;
                 ((Const*)n->op)->c = mutated_c;
                 if (changed_indices != NULL) {
-                    changed_indices->push_back(i);
-                    backup_ops->push_back(new Const(prev_c));
+
                     if (find(changed_indices->begin(), changed_indices->end(), i) == changed_indices->end()) {
                         changed_indices->push_back(i);
                         backup_ops->push_back(new Const(prev_c));
-                    };
+                    }else{
+                        int idx = find(changed_indices->begin(), changed_indices->end(), i) - changed_indices->begin();
+                        delete backup_ops->at(idx);
+                        backup_ops->at(idx) = new Const(prev_c);
+                    }
                 }
             }
         }
@@ -709,6 +712,7 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & do
             backup_ops.push_back(replaced_op);
             effectively_changed_indices.push_back(idx);
         }
+
         // check if at least one change was meaningful
         for(int i : effectively_changed_indices) {
             Node * n = offspring_nodes[i];
@@ -772,6 +776,57 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & do
         // discard backup
         for(Op * op : backup_ops) {
             delete op;
+        }
+
+        if(g::cmut_prob>0.){
+            effectively_changed_indices.clear();
+            backup_ops.clear();
+
+            // apply coeff mut
+            coeff_mut(offspring, false, &effectively_changed_indices, &backup_ops);
+
+            // check if at least one change was meaningful
+            for(int i : effectively_changed_indices) {
+                Node * n = offspring_nodes[i];
+                if (!parent->is_intron(n)) {
+                    change_is_meaningful = true;
+                    break;
+                }
+            }
+
+            // assume nothing changed
+            if (change_is_meaningful) {
+                // gotta recompute
+                g::fit_func->get_fitness_MO(parent);
+            }
+
+            // check is not worse
+            // Only checking mse because coeffmut cannot alter the number of nodes
+            if (parent->fitness[0] > backup_fitness[0]) {
+                    // undo
+                    for(int i = 0; i < effectively_changed_indices.size(); i++) {
+                        int changed_idx = effectively_changed_indices[i];
+                        Node *off_n = offspring_nodes[changed_idx];
+                        Op *back_op = backup_ops[i];
+                        delete off_n->op;
+                        off_n->op = back_op->clone();
+
+                    }
+                    parent->trees[mt] = offspring;
+                    parent->fitness = backup_fitness;
+            }else{
+                // it improved
+                ever_improved = true;
+                changed = true;
+                backup_fitness = parent->fitness;
+                g::ea->updateSOArchive(parent);
+                g::ea->updateMOArchive(parent);
+            }
+
+            // discard backup ops
+            for(Op * op : backup_ops) {
+                delete op;
+            }
         }
 
     }
