@@ -56,12 +56,12 @@ struct Individual {
       return all_nodes;
   }
 
-  vector<Node*> subtree(bool check_introns){
-      return  trees[trees.size()-1]->subtree(this->trees, check_introns);
+  vector<Node*> subtree(bool check_introns, bool add_ofa=false){
+      return  trees[trees.size()-1]->subtree(this->trees, check_introns, add_ofa);
   }
 
   bool is_intron(Node * node){
-      for(Node * n: this->subtree(false)){
+      for(Node * n: this->subtree(false, true)){
           if(n == node){
               return false;
           }
