@@ -553,6 +553,7 @@ check_changes_MO(Individual *offspring, bool FI, vector<float> back_obj){
 }
 
 Individual * efficient_gom_MO_FI(Individual * og_parent, vector<pair<vector<int>, int>> & fos, int objective, bool extrema) {
+    print("FI");
     Individual * parent = og_parent->clone();
 
     auto random_fos_order = Rng::rand_perm(fos.size());

@@ -14,6 +14,7 @@ using namespace myeig;
 struct Test {
 
   void run_all(){
+      indepth_intron_checking();
       //complexity_kommenda();
       //funcs();
     // num_nodes();
@@ -29,7 +30,32 @@ struct Test {
 //     math();
 // ============================================================================
   }
+void indepth_intron_checking(){
+      Individual * ind = new Individual();
+      Node * func1 = new Node(new FunctionTree(0));
+      Node * const1 = new Node(new Const(1.));
+      Node * const2 = new Node(new Const(2.));
 
+      func1->append(const1);
+      func1->append(const2);
+
+      Node * func0 = new Node(new Add());
+      Node * any0 = new Node(new AnyOp(0));
+      Node * const3 = new Node(new Const(3.));
+
+      func0->append(any0);
+      func0->append(const3);
+
+      ind->trees.push_back(func0);
+      ind->trees.push_back(func1);
+
+      assert(ind->is_intron(func1)==false);
+      assert(ind->is_intron(const1)==false);
+      assert(ind->is_intron(const2)==true);
+      assert(ind->is_intron(func0)==false);
+      assert(ind->is_intron(any0)==false);
+      assert(ind->is_intron(const3)==false);
+  }
 
 //    Individual * joe = new Individual();
 //    Node * sin = new Node(new Sin());

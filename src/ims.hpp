@@ -89,6 +89,7 @@ struct IMS {
       // perform generation
 
 
+
       if(g::use_GP){
           evolution->ga_generation(macro_generations);
       }
@@ -115,6 +116,41 @@ struct IMS {
       macro_generations += 1;
 
 
+        if (true) {
+            print(macro_generations);
+            vector<vector<float>> fitness_per_tree;
+            fitness_per_tree.resize(g::nr_multi_trees);  // Ensure the outer vector has 4 initialized inner vectors
+
+            string str = "";
+            for (int tree_number = 0; tree_number < g::nr_multi_trees; tree_number++) {
+
+
+                for (auto ind : evolution->population) {
+
+
+                    print(macro_generations, " " ,tree_number, " ", ind->trees[tree_number]->human_repr(ind->trees,true));
+
+                    Vec output = ind->trees[tree_number]->get_output(g::fit_func->X_train, ind->trees);
+                    float fitness = (g::fit_func->y_train - output).square().mean();
+                    fitness_per_tree[tree_number].push_back(fitness);  // Now it is safe to push_back
+                    str += to_string(fitness) + ",";
+                }
+                str.pop_back();
+                if (tree_number < g::nr_multi_trees - 1) {
+                    str += "\t";
+                } else {
+                    str += "\n";
+                }
+
+
+
+
+            }
+            ofstream csv_file;
+            csv_file.open("../drift.csv", ios::app);
+            csv_file << str;
+            csv_file.close();
+        }
 
       if(g::log){
 
