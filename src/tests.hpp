@@ -15,6 +15,8 @@ struct Test {
 
   void run_all(){
       indepth_intron_checking();
+      mutation();
+      crossover();
       //complexity_kommenda();
       //funcs();
     // num_nodes();
@@ -30,6 +32,31 @@ struct Test {
 //     math();
 // ============================================================================
   }
+
+  void mutation(){
+      vector<int> effectively_changed_indices;
+      effectively_changed_indices.reserve(pow(g::max_depth + 1,2)-1 * g::nr_multi_trees);
+
+      vector<Op*> backup_ops;
+      backup_ops.reserve(pow(g::max_depth + 1,2)-1 * g::nr_multi_trees);
+
+      Individual * ind1 = generate_individuals(3, "hh", 2);
+
+
+      string bf = ind1->human_repr(true);
+      mutate(ind1, true, &effectively_changed_indices, &backup_ops);
+      string af = ind1->human_repr(true);
+
+
+      assert(bf!=af);
+
+  }
+
+  void crossover(){
+      Individual * ind1 = generate_individuals(3, "hh", 2);
+      Individual * ind2 = generate_individuals(3, "hh", 2);
+  }
+
 void indepth_intron_checking(){
       Individual * ind = new Individual();
       Node * func1 = new Node(new FunctionTree(0));

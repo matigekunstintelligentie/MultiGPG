@@ -23,6 +23,7 @@ Op * _sample_operator(vector<Op *> & operators, Vec & cumul_probs) {
     int j = 0;
     for(int i = 0; i<operators.size();i++){
         if(r <= (double) cumul_probs[i]){
+
             return operators[j]->clone();
             break;
         }
@@ -373,7 +374,6 @@ void mutate(Individual * parent, bool force_mutation, vector<int> * changed_indi
 
     auto nodes = parent->all_nodes();
 
-
     bool effectively_changed = false;
     while(!effectively_changed) {
         // sample a crossover mask
@@ -396,13 +396,14 @@ void mutate(Individual * parent, bool force_mutation, vector<int> * changed_indi
             delete nodes[i]->op;
             if (nodes[i]->children.size() > 0) {
                 if (Rng::randu() < 0.25) {
-                    nodes[i]->op = _sample_terminal(i / (nodes.size() / g::nr_multi_trees), parent->trees);
+                    nodes[i]->op = _sample_terminal(int(i / (nodes.size() / g::nr_multi_trees)), parent->trees);
                 } else {
-                    nodes[i]->op = _sample_function(i / (nodes.size() / g::nr_multi_trees), parent->trees);
+                    nodes[i]->op = _sample_function(int(i / (nodes.size() / g::nr_multi_trees)), parent->trees);
                 }
             } else {
-                nodes[i]->op = _sample_terminal(i / (nodes.size() / g::nr_multi_trees), parent->trees);
+                nodes[i]->op = _sample_terminal(int(i / (nodes.size() / g::nr_multi_trees)), parent->trees);
             }
+
             if(!is_intron && orig_op!=nodes[i]->op->sym() && force_mutation){
                 effectively_changed = true;
                 break;

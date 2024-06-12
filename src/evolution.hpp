@@ -72,25 +72,6 @@ struct Evolution {
     population.reserve(pop_size);
     int init_attempts = 0;
 
-    if(g::use_adf) {
-        int size_terminals = g::terminals.size();
-
-        for(int i =0;i<int(1);i++) {
-            g::terminals.push_back(new AnyOp(0));
-            g::terminals.push_back(new AnyOp(1));
-        }
-    }
-
-
-    for(int i = 0; i<g::nr_multi_trees - 1;i++){
-        if(g::use_adf) {
-            g::functions.push_back(new FunctionTree(i));
-        }
-        if(g::use_aro){
-            g::terminals.push_back(new OutputTree(i));
-        }
-    }
-
     while (population.size() < pop_size) {
       auto * individual = generate_individuals(g::max_depth, g::init_strategy, g::nr_multi_trees);
 
@@ -821,18 +802,17 @@ struct Evolution {
         vector<Individual*> offspring_population;
         offspring_population.reserve(pop_size);
 
-
-
         for(int i = 0; i < pop_size; i++) {
             vector<int> effectively_changed_indices;
-            effectively_changed_indices.reserve(pow(g::max_depth + 1,2)-1 * g::nr_multi_trees);
+
+            effectively_changed_indices.reserve((pow(2, g::max_depth + 1)-1) * g::nr_multi_trees);
 
             vector<Op*> backup_ops;
-            backup_ops.reserve(pow(g::max_depth + 1,2)-1 * g::nr_multi_trees);
+            backup_ops.reserve((pow(2, g::max_depth + 1)-1) * g::nr_multi_trees);
 
             auto * cr_offspring = crossover(population[i], population[Rng::randu()*population.size()], &effectively_changed_indices, &backup_ops);
-            mutate(cr_offspring, false, &effectively_changed_indices, &backup_ops);
 
+            mutate(cr_offspring, false, &effectively_changed_indices, &backup_ops);
 
             cr_offspring = coeff_mut_ind(cr_offspring, false, &effectively_changed_indices, &backup_ops);
 
@@ -850,6 +830,9 @@ struct Evolution {
                 // compute fitness
                 g::fit_func->get_fitness_MO(cr_offspring);
                 g::fit_func->get_fitness_SO(cr_offspring);
+
+                g::ea->updateSOArchive(cr_offspring);
+                g::ea->updateMOArchive(cr_offspring);
             }
 
             // discard backup
@@ -857,17 +840,17 @@ struct Evolution {
                 delete op;
             }
 
-
             // add to off pop
             offspring_population.push_back(cr_offspring);
         }
 
 
-        // popwise tournament selection on offspring + original population
-        offspring_population.insert(offspring_population.end(), population.begin(), population.end());
+
+        // popwise tournament selection on offspring
         auto selection = popwise_tournament(offspring_population, pop_size, g::tournament_size, false);
 
         // clean up
+        clear_population(population);
         clear_population(offspring_population);
         population = selection;
     }
