@@ -90,7 +90,7 @@ struct IMS {
 
 
 
-      if(g::use_GP){
+      if(g::use_GA){
           evolution->ga_generation(macro_generations);
       }
       else{
