@@ -30,6 +30,7 @@ struct IMS {
   vector<string> best_strings;
   vector<string> MO_archive_strings;
   vector<int> consecutive_non_improvements;
+  vector<float> evals;
 
 
   Evolution* evolution;
@@ -211,6 +212,7 @@ struct IMS {
           best_sizes_discount.push_back(best_size_discount);
           times.push_back(tock(start_time));
           MO_archive_strings.push_back(MO_archive_string);
+          evals.push_back(g::fit_func->evaluations);
       }
       else{
           float best_train_mse = 9999999.;
@@ -321,6 +323,15 @@ struct IMS {
           str += to_string(times[i]) + ",";
       }
       str += to_string(times[times.size()-1]);
+      csv_file << str;
+
+      // 17 evals
+      str = "";
+      for(int i=0;i<evals.size()-1;i++){
+          str += to_string(evals[i]) + ",";
+      }
+      str += to_string(evals[evals.size()-1]);
+
       csv_file << str + "\n";
 
       csv_file.close();

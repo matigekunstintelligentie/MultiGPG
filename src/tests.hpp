@@ -14,9 +14,9 @@ using namespace myeig;
 struct Test {
 
   void run_all(){
-      indepth_intron_checking();
-      mutation();
-      crossover();
+//      indepth_intron_checking();
+//      mutation();
+//      crossover();
       //complexity_kommenda();
       //funcs();
     // num_nodes();
