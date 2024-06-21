@@ -323,7 +323,7 @@ struct IMS {
           str += to_string(times[i]) + ",";
       }
       str += to_string(times[times.size()-1]);
-      csv_file << str;
+      csv_file << str + "\t";
 
       // 17 evals
       str = "";
