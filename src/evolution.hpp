@@ -847,7 +847,7 @@ struct Evolution {
 
 
         // popwise tournament selection on offspring
-        auto selection = popwise_tournament(offspring_population, pop_size, g::tournament_size, false);
+        auto selection = popwise_tournament(offspring_population, pop_size, g::tournament_size, true);
 
         // clean up
         clear_population(population);
@@ -886,7 +886,7 @@ struct Evolution {
 
         // popwise tournament selection on offspring
         offspring_population.insert(offspring_population.end(), population.begin(), population.end());
-        auto selection = popwise_tournament(offspring_population, pop_size, g::tournament_size, false);
+        auto selection = popwise_tournament(offspring_population, pop_size, g::tournament_size, true);
 
         // clean up
         //clear_population(population);
