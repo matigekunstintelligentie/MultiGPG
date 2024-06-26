@@ -45,6 +45,7 @@ namespace g {
   bool use_aro = false;
 
   bool use_GA = false;
+  bool use_GP = false;
   bool drift = false;
 
   int n_clusters = 7;
@@ -348,6 +349,7 @@ namespace g {
     parser.set_optional<bool>("use_adf", "use_adf", false, "Whether Automatically Defined Functions are used");
     parser.set_optional<bool>("use_aro", "use_aro", false, "Whether Automatically Re-used outputs are used");
     parser.set_optional<bool>("use_GA", "use_GA", false, "Whether GA or GOMEA is used");
+    parser.set_optional<bool>("use_GP", "use_GP", false, "Whether GP or GOMEA is used");
 
 
     parser.set_optional<bool>("drift", "drift", false, "Whether intron changes are kept.");
@@ -482,6 +484,7 @@ namespace g {
     use_adf = parser.get<bool>("use_adf");
     use_aro = parser.get<bool>("use_aro");
     use_GA = parser.get<bool>("use_GA");
+    use_GP = parser.get<bool>("use_GP");
     drift = parser.get<bool>("drift");
 
     discount_size = parser.get<bool>("discount_size");
@@ -563,7 +566,8 @@ namespace g {
       + " nr multi trees " + std::to_string(nr_multi_trees)
       + " MO mode " + std::to_string(MO_mode)
       + " n clusters " + std::to_string(n_clusters)
-      + "GA mode " + std::to_string(use_GA)
+      + " GA mode " + std::to_string(use_GA)
+      + " GP mode " + std::to_string(use_GP)
       + "drift " + std::to_string(drift)
       + " use aro " + std::to_string(use_aro)
       + " use adf " + std::to_string(use_adf)

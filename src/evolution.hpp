@@ -855,6 +855,45 @@ struct Evolution {
         population = selection;
     }
 
+    void gp_generation(int macro_generation) {
+        vector<Individual*> offspring_population;
+        offspring_population.reserve(pop_size);
+
+        for(int i = 0; i < pop_size; i++) {
+
+
+            // Swaps the entire tree of an individual with that of a donor with a probability of 0.5
+            Individual * cr_offspring = uniform_crossover(population[i], population[Rng::randu()*g::pop_size]);
+
+            // Randomly samples a crossover point for each tree and swaps it with a random donor tree that is equal in size or smaller
+            cr_offspring = gp_crossover(cr_offspring, population);
+
+            mutate(cr_offspring, false);
+
+            cr_offspring = coeff_mut_ind(cr_offspring, false);
+
+            g::fit_func->get_fitness_MO(cr_offspring);
+            g::fit_func->get_fitness_SO(cr_offspring);
+
+            g::ea->updateSOArchive(cr_offspring);
+            g::ea->updateMOArchive(cr_offspring);
+
+            // add to off pop
+            offspring_population.push_back(cr_offspring);
+        }
+
+
+
+        // popwise tournament selection on offspring
+        offspring_population.insert(offspring_population.end(), population.begin(), population.end());
+        auto selection = popwise_tournament(offspring_population, pop_size, g::tournament_size, false);
+
+        // clean up
+        //clear_population(population);
+        clear_population(offspring_population);
+        population = selection;
+    }
+
   void gomea_generation_MO(int macro_generation){
       if(g::remove_duplicates){
           prune_duplicates();

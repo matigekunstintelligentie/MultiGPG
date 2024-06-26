@@ -44,6 +44,16 @@ struct Node {
     return new_node;
   }
 
+    int depth() {
+        int depth = 0;
+        auto * curr = this;
+        while(curr->parent) {
+            depth++;
+            curr = curr->parent;
+        }
+        return depth;
+    }
+
   void append(Node * c) {
     this->children.push_back(c);
     c->parent = this;

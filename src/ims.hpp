@@ -94,6 +94,9 @@ struct IMS {
       if(g::use_GA){
           evolution->ga_generation(macro_generations);
       }
+      else if(g::use_GP){
+          evolution->gp_generation(macro_generations);
+      }
       else{
           evolution->gomea_generation_MO(macro_generations);
       };

@@ -370,6 +370,58 @@ Individual * crossover(Individual * parent, Individual * donor, vector<int> * ch
     return offspring;
 }
 
+Individual * uniform_crossover(Individual * parent, Individual * donor, vector<int> * changed_indices = NULL, vector<Op*> * backup_ops = NULL) {
+    Individual * offspring = parent->clone();
+
+    for(int i =0;i<offspring->trees.size();i++){
+        if(Rng::randu() < 0.5){
+            offspring->trees[i]->clear();
+            offspring->trees[i] = donor->trees[i]->clone();
+        }
+    }
+
+    return offspring;
+}
+
+Individual * gp_crossover(Individual * parent, vector<Individual *> & donor_pop){
+    for(int j=0;j<parent->trees.size();j++){
+        auto nodes = parent->trees[j]->subtree();
+        //nodes.erase(std::remove_if(nodes.begin(), nodes.end(), [](Node* node) { return node->depth() == g::max_depth; }), nodes.end());
+
+        Node * sampled_node = nodes[Rng::randi(nodes.size())];
+        int depth = sampled_node->depth();
+
+        Individual * donor = donor_pop[Rng::randu()*g::pop_size];
+        auto donor_nodes = donor->trees[j]->subtree();
+        //donor_nodes.erase(std::remove_if(donor_nodes.begin(), donor_nodes.end(), [depth](Node* node) { return node->depth() < depth && node->depth() ==g::max_depth; }), donor_nodes.end());
+
+        bool found = false;
+
+        while(!found){
+            Node * sampled_donor_node = donor_nodes[Rng::randi(donor_nodes.size())];
+            int donor_depth = sampled_donor_node->depth();
+
+            if(donor_depth>=depth){
+                found = true;
+                vector<Node*> sampled_nodes = sampled_node->subtree();
+
+
+                int max_depth = depth + (g::max_depth-donor_depth);
+
+                sampled_nodes.erase(std::remove_if(sampled_nodes.begin(), sampled_nodes.end(), [max_depth](Node* node) { return node->depth() > max_depth; }), sampled_nodes.end());
+
+                int idx = 0;
+                for(auto node: sampled_donor_node->subtree()){
+                    delete sampled_nodes[idx]->op;
+                    sampled_nodes[idx]->op = node->op->clone();
+                    idx ++;
+                }
+            }
+        }
+    }
+    return parent;
+}
+
 void mutate(Individual * parent, bool force_mutation, vector<int> * changed_indices = NULL, vector<Op*> * backup_ops = NULL, float prob_fun = 0.75) {
 
     auto nodes = parent->all_nodes();
