@@ -129,7 +129,7 @@ datasets = ["synthetic_1", "synthetic_2", "synthetic_3", "synthetic_4", "synthet
 n_processes = 30
 duration = 3600*6
 
-for i in range(30):
+for i in range(10):
     for dataset in datasets:
         contains_train = "_train" in dataset
 
@@ -171,7 +171,7 @@ datasets = ["dowchemical","tower", "air", "concrete", "bike", "synthetic_1", "sy
 duration = 3600
 popsize = 8192
 
-for i in range(30):
+for i in range(10):
     for dataset in datasets:
         contains_train = "_train" in dataset
 
