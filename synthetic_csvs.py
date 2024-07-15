@@ -147,7 +147,7 @@ def generate_dataset_3(num_rows, primes):
 # Function to generate dataset: summation of 4 sqrt(abs(sin(2/pi +xi)))
 def generate_dataset_4(num_rows, primes):
     dataset = np.zeros((num_rows, 5))  # +1 for the target column
-    dataset[:,0:4] = np.random.randn(num_rows, 4)
+    dataset[:,0:4] = np.random.rand(num_rows, 4)
     for i in range(num_rows):
 
         stri = "np.sin(" + "np.cos(" + str(dataset[i, 0]) + " * " + str(dataset[i, 1]) + ")" + " + " + "np.cos(" + str(dataset[i, 2]) + " * " + str(dataset[i, 3]) + ")" + ") + "
@@ -165,7 +165,7 @@ def generate_dataset_4(num_rows, primes):
 # Function to generate dataset: summation of 4 sqrt(abs(sin(2/pi +xi)))
 def generate_dataset_5(num_rows, primes):
     dataset = np.zeros((num_rows, 4))  # +1 for the target column
-    r = np.random.randn(num_rows, 3)
+    r = np.random.rand(num_rows, 3)
     for i in range(num_rows):
         dataset[i, 0:3] = r[i,:]
         stri = "np.cos(" + str(dataset[i, 0]) + "* np.sin(" + str(dataset[i, 1]) + "+" + str(dataset[i, 2]) + ")) + "
