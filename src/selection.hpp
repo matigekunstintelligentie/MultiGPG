@@ -11,7 +11,7 @@ using namespace std;
 
 Individual * tournament(vector<Individual*> & candidates, int tournament_size) {
   auto rp = Rng::rand_perm(candidates.size());
-    Individual * winner = candidates[rp[0]];
+  Individual * winner = candidates[rp[0]];
   for(int i = 1; i < tournament_size; i++) {
     if (candidates[rp[i]]->fitness[0] <= winner->fitness[0])
       winner = candidates[rp[i]];
@@ -20,14 +20,18 @@ Individual * tournament(vector<Individual*> & candidates, int tournament_size) {
 }
 
 vector<Individual*> popwise_tournament(vector<Individual*> & population, int selection_size, int tournament_size, bool stochastic=false) {
+
   int pop_size = population.size();
   vector<Individual*> selected; selected.reserve(selection_size);
+
 
   if (stochastic) {
     while(selected.size() < selection_size) {
       selected.push_back(tournament(population, tournament_size));
     }
   }
+
+
 
   // else proceed with deterministic
 
@@ -52,6 +56,8 @@ vector<Individual*> popwise_tournament(vector<Individual*> & population, int sel
       selected.push_back(winner->clone());
     }
   }
+
+
   return selected;
 }
 

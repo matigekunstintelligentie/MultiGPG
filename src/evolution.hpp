@@ -859,6 +859,8 @@ struct Evolution {
         vector<Individual*> offspring_population;
         offspring_population.reserve(pop_size);
 
+
+
         for(int i = 0; i < pop_size; i++) {
 
 
@@ -878,15 +880,17 @@ struct Evolution {
             g::ea->updateSOArchive(cr_offspring);
             g::ea->updateMOArchive(cr_offspring);
 
+
             // add to off pop
             offspring_population.push_back(cr_offspring);
         }
 
 
-
+        auto start_time = tick();
         // popwise tournament selection on offspring
         offspring_population.insert(offspring_population.end(), population.begin(), population.end());
-        auto selection = popwise_tournament(offspring_population, pop_size, g::tournament_size, true);
+        auto selection = popwise_tournament(offspring_population, pop_size, g::tournament_size, false);
+
 
         // clean up
         //clear_population(population);
