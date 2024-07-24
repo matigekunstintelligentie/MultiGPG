@@ -168,16 +168,16 @@ def generate_dataset_5(num_rows, primes):
     r = np.random.rand(num_rows, 3)
     for i in range(num_rows):
         dataset[i, 0:3] = r[i,:]
-        stri = "np.cos(" + str(dataset[i, 0]) + "* np.sin(" + str(dataset[i, 1]) + "+" + str(dataset[i, 2]) + ")) + "
-        stri += "np.cos(" + str(dataset[i, 0]) + "* np.sin(" + str(dataset[i, 2]) + "+" + str(dataset[i, 1]) + ")) + "
-        stri += "np.cos(" + str(dataset[i, 1]) + "* np.sin(" + str(dataset[i, 0]) + "+" + str(dataset[i, 2]) + ")) + "
-        stri += "np.cos(" + str(dataset[i, 1]) + "* np.sin(" + str(dataset[i, 2]) + "+" + str(dataset[i, 0]) + "))"
+        stri = "np.cos(" + str(dataset[i, 0]) + "* np.sin(" + str(dataset[i, 1]) + "/" + str(dataset[i, 2]) + ")) + "
+        stri += "np.cos(" + str(dataset[i, 0]) + "* np.sin(" + str(dataset[i, 2]) + "/" + str(dataset[i, 1]) + ")) + "
+        stri += "np.cos(" + str(dataset[i, 1]) + "* np.sin(" + str(dataset[i, 0]) + "/" + str(dataset[i, 2]) + ")) + "
+        stri += "np.cos(" + str(dataset[i, 1]) + "* np.sin(" + str(dataset[i, 2]) + "/" + str(dataset[i, 0]) + "))"
 
 
         # Target column calculation (example: sum of x variables)
         dataset[i, -1] = eval(stri)
 
-    func = lambda x: np.cos(x[:,0] * np.sin(x[:,1] + x[:,2])) + np.cos(x[:,0] * np.sin(x[:,2] + x[:,1])) + np.cos(x[:,1] * np.sin(x[:,0] + x[:,2])) + np.cos(x[:,1] * np.sin(x[:,2] + x[:,0]))
+    func = lambda x: np.cos(x[:,0] * np.sin(x[:,1] / x[:,2])) + np.cos(x[:,0] * np.sin(x[:,2] / x[:,1])) + np.cos(x[:,1] * np.sin(x[:,0] / x[:,2])) + np.cos(x[:,1] * np.sin(x[:,2] / x[:,0]))
 
     assert np.sum(func(dataset[:,:-1]) - dataset[:,-1])==0
 

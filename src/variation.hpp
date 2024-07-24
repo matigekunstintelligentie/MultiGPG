@@ -54,10 +54,19 @@ Op * _sample_function(int mt, vector<Node *> &trees) {
 Op * _sample_terminal(int mt, vector<Node *> &trees) {
     auto first = g::terminals.begin();
     auto last = g::terminals.end();
+
     if(g::use_aro){
         last = g::terminals.end()-(g::nr_multi_trees-mt-1);
     }
+    if(g::koza && mt!= (g::nr_multi_trees - 1)){
+        first = g::terminals.end()-2;
+    }
+
+
+
+
     vector<Op *> AB(first, last);
+
      
      Vec cumul_tset_probs(AB.size());
 

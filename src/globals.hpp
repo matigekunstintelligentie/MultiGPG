@@ -47,6 +47,7 @@ namespace g {
   bool use_GA = false;
   bool use_GP = false;
   bool drift = false;
+  bool koza = false;
 
   int n_clusters = 7;
   int nr_objs = 2;
@@ -350,6 +351,7 @@ namespace g {
     parser.set_optional<bool>("use_aro", "use_aro", false, "Whether Automatically Re-used outputs are used");
     parser.set_optional<bool>("use_GA", "use_GA", false, "Whether GA or GOMEA is used");
     parser.set_optional<bool>("use_GP", "use_GP", false, "Whether GP or GOMEA is used");
+    parser.set_optional<bool>("koza", "koza", false, "Whether Koza style HADFs are used.");
 
 
     parser.set_optional<bool>("drift", "drift", false, "Whether intron changes are kept.");
@@ -485,6 +487,7 @@ namespace g {
     use_aro = parser.get<bool>("use_aro");
     use_GA = parser.get<bool>("use_GA");
     use_GP = parser.get<bool>("use_GP");
+    koza = parser.get<bool>("koza");
     drift = parser.get<bool>("drift");
 
     discount_size = parser.get<bool>("discount_size");
@@ -568,6 +571,7 @@ namespace g {
       + " n clusters " + std::to_string(n_clusters)
       + " GA mode " + std::to_string(use_GA)
       + " GP mode " + std::to_string(use_GP)
+      + " Koza mode " + std::to_string(koza)
       + "drift " + std::to_string(drift)
       + " use aro " + std::to_string(use_aro)
       + " use adf " + std::to_string(use_adf)
