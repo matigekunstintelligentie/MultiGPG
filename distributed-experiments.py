@@ -124,14 +124,14 @@ arithmetic_fset = '+,-,*,/'
 sin_fset = "+,sin"
 
 
-result_dir = "./results/2hr2objs"
+result_dir = "./results/3hr2objslogpop"
 
 
 experiments = []
-datasets = ["synthetic_1", "synthetic_2", "synthetic_3", "synthetic_4", "synthetic_5", "air", "bike", "concrete", "dowchemical", "tower"]
+datasets = ["air", "bike", "concrete", "dowchemical", "tower"]
 
 n_processes = 30
-duration = 3600*2
+duration = 3600*3
 
 for i in range(10):
     for dataset in datasets:
@@ -188,9 +188,9 @@ for i in range(10):
 
 
 print("NR EXPERIMENTS", len(experiments))
-
+random.shuffle(experiments)
 p = Pool(n_processes)
-p.map(run, random.shuffle(experiments))
+p.map(run, experiments)
 
 
 
