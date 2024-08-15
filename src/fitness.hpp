@@ -169,7 +169,7 @@ struct MSEFitness : Fitness {
 
         n->fitness[1] = n->get_num_nodes(true, discount_size);
 
-        n->fitness[2] = n->get_height();
+        n->fitness[2] = n->get_complexity_kommenda();
                 //n->get_complexity_kommenda();
     }
 
@@ -242,7 +242,7 @@ struct LSMSEFitness : Fitness {
        if(change_fitness) {
         n->fitness[0] = fitness;
         n->fitness[1] = n->get_num_nodes(true, discount_size);
-        n->fitness[2] = n->get_height();
+        n->fitness[2] = n->get_complexity_kommenda();
                 //n->get_complexity_kommenda();
       }
 
