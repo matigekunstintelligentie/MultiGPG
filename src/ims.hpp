@@ -177,7 +177,7 @@ struct IMS {
 
               int size =  ind->get_num_nodes(true, false);
 
-              float k_complexity = ind->get_height();
+              float k_complexity = ind->get_complexity_kommenda();
 
 
               if (best_train_mse > train_mse) {
@@ -200,7 +200,7 @@ struct IMS {
               }
 
               string str_ind = "(" + to_string(ind->add) + "+(" + to_string(ind->mul) + "*"  + ind->human_repr(true) + ")" + ")";
-              MO_archive_string = MO_archive_string + "[" + to_string(train_mse) + "," + to_string(val_mse) + "," + to_string(ind->get_num_nodes(true)) + "," + to_string(ind->get_num_nodes(true, true)) + "," + to_string(ind->get_height()) + "," + str_ind + "]";
+              MO_archive_string = MO_archive_string + "[" + to_string(train_mse) + "," + to_string(val_mse) + "," + to_string(ind->get_num_nodes(true)) + "," + to_string(ind->get_num_nodes(true, true)) + "," + to_string(ind->get_complexity_kommenda()) + "," + str_ind + "]";
           }
           MO_archive_string += "}";
 
