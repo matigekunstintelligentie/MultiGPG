@@ -14,6 +14,7 @@ using namespace myeig;
 struct Test {
 
   void run_all(){
+      complexity();
 //      indepth_intron_checking();
 //      mutation();
 //      crossover();
@@ -31,6 +32,48 @@ struct Test {
 //     converge();
 //     math();
 // ============================================================================
+  }
+
+  void complexity(){
+      Individual * ind = new Individual();
+
+      Node * func1 = new Node(new FunctionTree(0));
+      Node * sin = new Node(new Sin());
+      Node * const1 = new Node(new Const(324.533));
+      sin->append(const1);
+
+      Node * div2 = new Node(new Div());
+      Node * feat2 = new Node(new Feat(2));
+      div2->append(func1);
+      div2->append(feat2);
+
+      Node * mul = new Node(new Mul());
+      mul->append(func1);
+      mul->append(div2);
+
+      Node * cos = new Node(new Cos());
+      cos->append(mul);
+
+      Node * div1 = new Node(new Div());
+
+      Node * ln = new Node(new Log);
+      Node * abs = new Node(new Abs);
+      Node * sqrt = new Node(new Sqrt);
+      Node * feat = new Node(new Feat(1));
+
+      sqrt->append(feat);
+      abs->append(sqrt);
+      ln->append(abs);
+
+      div1->append(ln);
+      div1->append(cos);
+
+
+      ind->trees.push_back(sin);
+      ind->trees.push_back(div1);
+      print("Complexity ", to_string(ind->get_complexity_kommenda()));
+      print(ind->human_repr());
+      assert(ind->get_complexity_kommenda()==10);
   }
 
   void mutation(){
