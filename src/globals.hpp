@@ -88,6 +88,7 @@ namespace g {
   bool equal_p_coeffs=false;
   int max_coeffs;
   bool discount_size=false;
+  bool  change_second_obj = false;
 
   bool remove_duplicates = false;
   string replacement_strategy;
@@ -356,6 +357,7 @@ namespace g {
 
     parser.set_optional<bool>("drift", "drift", false, "Whether intron changes are kept.");
     parser.set_optional<bool>("discount_size", "discount_size", false, "Whether the model size is discounted for re-use");
+    parser.set_optional<bool>("change_second_obj", "change_second_obj", false, "Whether the second obj is complexity or arbitrary complexity");
     parser.set_optional<bool>("balanced", "balanced", false, "Whether balanced k-leaders is used");
     parser.set_optional<bool>("k2", "k2", false, "Whether balanced k-2-leaders is used");
     parser.set_optional<bool>("accept_diversity", "accept_diversity", false, "Whether non-dominated, but equal objective solution are accepted into the MO-archive");
@@ -491,6 +493,7 @@ namespace g {
     drift = parser.get<bool>("drift");
 
     discount_size = parser.get<bool>("discount_size");
+    change_second_obj = parser.get<bool>("change_second_obj");
     balanced = parser.get<bool>("balanced");
     k2 = parser.get<bool>("k2");
     accept_diversity = parser.get<bool>("accept_diversity");
