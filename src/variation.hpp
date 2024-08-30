@@ -69,8 +69,6 @@ Op * _sample_terminal(int mt, vector<Node *> &trees) {
 
     vector<Op *> AB(first, last);
 
-    print("AB ", AB.size(), " mt ", mt);
-
      Vec cumul_tset_probs(AB.size());
 
      cumul_tset_probs[0] = 1./float(AB.size());

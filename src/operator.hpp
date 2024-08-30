@@ -129,7 +129,7 @@ struct Add : Fun {
   }
 
     float complexity_kommenda(vector<float> child_complexities) override {
-        return child_complexities[0] + child_complexities[1] + 1;
+        return child_complexities[0] + child_complexities[1] + 90;
     }
 
   string sym() override {
@@ -208,7 +208,7 @@ struct Sub : Fun {
   }
 
     float complexity_kommenda(vector<float> child_complexities) override {
-        return child_complexities[0] + child_complexities[1] + 2;
+        return child_complexities[0] + child_complexities[1] + 80;
     }
 
   string sym() override {
@@ -247,7 +247,7 @@ struct Mul : Fun {
   }
 
     float complexity_kommenda(vector<float> child_complexities) override {
-        return child_complexities[0] + child_complexities[1] + 3.;
+        return child_complexities[0] + child_complexities[1] + 70;
     }
 
   string sym() override {
@@ -335,7 +335,7 @@ struct Div : Fun {
   }
 
     float complexity_kommenda(vector<float> child_complexities) override {
-        return child_complexities[0] + child_complexities[1] + 4.;
+        return child_complexities[0] + child_complexities[1] + 60;
     }
 
   Vec apply(const Mat & X) override {
@@ -416,7 +416,7 @@ struct Abs : Fun {
 
 
     float complexity_kommenda(vector<float> child_complexities) override {
-        return child_complexities[0] + 9.;
+        return child_complexities[0] + 1.;
     }
 
   string sym() override {
@@ -626,7 +626,7 @@ struct Cos : Fun {
   }
 
     float complexity_kommenda(vector<float> child_complexities) override {
-        return child_complexities[0] + 6.;
+        return child_complexities[0] + 4.;
     }
 
   string sym() override {
@@ -666,7 +666,7 @@ struct Log : Fun {
   }
 
     float complexity_kommenda(vector<float> child_complexities) override {
-        return child_complexities[0] + 7.;
+        return child_complexities[0] + 3.;
     }
 
   string sym() override {
@@ -709,7 +709,7 @@ struct Sqrt : Fun {
   }
 
     float complexity_kommenda(vector<float> child_complexities) override {
-        return child_complexities[0] + 8.;
+        return child_complexities[0] + 2.;
     }
 
   string sym() override {
