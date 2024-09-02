@@ -119,7 +119,7 @@ Node * generate_tree(int max_depth, int mt, vector<Node *> &trees, string init_t
     
     bool is_full = Rng::randu() < .5;
 
-    if (is_full) {
+    if (g::full_mode || is_full) {
         tree = _grow_tree_recursive(max_arity, max_depth, actual_depth, -1, mt, trees, 0.0);
     }
     else{

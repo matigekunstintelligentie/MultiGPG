@@ -166,11 +166,17 @@ struct MSEFitness : Fitness {
     if (isnan(fitness) || fitness < 0) // the latter can happen due to float overflow
         fitness = INF;
 
+    float max_error = (y-out).maxCoeff();
+
+    if (isnan(max_error) || max_error<0){
+        max_error = INF;
+    }
+
     if(change_fitness) {
         n->fitness[0] = fitness;
 
         if(change_second_obj){
-            n->fitness[1] = n->get_complexity_kommenda();
+            n->fitness[1] = max_error;
         }
         else{
             n->fitness[1] = n->get_num_nodes(true, discount_size);
