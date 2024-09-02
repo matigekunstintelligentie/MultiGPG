@@ -41,6 +41,8 @@ namespace g {
   int max_non_improve;
 
   bool MO_mode = false;
+  bool full_mode = false;
+
   bool use_adf = false;
   bool use_aro = false;
 
@@ -354,7 +356,7 @@ namespace g {
     parser.set_optional<bool>("use_GP", "use_GP", false, "Whether GP or GOMEA is used");
     parser.set_optional<bool>("koza", "koza", false, "Whether Koza style HADFs are used.");
 
-
+    parser.set_optional<bool>("full_mode", "full_mode", false, "Whether all trees are initialized full.");
     parser.set_optional<bool>("drift", "drift", false, "Whether intron changes are kept.");
     parser.set_optional<bool>("discount_size", "discount_size", false, "Whether the model size is discounted for re-use");
     parser.set_optional<bool>("change_second_obj", "change_second_obj", false, "Whether the second obj is complexity or arbitrary complexity");
