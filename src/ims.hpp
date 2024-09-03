@@ -42,12 +42,13 @@ struct IMS {
   }
 
   void run() {
-    evolution = new Evolution(g::pop_size);
-
     g::fit_func->discount_size = g::discount_size;
     g::fit_func->change_second_obj = g::change_second_obj;
     g::mse_func->discount_size = g::discount_size;
     g::mse_func->change_second_obj = g::change_second_obj;
+    evolution = new Evolution(g::pop_size);
+
+
 
     auto start_time = tick();
     
