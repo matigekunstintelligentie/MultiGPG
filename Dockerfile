@@ -3,10 +3,10 @@ FROM continuumio/miniconda3:latest AS build
 COPY . /pkg
 
 RUN apt-get update --fix-missing \
-  && apt-get install
-RUN conda config --set verbosity 3
-RUN conda config --set ssl_verify false
-RUN conda update --all
+  && apt-get install \
+  && conda config --set verbosity 3 \
+  && conda config --set ssl_verify false \
+  && conda update --all
 RUN conda env create -f /pkg/environment.yml -p /env --solver libmamba -v
 RUN cd pkg && make main-build
 RUN conda clean -afy

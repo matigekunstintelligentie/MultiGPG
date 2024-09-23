@@ -1,6 +1,7 @@
 name: gpg
 channels:
   - conda-forge
+  - nodefaults
 dependencies:
   - make
   - cmake=3
