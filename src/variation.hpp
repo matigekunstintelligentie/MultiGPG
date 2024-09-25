@@ -579,7 +579,7 @@ pair<bool, bool>
 check_changes_MO(Individual *offspring, bool FI, vector<float> back_obj){
     bool dominates = false;
 
-    for (size_t j = 0; j < offspring->fitness.size(); j++) {
+    for (size_t j = 0; j < g::nr_objs; j++) {
         if (offspring->fitness[j] < back_obj[j])
             dominates = true;
         else if (offspring->fitness[j] > back_obj[j]) {
@@ -593,7 +593,7 @@ check_changes_MO(Individual *offspring, bool FI, vector<float> back_obj){
 
     if(!FI) {
         bool same = true;
-        for (size_t j = 0; j < offspring->fitness.size(); j++) {
+        for (size_t j = 0; j < g::nr_objs; j++) {
             if (offspring->fitness[j] != back_obj[j]) {
                 same = false;
                 break;
@@ -616,7 +616,6 @@ check_changes_MO(Individual *offspring, bool FI, vector<float> back_obj){
 }
 
 Individual * efficient_gom_MO_FI(Individual * og_parent, vector<pair<vector<int>, int>> & fos, int objective, bool extrema) {
-    print("FI");
     Individual * parent = og_parent->clone();
 
     auto random_fos_order = Rng::rand_perm(fos.size());

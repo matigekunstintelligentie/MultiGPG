@@ -46,7 +46,7 @@ struct ElitistArchive{
     bool nondominated(Individual* ind){
         bool solution_is_dominated = false;
         bool identical_objectives_already_exist;
-        bool diversity_added = false;
+        //bool diversity_added = false;
 
         if (MO_archive.empty()) {
             return true;
@@ -65,14 +65,14 @@ struct ElitistArchive{
                     break;
                 }
             }
-            if (identical_objectives_already_exist) {
-                if (diversityAdded(ind, i)) {
-                    diversity_added = true;
-                }
-                break;
-            }
+            // if (identical_objectives_already_exist) {
+            //     if (diversityAdded(ind, i)) {
+            //         diversity_added = true;
+            //     }
+            //     break;
+            // }
         }
-        return (!solution_is_dominated && !identical_objectives_already_exist) || (diversity_added);
+        return (!solution_is_dominated && !identical_objectives_already_exist);
     }
 
     bool dominates(Individual * ind1, Individual * ind2){
@@ -88,15 +88,15 @@ struct ElitistArchive{
         return strictly_better_somewhere;
     }
 
-    bool diversityAdded(Individual* individual, int idx){
-        Vec diff = individual->get_output(X_train) - MO_archive[idx]->get_output(X_train);
-        if(diff.mean()==0){
-            return false;
-        }
-        else{
-            return true;
-        }
-    }
+    // bool diversityAdded(Individual* individual, int idx){
+    //     Vec diff = individual->get_output(X_train) - MO_archive[idx]->get_output(X_train);
+    //     if(diff.mean()==0){
+    //         return false;
+    //     }
+    //     else{
+    //         return true;
+    //     }
+    // }
 
     void initSOArchive(vector<Individual*> population){
         SO_archive = vector<Individual*>(nr_objs, nullptr);
@@ -128,7 +128,7 @@ struct ElitistArchive{
 
     void updateMOArchive(Individual * individual){
         bool solution_is_dominated = false;
-        bool diversity_added = false;
+        //bool diversity_added = false;
         bool identical_objectives_already_exist = false;
 
         for(int i = 0; i<MO_archive.size(); i++){
@@ -165,14 +165,14 @@ struct ElitistArchive{
                 }
             }
 
-            if(identical_objectives_already_exist){
-                if(dominates(individual, MO_archive[i])){
-                    MO_archive[i]->clear();
-                    MO_archive[i] = nullptr;
-                    diversity_added = true;
-                }
-                break;
-            }
+            // if(identical_objectives_already_exist){
+            //     if(dominates(individual, MO_archive[i])){
+            //         MO_archive[i]->clear();
+            //         MO_archive[i] = nullptr;
+            //         diversity_added = true;
+            //     }
+            //     break;
+            // }
 
             if(dominates(individual, MO_archive[i])){
                 MO_archive[i]->clear();
@@ -184,7 +184,7 @@ struct ElitistArchive{
         MO_archive.erase(std::remove_if(MO_archive.begin(), MO_archive.end(), [](Individual *ind){return ind== nullptr;}), MO_archive.end());
 
         // !identical_objectives_already_exist means hypercube not filled
-        if ((!solution_is_dominated && !identical_objectives_already_exist) || diversity_added) {
+        if ((!solution_is_dominated && !identical_objectives_already_exist)) {
             Individual *new_individual = individual->clone();
             MO_archive.push_back(new_individual);
 
