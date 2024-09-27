@@ -16,7 +16,14 @@ est: RegressorMixin = MGPGRegressor(
     drift=True,
     remove_duplicates=True,
     replacement_strategy="sample",
-    popsize = 4096
+    popsize = 4096,
+    use_adf=True,
+    nr_multi_trees=4,
+    use_max_range=True,
+    ff="lsmse",
+    batch_size=256,
+    coeff_p=1.,
+    max_coeffs=-1
     # TODO @matigekunstintelligentie
 )
 
