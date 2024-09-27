@@ -1,9 +1,7 @@
-# assumes everything is installed and mgpg is available
-import sympy as sym
+from sklearn.base import RegressorMixin
 
 from pymgpg.sk import MGPGRegressor
 
-from sklearn.base import BaseEstimator, RegressorMixin
 
 est: RegressorMixin = MGPGRegressor(
     verbose=False,
@@ -26,6 +24,8 @@ est: RegressorMixin = MGPGRegressor(
     max_non_improve=-1,
     equal_p_coeffs=True,
     bs=2048,
+    # only return 100 models
+    max_models=100,
 )
 
 
@@ -90,7 +90,7 @@ def get_population(est: MGPGRegressor) -> list[RegressorMixin]:
         e.models = [m]
         return e
 
-    return [make_regressor(sym.simplify(m)) for m in est.models]
+    return [make_regressor(m) for m in est.models]
 
 
 def get_best_solution(est: MGPGRegressor) -> RegressorMixin:

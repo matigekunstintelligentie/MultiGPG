@@ -48,6 +48,8 @@ class MGPGRegressor(BaseEstimator, RegressorMixin):
                 # we let it run for 1 min less than it is set for SRBench only
                 # to not have this, just use 't' directly instead of 'max_time'...
                 s += f" -t {max(min(v, 60), v - 60)}"
+            elif k in ["max_models"]:
+                pass
             else:
                 s += f" -{k} {v}"
 
@@ -83,7 +85,7 @@ class MGPGRegressor(BaseEstimator, RegressorMixin):
 
         self.models = _pb_mgpg.evolve(cpp_options, X, y)
         # extract the model as a sympy and store it internally
-        self.model = self._pick_best_model(X, y, self.models)
+        self.models, self.model = self._pick_best_models(X, y, self.models)
 
     def fit_val(self, X, y, X_val, y_val):
         if isinstance(X, pd.DataFrame):
@@ -110,7 +112,7 @@ class MGPGRegressor(BaseEstimator, RegressorMixin):
 
         self.models = _pb_mgpg.evolve_val(cpp_options, X, y, X_val, y_val)
         # extract the model as a sympy and store it internally
-        self.model = self._pick_best_model(X, y, self.models)
+        self.models, self.model = self._pick_best_models(X, y, self.models)
 
     def _finetune_multiple_models(self, models, X, y):
         import finetuning as ft
@@ -151,9 +153,7 @@ class MGPGRegressor(BaseEstimator, RegressorMixin):
                     for j in range(reminder):
                         finetune_num_steps[np.random.randint(i + 1, len(models))] += 1
 
-    def _pick_best_model(self, X, y, models):
-        backup_txt_models = models
-
+    def _pick_best_models(self, X, y, models):
         simplified_models = list()
         for m in models:
             simpl_m = conversion.timed_simplify(m, ratio=1.0, timeout=5)
@@ -182,6 +182,7 @@ class MGPGRegressor(BaseEstimator, RegressorMixin):
             errs.append(err)
         # adjust errs
         errs = [err if not np.isnan(err) else max_err + 1e-6 for err in errs]
+        by_err = np.argsort(errs)
 
         if hasattr(self, "rci") and len(models) > 1:
             complexity_metric = (
@@ -192,11 +193,12 @@ class MGPGRegressor(BaseEstimator, RegressorMixin):
             ]
             best_idx = complexity.determine_rci_best(errs, compls, self.rci)
         else:
-            best_idx = np.argmin(errs)
+            best_idx = by_err[0]
 
-        self.txt_models = backup_txt_models[best_idx]
-
-        return models[best_idx]
+        max_models = self.kwargs.get("max_models")
+        return [
+            models[i] for i in list(by_err)[:max_models]
+        ] if max_models is not None else models, models[best_idx]
 
     def predict(self, X, model=None):
         if isinstance(X, pd.DataFrame):
