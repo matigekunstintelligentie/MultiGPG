@@ -217,7 +217,9 @@ struct IMS {
           best_kommenda_complexities.push_back(best_kommenda_complexity);
           best_sizes_discount.push_back(best_size_discount);
           times.push_back(tock(start_time));
-          MO_archive_strings.push_back(MO_archive_string);
+          if(g::log_front){
+            MO_archive_strings.push_back(MO_archive_string);
+          }
           evals.push_back(g::fit_func->evaluations);
       }
       else{
@@ -309,11 +311,17 @@ struct IMS {
 
       // 14 MO over time
       str = "";
-      for(int i=0;i<MO_archive_strings.size()-1;i++){
-          str += MO_archive_strings[i] + ";";
+      if(g::log_front){
+        for(int i=0;i<MO_archive_strings.size()-1;i++){
+            str += MO_archive_strings[i] + ";";
+        }
+        str += MO_archive_strings[MO_archive_strings.size()-1]+"\t";
+        csv_file << str;
       }
-      str += MO_archive_strings[MO_archive_strings.size()-1]+"\t";
-      csv_file << str;
+      else{
+        csv_file << str + "\t";
+      }
+      
 
       // 15 consecutive_non_improvements
       str = "";

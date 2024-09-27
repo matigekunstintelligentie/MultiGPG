@@ -42,7 +42,7 @@ class MGPGRegressor(BaseEstimator, RegressorMixin):
                 if v:
                     s += f" -{k}"
             elif k == "max_time":
-                s += f" -t {max(10, v - 10)}"  # TODO @matigekunstintelligentie
+                s += f" -t {max(60, v - 60)}"  # TODO @matigekunstintelligentie
             else:
                 s += f" -{k} {v}"
 

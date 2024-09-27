@@ -37,6 +37,7 @@ parser.add_argument('--coeff_p')
 parser.add_argument('--dataset')
 parser.add_argument('--log', type=str2bool)
 parser.add_argument('--log_pop', type=str2bool)
+parser.add_argument('--log_front', type=str2bool)
 parser.add_argument('--contains_train', type=str2bool)
 parser.add_argument('--t', type=int)
 parser.add_argument('--g', type=int)
@@ -121,7 +122,7 @@ g = MGPGRegressor(t=args.t, g=args.g, tour=args.tour, d=args.depth,
         nr_objs=args.nr_objs,
                   replacement_strategy=args.replacement_strategy,
                   remove_duplicates=args.remove_duplicates, max_non_improve=100, use_GA=args.use_GA, drift=args.drift,
-                  use_GP=args.use_GP, koza=args.koza, change_second_obj=args.change_second_obj, full_mode=args.full_mode)
+                  use_GP=args.use_GP, koza=args.koza, change_second_obj=args.change_second_obj, full_mode=args.full_mode, log_front=args.log_front)
 
 #+,-,*,/,¬,log,pow,max,min,abs,exp,sqrt,sin,cos
 if not args.contains_train:

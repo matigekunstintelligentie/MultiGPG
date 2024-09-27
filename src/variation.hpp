@@ -564,7 +564,7 @@ check_changes_SO(Individual *offspring, vector<float> back_obj, bool FI, int obj
     if (offspring->fitness[obj] < back_obj[obj] ) {
         return std::make_pair(true,true);
     }
-    if (offspring->fitness[obj] == back_obj[obj] ) {
+    if (std::abs(offspring->fitness[obj] - back_obj[obj] )<1e-9) {
         if (FI) {
             return std::make_pair(false,false);
         } else {
@@ -670,6 +670,8 @@ Individual * efficient_gom_MO_FI(Individual * og_parent, vector<pair<vector<int>
 
             std::pair<bool, bool> check_changes = extrema ? check_changes_SO(parent, backup_fitness,  true, objective)
                                                           : check_changes_MO(parent, true, backup_fitness);
+
+            //check_changes = std::make_pair(true,true);
 
             if (check_changes.first) {
                 // keep changes

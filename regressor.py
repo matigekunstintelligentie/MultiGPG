@@ -9,8 +9,14 @@ from sklearn.base import BaseEstimator, RegressorMixin
 est: RegressorMixin = MGPGRegressor(
     verbose=False,
     log=False,
-    MO_mode=True,
-    n_clusters=5,
+    MO_mode=False,
+    n_clusters=1,
+    optimize=True,
+    log_front=False,
+    drift=True,
+    remove_duplicates=True,
+    replacement_strategy="sample",
+    popsize = 4096
     # TODO @matigekunstintelligentie
 )
 

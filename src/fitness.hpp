@@ -1,4 +1,4 @@
-#ifndef FITNESS_H
+ #ifndef FITNESS_H
 #define FITNESS_H
 
 #include <Eigen/Dense>
@@ -153,6 +153,10 @@ struct MSEFitness : Fitness {
     if(change_fitness) {
         n->fitness[0] = fitness;
     }
+    else{
+      vector<float> tmp_fitness = {fitness, n->get_num_nodes(true, discount_size), n->get_height()};
+        return tmp_fitness;
+    }
     fitnessses.push_back(fitness);
     return fitnessses;
   }
@@ -185,6 +189,10 @@ struct MSEFitness : Fitness {
 
         n->fitness[2] = n->get_complexity_kommenda();
                 //n->get_complexity_kommenda();
+    }
+    else{
+        vector<float> tmp_fitness = {fitness, n->get_num_nodes(true, discount_size), n->get_height()};
+        return tmp_fitness;
     }
 
     return n->fitness;
@@ -227,6 +235,10 @@ struct LSMSEFitness : Fitness {
     if(change_fitness) {
         n->fitness[0] = fitness;
     }
+    else{
+        vector<float> tmp_fitness = {fitness, n->get_num_nodes(true, discount_size), n->get_height()};
+        return tmp_fitness;
+    }
 
     return n->fitness;
   }
@@ -268,6 +280,10 @@ struct LSMSEFitness : Fitness {
         }
         n->fitness[2] = n->get_complexity_kommenda();
                 //n->get_complexity_kommenda();
+      }
+      else{
+        vector<float> tmp_fitness = {fitness, n->get_num_nodes(true, discount_size), n->get_height()};
+        return tmp_fitness;
       }
 
         return n->fitness;
