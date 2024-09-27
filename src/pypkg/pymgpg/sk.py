@@ -1,10 +1,13 @@
-from pymgpg import conversion, imputing, complexity
+from pymgpg import conversion, complexity
+from sklearn.experimental import enable_iterative_imputer  # noqa
+from sklearn.impute import IterativeImputer
 from sklearn.metrics import mean_squared_error
 from sklearn.base import BaseEstimator, RegressorMixin
 import sys, os
 import inspect
 import numpy as np
 import sympy
+import pandas as pd
 
 sys.path.insert(
     0,
@@ -42,7 +45,9 @@ class MGPGRegressor(BaseEstimator, RegressorMixin):
                 if v:
                     s += f" -{k}"
             elif k == "max_time":
-                s += f" -t {max(10, v - 10)}"  # TODO @matigekunstintelligentie
+                # we let it run for 1 min less than it is set for SRBench only
+                # to not have this, just use 't' directly instead of 'max_time'...
+                s += f" -t {max(min(v, 60), v - 60)}"
             else:
                 s += f" -{k} {v}"
 
@@ -54,33 +59,56 @@ class MGPGRegressor(BaseEstimator, RegressorMixin):
         return s
 
     def fit(self, X, y):
+        if isinstance(X, pd.DataFrame):
+            X = X.to_numpy()
+
+        if isinstance(y, pd.Series):
+            y = y.to_numpy()
+
         # setup cpp interface
         cpp_options = self._create_cpp_option_string()
 
         # impute if needed
+        self.imputer = IterativeImputer(
+            max_iter=10,
+            random_state=self.kwargs.get("random_state", None),
+            sample_posterior=True,
+        )
         if np.isnan(X).any():
-            self.imputer, X = imputing.fit_and_apply_imputation(X)
+            X = self.imputer.fit_transform(X)
             # fix non-contiguous memory block for SWIG
             X = X.copy()
+        else:
+            self.imputer.fit(X)
 
-        print(f"{cpp_options} - 💩:/")
         self.models = _pb_mgpg.evolve(cpp_options, X, y)
-        print("💩🚀")
         # extract the model as a sympy and store it internally
         self.model = self._pick_best_model(X, y, self.models)
 
     def fit_val(self, X, y, X_val, y_val):
+        if isinstance(X, pd.DataFrame):
+            X = X.to_numpy()
+
+        if isinstance(y, pd.Series):
+            y = y.to_numpy()
+
         # setup cpp interface
         cpp_options = self._create_cpp_option_string()
 
         # impute if needed
+        self.imputer = IterativeImputer(
+            max_iter=10,
+            random_state=self.kwargs.get("random_state", None),
+            sample_posterior=True,
+        )
         if np.isnan(X).any():
-            self.imputer, X = imputing.fit_and_apply_imputation(X)
+            X = self.imputer.fit_transform(X)
             # fix non-contiguous memory block for SWIG
             X = X.copy()
+        else:
+            self.imputer.fit(X)
 
         self.models = _pb_mgpg.evolve_val(cpp_options, X, y, X_val, y_val)
-
         # extract the model as a sympy and store it internally
         self.model = self._pick_best_model(X, y, self.models)
 
@@ -171,12 +199,21 @@ class MGPGRegressor(BaseEstimator, RegressorMixin):
         return models[best_idx]
 
     def predict(self, X, model=None):
+        if isinstance(X, pd.DataFrame):
+            X = X.to_numpy()
+
+        # impute if needed
+        if np.isnan(X).any():
+            assert hasattr(self, "imputer")
+            X = self.imputer.transform(X)
+
         if model is None:
+            assert self.model is not None
             # assume implicitly wanted the best one found at fit
             model = self.model
 
         # deal with a model that was simplified to a simple constant
-        if type(model) == sympy.Float or type(model) == sympy.Integer:
+        if isinstance(model, sympy.Float) or isinstance(model, sympy.Integer):
             prediction = np.array([float(model)] * X.shape[0])
             return prediction
 
@@ -186,10 +223,6 @@ class MGPGRegressor(BaseEstimator, RegressorMixin):
                 "[!] Warning: failed to convert sympy model to numpy, returning NaN as prediction"
             )
             return float("nan")
-
-        if np.isnan(X).any():
-            assert hasattr(self, "imputer")
-            X = self.imputer.transform(X)
 
         try:
             prediction = f(X)
@@ -201,7 +234,7 @@ class MGPGRegressor(BaseEstimator, RegressorMixin):
 
         # can still happen for certain classes of sympy
         # (e.g., sympy.core.numbers.Zero)
-        if type(prediction) in [int, float, np.int64, np.float64]:
+        if isinstance(prediction, (int, float, np.int64, np.float64)):
             prediction = np.array([float(prediction)] * X.shape[0])
         if len(prediction) != X.shape[0]:
             prediction = np.array([prediction[0]] * X.shape[0])

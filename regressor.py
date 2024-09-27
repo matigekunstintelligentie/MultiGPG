@@ -142,8 +142,5 @@ if __name__ == "__main__":
 
     est.set_params(**eval_kwargs["test_params"])
 
-    print("Poop")
-
     est.fit(X, y)
-    print("💩")
     print(get_population(est))
