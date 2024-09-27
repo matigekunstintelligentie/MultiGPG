@@ -20,9 +20,12 @@ est: RegressorMixin = MGPGRegressor(
     nr_multi_trees=4,
     use_max_range=True,
     ff="lsmse",
-    bs=256,
+    bs_opt=256,
     cmp=1.0,
     max_coeffs=-1,
+    max_non_improve=-1,
+    equal_p_coeffs=True,
+    bs=2048,
 )
 
 
