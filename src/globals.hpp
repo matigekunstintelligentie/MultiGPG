@@ -63,6 +63,7 @@ namespace g {
   string csv_file_pop;
   bool log = false;
   bool log_pop = false;
+  bool log_front = false;
   bool accept_diversity = false;
 
   // Optimisation choices
@@ -294,6 +295,7 @@ namespace g {
     fit_func = NULL;
   }
 
+
   void read_options(int argc, char** argv) {
     reset();
     cli::Parser parser(argc, argv);
@@ -335,6 +337,7 @@ namespace g {
     parser.set_optional<int>("opt_per_gen", "opt_per_gen", 1, "Optimise per x gens)");
     // logging
     parser.set_optional<bool>("log", "log", false, "Whether to log");
+    parser.set_optional<bool>("log_front", "log_front", false, "Whether to log nondom front");
 
     parser.set_optional<bool>("log_pop", "log_pop", false, "Whether to log pop");
     parser.set_optional<string>("csv_file", "csv_file", "required.csv", "CSV file that is written to.");
@@ -515,6 +518,7 @@ namespace g {
     use_optimiser = parser.get<bool>("use_optim");
     use_ftol = parser.get<bool>("use_ftol");
     log = parser.get<bool>("log");
+    log_front = parser.get<bool>("log_front");
     log_pop = parser.get<bool>("log_pop");
     use_mse_opt = parser.get<bool>("use_mse_opt");
     tol = parser.get<float>("tol");
@@ -567,6 +571,7 @@ namespace g {
       + " use_ftol " +  std::to_string(use_ftol) +
       + " log " +  std::to_string(log) +
       + " log pop " +  std::to_string(log_pop) +
+      + " log front " +  std::to_string(log_front) +
       + " tol " +  std::to_string(tol) +
       + " use_mse_opt " +  std::to_string(use_mse_opt) +
       + " opt_per_gen " +  std::to_string(opt_per_gen) +

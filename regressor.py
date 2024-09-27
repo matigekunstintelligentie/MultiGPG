@@ -5,13 +5,24 @@ from pymgpg.sk import MGPGRegressor
 
 from sklearn.base import BaseEstimator, RegressorMixin
 
-
 est: RegressorMixin = MGPGRegressor(
     verbose=False,
     log=False,
-    MO_mode=True,
-    n_clusters=5,
-    # TODO @matigekunstintelligentie
+    MO_mode=False,
+    n_clusters=1,
+    use_optim=True,
+    log_front=False,
+    drift=True,
+    remove_duplicates=True,
+    replacement_strategy="sample",
+    pop=4096,
+    use_adf=True,
+    nr_multi_trees=4,
+    use_max_range=True,
+    ff="lsmse",
+    bs=256,
+    cmp=1.0,
+    max_coeffs=-1,
 )
 
 
@@ -131,7 +142,13 @@ def my_pre_train_fn(est, X, y):
 
 
 # define eval_kwargs.
-eval_kwargs = dict(test_params={"g": 5, "pop": 500, "verbose": True})
+eval_kwargs = dict(
+    test_params=dict(
+        g=1,
+        max_time=600,
+        verbose=True,
+    )
+)
 
 if __name__ == "__main__":
     import pandas as pd
@@ -143,4 +160,4 @@ if __name__ == "__main__":
     est.set_params(**eval_kwargs["test_params"])
 
     est.fit(X, y)
-    print(get_population(est))
+    print("Archive size:", len(get_population(est)))
