@@ -221,7 +221,7 @@ class MGPGRegressor(BaseEstimator, RegressorMixin):
             mse /= worst_mse - best_mse
 
             # normalize size to 0-1
-            size = np.array([model_size(m) for m in models])
+            size = np.array([model_size(m) for m in models]).astype(np.float64)
             min_size, max_size = np.min(size), np.max(size)
             size -= min_size
             size /= max_size - min_size
