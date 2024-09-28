@@ -132,23 +132,23 @@ Options
 """
 
 
-def my_pre_train_fn(est, X, y):
-    """In this example we adjust FEAT generations based on the size of X
-    versus relative to FEAT's batch size setting.
-    """
-    if est.batch_size < len(X):
-        est.gens = int(est.gens * len(X) / est.batch_size)
-    print("FEAT gens adjusted to", est.gens)
-    # adjust max dim
-    est.max_dim = min(max(est.max_dim, X.shape[1]), 20)
-    print("FEAT max_dim set to", est.max_dim)
+# def my_pre_train_fn(est, X, y):
+#     """In this example we adjust FEAT generations based on the size of X
+#     versus relative to FEAT's batch size setting.
+#     """
+#     if est.batch_size < len(X):
+#         est.gens = int(est.gens * len(X) / est.batch_size)
+#     print("FEAT gens adjusted to", est.gens)
+#     # adjust max dim
+#     est.max_dim = min(max(est.max_dim, X.shape[1]), 20)
+#     print("FEAT max_dim set to", est.max_dim)
 
 
 # define eval_kwargs.
 eval_kwargs = dict(
     test_params=dict(
-        g=1,
-        max_time=600,
+        g=5,
+        max_time=180,
         verbose=True,
     )
 )

@@ -1,3 +1,4 @@
+import ast
 from pymgpg import conversion, complexity
 from sklearn.experimental import enable_iterative_imputer  # noqa
 from sklearn.impute import IterativeImputer
@@ -18,6 +19,33 @@ sys.path.insert(
 
 # load cpp interface
 import _pb_mgpg
+
+
+def model_size(m) -> int:
+    """Returns the model size"""
+
+    # ! doesn't works since sympy internally uses + and * to represent e.g. -
+    # sum(1 for _ in sym.preorder_traversal(self._model))
+
+    s = 0
+    q = [ast.parse(str(m)).body[0].value]
+    while len(q) > 0:
+        n = q.pop()
+        if isinstance(n, (ast.Name, ast.Constant)):
+            s += 1
+        elif isinstance(n, ast.UnaryOp):
+            s += 1
+            q.append(n.operand)
+        elif isinstance(n, ast.BinOp):
+            s += 1
+            q.append(n.left)
+            q.append(n.right)
+        elif isinstance(n, ast.Call):
+            s += 1
+            for arg in n.args:
+                q.append(arg)
+
+    return s
 
 
 class MGPGRegressor(BaseEstimator, RegressorMixin):
@@ -154,51 +182,68 @@ class MGPGRegressor(BaseEstimator, RegressorMixin):
                         finetune_num_steps[np.random.randint(i + 1, len(models))] += 1
 
     def _pick_best_models(self, X, y, models):
-        simplified_models = list()
-        for m in models:
-            simpl_m = conversion.timed_simplify(m, ratio=1.0, timeout=5)
-            if simpl_m is None:
-                simpl_m = sympy.sympify(m)  # do not simplify, just sympify
-            simplified_models.append(simpl_m)
-        # proceed with simplified models
-        models = simplified_models
+        def process_model(m):
+            # simplify
+            sm = conversion.timed_simplify(m, ratio=1.0, timeout=5)
+            if sm is None:
+                sm = sympy.sympify(m)  # do not simplify, just sympify
 
-        # cleanup
-        models = [conversion.model_cleanup(m, timeout=5) for m in models]
-        models = [m for m in models if m is not None]
+            # cleanup
+            return conversion.model_cleanup(sm, timeout=5)
 
-        # pick best
-        errs = list()
-        max_err = 0
+        # proceed with simplified & cleaned models
+        models = [p for m in models if (p := process_model(m)) is not None]
+
+        # compute error and size
+        mse = np.empty(len(models))
+
+        my = np.mean(y)
         for i, m in enumerate(models):
             p = self.predict(X, model=m)
             if np.isnan(p).any():
                 # convert this model to a constant, i.e., the mean over the training y
-                models[i] = sympy.sympify(np.mean(y))
-                p = np.array([np.mean(y)] * len(y))
-            err = mean_squared_error(y, p)
-            if err > max_err:
-                max_err = err
-            errs.append(err)
-        # adjust errs
-        errs = [err if not np.isnan(err) else max_err + 1e-6 for err in errs]
-        by_err = np.argsort(errs)
+                models[i] = sympy.sympify(my)
+                p = np.repeat(my, y.shape[0])
+            mse[i] = mean_squared_error(y, p)
 
-        if hasattr(self, "rci") and len(models) > 1:
-            complexity_metric = (
-                "node_count" if not hasattr(self, "compl") else self.compl
-            )
-            compls = [
-                complexity.compute_complexity(m, complexity_metric) for m in models
-            ]
-            best_idx = complexity.determine_rci_best(errs, compls, self.rci)
-        else:
-            best_idx = by_err[0]
+        best_mse_idx = np.nanargmin(mse)
 
+        # model selection
         max_models = self.kwargs.get("max_models")
-        return [
-            models[i] for i in list(by_err)[:max_models]
-        ] if max_models is not None else models, models[best_idx]
+        if max_models is None or max_models >= len(models):
+            selected = models
+        else:
+            assert max_models > 0
+
+            size = np.array([model_size(m) for m in models])
+
+            selected_indices = [best_mse_idx]
+            remaining_indices = set(range(len(models)))
+            remaining_indices.remove(best_mse_idx)
+
+            # greedy scattered subset selection: repeatedly add the most distant model
+            # from the already selected using euclidean dist wrt mse and size
+            while len(selected_indices) < max_models:
+                best_dist = np.inf
+                best_idx = None
+                for i in remaining_indices:
+                    dist = np.min(
+                        np.abs(mse[selected_indices] - mse[i])
+                        + np.abs(size[selected_indices] - size[i])
+                    )
+                    if dist > best_dist:
+                        best_dist = dist
+                        best_idx = i
+
+                if best_idx is None:
+                    break
+
+                selected_indices.append(best_idx)
+                remaining_indices.remove(best_idx)
+
+            selected = [models[i] for i in selected_indices]
+
+        return selected, models[best_mse_idx]
 
     def predict(self, X, model=None):
         if isinstance(X, pd.DataFrame):

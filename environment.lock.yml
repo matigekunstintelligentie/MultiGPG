@@ -11,11 +11,11 @@ dependencies:
   - pybind11=2.13.6
   - pip=24.2
   - pip:
-      - functorch==2.0.0
+      # - functorch==2.0.0
       - numpy==2.1.1
       - pandas==2.2.3
       - scikit-learn==1.5.2
       - stopit==1.1.2
       - sympy==1.13.3
-      - sympytorch==0.1.4
-      - torch==2.0.1
+      # - sympytorch==0.1.4
+      # - torch==2.0.1
