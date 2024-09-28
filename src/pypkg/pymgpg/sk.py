@@ -215,10 +215,21 @@ class MGPGRegressor(BaseEstimator, RegressorMixin):
         else:
             assert max_models > 0
 
+            # normalize mse to 0-1
+            best_mse, worst_mse = mse[best_mse_idx], np.nanmax(mse)
+            mse -= best_mse
+            mse /= worst_mse - best_mse
+
+            # normalize size to 0-1
             size = np.array([model_size(m) for m in models])
+            min_size, max_size = np.min(size), np.max(size)
+            size -= min_size
+            size /= max_size - min_size
 
             selected_indices = [best_mse_idx]
-            remaining_indices = set(range(len(models)))
+            remaining_indices = set(
+                i for i in range(len(models)) if not np.isnan(mse[i])
+            )
             remaining_indices.remove(best_mse_idx)
 
             # greedy scattered subset selection: repeatedly add the most distant model
@@ -227,9 +238,11 @@ class MGPGRegressor(BaseEstimator, RegressorMixin):
                 best_dist = np.inf
                 best_idx = None
                 for i in remaining_indices:
+                    # sqrt is not necessary, also it would be possible to only
+                    # update the distance to the last selected index but meh
                     dist = np.min(
-                        np.abs(mse[selected_indices] - mse[i])
-                        + np.abs(size[selected_indices] - size[i])
+                        np.abs(mse[selected_indices] - mse[i]) ** 2
+                        + np.abs(size[selected_indices] - size[i]) ** 2
                     )
                     if dist > best_dist:
                         best_dist = dist
