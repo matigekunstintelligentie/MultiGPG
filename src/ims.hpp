@@ -49,13 +49,14 @@ struct IMS
     g::mse_func->change_second_obj = g::change_second_obj;
     evolution = new Evolution(g::pop_size);
 
-    auto start_time = tick();
+    
 
     bool stop = false;
     int generations_without_improvement = 0;
     float previous_fitness = -1.;
 
     while (!stop) {
+
 
       // macro generation
 
@@ -68,7 +69,7 @@ struct IMS
       }
       if (expression_found ||
           (g::max_generations > 0 && macro_generations == g::max_generations) ||
-          (g::max_time > 0 && tock(start_time) >= g::max_time) ||
+          (g::max_time > 0 && tock(g::start_time) >= g::max_time) ||
           (g::max_evals > 0 && g::fit_func->evaluations >= g::max_evals) ||
           (g::max_non_improve > 0 &&
            generations_without_improvement >= g::max_non_improve)) {
@@ -77,7 +78,7 @@ struct IMS
         if (g::max_generations > 0 && macro_generations == g::max_generations) {
           print("Stopping due to max gens");
         }
-        if (g::max_time > 0 && tock(start_time) >= g::max_time) {
+        if (g::max_time > 0 && tock(g::start_time) >= g::max_time) {
           print("Stopping due to max time");
         }
         if (g::max_evals > 0 && g::fit_func->evaluations >= g::max_evals) {
@@ -221,7 +222,7 @@ struct IMS
               " ",
               generations_without_improvement,
               " ",
-              to_string(tock(start_time)),
+              to_string(tock(g::start_time)),
               ", curr. best fit: ",
               best_train_mse,
               " r2 ",
@@ -245,7 +246,7 @@ struct IMS
         best_strings.push_back(best_string);
         best_kommenda_complexities.push_back(best_kommenda_complexity);
         best_sizes_discount.push_back(best_size_discount);
-        times.push_back(tock(start_time));
+        times.push_back(tock(g::start_time));
         if (g::log_front) {
           MO_archive_strings.push_back(MO_archive_string);
         }
@@ -271,7 +272,7 @@ struct IMS
               " ",
               generations_without_improvement,
               " ",
-              to_string(tock(start_time)),
+              to_string(tock(g::start_time)),
               " ",
               g::ea->MO_archive.size(),
               " ",
