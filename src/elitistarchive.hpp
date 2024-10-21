@@ -13,7 +13,7 @@ struct ElitistArchive{
     int nr_objs = 2;
 
     vector<float> min_objs = {0.,0.,0.};
-    vector<float> max_objs = {10000.,200.,999999999999999999999.};
+    vector<float> max_objs = {1000.,200.,9999999999.};
 
     int num_boxes = 100;
 
@@ -46,7 +46,7 @@ struct ElitistArchive{
     bool nondominated(Individual* ind){
         bool solution_is_dominated = false;
         bool identical_objectives_already_exist;
-        bool diversity_added = false;
+        //bool diversity_added = false;
 
         if (MO_archive.empty()) {
             return true;
@@ -58,21 +58,21 @@ struct ElitistArchive{
                 break;
             }
 
-            identical_objectives_already_exist = true;
-            for (size_t j = 0; j < nr_objs; j++) {
-                if (ind->fitness[j] != MO_archive[i]->fitness[j]) {
-                    identical_objectives_already_exist = false;
-                    break;
-                }
-            }
-            if (identical_objectives_already_exist) {
-                if (diversityAdded(ind, i)) {
-                    diversity_added = true;
-                }
-                break;
-            }
+            // identical_objectives_already_exist = true;
+            // for (size_t j = 0; j < nr_objs; j++) {
+            //     if (ind->fitness[j] != MO_archive[i]->fitness[j]) {
+            //         identical_objectives_already_exist = false;
+            //         break;
+            //     }
+            // }
+            // if (identical_objectives_already_exist) {
+            //     if (diversityAdded(ind, i)) {
+            //         diversity_added = true;
+            //     }
+            //     break;
+            // }
         }
-        return (!solution_is_dominated && !identical_objectives_already_exist) || (diversity_added);
+        return !solution_is_dominated;
     }
 
     bool dominates(Individual * ind1, Individual * ind2){
@@ -88,15 +88,15 @@ struct ElitistArchive{
         return strictly_better_somewhere;
     }
 
-    bool diversityAdded(Individual* individual, int idx){
-        Vec diff = individual->get_output(X_train) - MO_archive[idx]->get_output(X_train);
-        if(diff.mean()==0){
-            return false;
-        }
-        else{
-            return true;
-        }
-    }
+    // bool diversityAdded(Individual* individual, int idx){
+    //     Vec diff = individual->get_output(X_train) - MO_archive[idx]->get_output(X_train);
+    //     if(diff.mean()==0){
+    //         return false;
+    //     }
+    //     else{
+    //         return true;
+    //     }
+    // }
 
     void initSOArchive(vector<Individual*> population){
         SO_archive = vector<Individual*>(nr_objs, nullptr);
@@ -128,8 +128,9 @@ struct ElitistArchive{
 
     void updateMOArchive(Individual * individual){
         bool solution_is_dominated = false;
-        bool diversity_added = false;
+        //bool diversity_added = false;
         bool identical_objectives_already_exist = false;
+
 
         for(int i = 0; i<MO_archive.size(); i++){
             // Check domination
@@ -139,15 +140,16 @@ struct ElitistArchive{
                 break;
             }
 
-//            identical_objectives_already_exist = true;
-//            for(int j=0; j<2; j++){
-//                if(individual->fitness[j] != MO_archive[i]->fitness[j]){
-//                    identical_objectives_already_exist = false;
-//                    break;
-//                }
-//            }
+            // identical_objectives_already_exist = true;
+            // for(int j=0; j<2; j++){
+            //     if(individual->fitness[j] != MO_archive[i]->fitness[j]){
+            //         identical_objectives_already_exist = false;
+            //         break;
+            //     }
+            // }
 
             // Rigid grid
+            //if(!identical_objectives_already_exist){
             identical_objectives_already_exist = true;
             for(int j=0; j<nr_objs; j++){
                 float epsilon;
@@ -164,15 +166,16 @@ struct ElitistArchive{
                     break;
                 }
             }
+            //}
 
-            if(identical_objectives_already_exist){
-                if(dominates(individual, MO_archive[i])){
-                    MO_archive[i]->clear();
-                    MO_archive[i] = nullptr;
-                    diversity_added = true;
-                }
-                break;
-            }
+            // if(identical_objectives_already_exist){
+            //     if(dominates(individual, MO_archive[i])){
+            //         MO_archive[i]->clear();
+            //         MO_archive[i] = nullptr;
+            //         diversity_added = true;
+            //     }
+            //     break;
+            // }
 
             if(dominates(individual, MO_archive[i])){
                 MO_archive[i]->clear();
@@ -180,23 +183,24 @@ struct ElitistArchive{
             }
 
 
+
         }
         MO_archive.erase(std::remove_if(MO_archive.begin(), MO_archive.end(), [](Individual *ind){return ind== nullptr;}), MO_archive.end());
 
         // !identical_objectives_already_exist means hypercube not filled
-        if ((!solution_is_dominated && !identical_objectives_already_exist) || diversity_added) {
+        if ((!solution_is_dominated && !identical_objectives_already_exist) ) {
             Individual *new_individual = individual->clone();
             MO_archive.push_back(new_individual);
 
-//            // Update maxes for each objective
-//            for(int j=0; j<2; j++) {
-//                if (new_individual->fitness[j] > max_objs[j] && !isnan(new_individual->fitness[j]) && !isinf(new_individual->fitness[j])) {
-//                    max_objs[j] = new_individual->fitness[j];
-//                }
-//                if (new_individual->fitness[j] < min_objs[j] && !isnan(new_individual->fitness[j]) && !isinf(new_individual->fitness[j])) {
-//                    min_objs[j] = new_individual->fitness[j];
-//                }
-//            }
+            // // Update maxes for each objective
+            // for(int j=0; j<nr_objs; j++) {
+            //     if (new_individual->fitness[j] > max_objs[j] && !isnan(new_individual->fitness[j]) && !isinf(new_individual->fitness[j])) {
+            //         max_objs[j] = new_individual->fitness[j];
+            //     }
+            //     if (new_individual->fitness[j] < min_objs[j] && !isnan(new_individual->fitness[j]) && !isinf(new_individual->fitness[j])) {
+            //         min_objs[j] = new_individual->fitness[j];
+            //     }
+            // }
 
             improved_this_gen = true;
         }

@@ -15,7 +15,7 @@ set(CMAKE_CXX_FLAGS_VALGRIND
 set(CMAKE_CXX_FLAGS_DEBUG
     "${CMAKE_CXX_FLAGS_DEBUG} -g -O0 -DDEBUG -Wall -Wconversion ${CXX_EXTRA}")
 set(CMAKE_CXX_FLAGS_RELEASE
-    "${CMAKE_CXX_FLAGS_RELEASE} -O3 -DNDEBUG ${CXX_EXTRA}")
+    "${CMAKE_CXX_FLAGS_RELEASE} -O3 -DNDEBUG -march=native ${CXX_EXTRA}")
 # Create project
 project(${PROJECT_NAME})               
 # Enable c++17 standard
