@@ -717,7 +717,6 @@ struct Evolution {
       keep.push_back(population[0]->clone());
 
       int duplicates = 0;
-      vector<string> stris;
 
       for(int i=1; i<pop_size;i++){
           bool add = true;
@@ -744,7 +743,6 @@ struct Evolution {
               keep.push_back(k);
           }
           else{
-              stris.push_back(population[i]->human_repr());
               if(g::replacement_strategy=="mutate") {
                   Individual * indi = population[i]->clone();
                   mutate(indi, true);
@@ -763,34 +761,16 @@ struct Evolution {
               else{
                   throw std::invalid_argument( "Invalid replacement strategy");
               }
-
-
-
           }
       }
 
       print("DUPLICATES: ", duplicates);
 
-//      int remaining = pop_size-keep.size();
-//      for(int i=0; i<remaining; i++){
-//          //Individual * ind = generate_individuals(g::max_depth, g::init_strategy, g::nr_multi_trees);
-//
-//
-//          Individual * ind = population;
-//
-//          mutate(ind);
-//
-//          g::fit_func->get_fitness_MO(ind);
-//
-//          //keep.push_back(ind);
-//          //keep.push_back(g::ea->ReturnCopyRandomMOMember());
-//      }
 
       for(int i=0; i<population.size(); i++){
           population[i]->clear();
           population[i] = nullptr;
       }
-
 
       // This should be needed
       population.erase(std::remove_if(population.begin(), population.end(), [](Individual *ind){return ind== nullptr;}), population.end());
