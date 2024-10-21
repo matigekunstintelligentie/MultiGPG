@@ -890,13 +890,14 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & do
                 g::ea->updateSOArchive(parent);
                 g::ea->updateMOArchive(parent);
             }
+            // discard backup ops
+            for(Op * op : backup_ops) {
+                delete op;
+            }
         }
 
 
-        // discard backup ops
-        for(Op * op : backup_ops) {
-            delete op;
-        }
+
     }
 
 
