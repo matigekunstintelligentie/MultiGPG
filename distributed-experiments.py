@@ -112,8 +112,8 @@ def run(experiment):
 
 log_pop = False
 verbose = False
-n_processes = 29
-duration = 3600*2
+n_processes = 30
+duration = 3600
 generations = 30
 popsize = 4096
 nr_objs = 2
@@ -127,7 +127,7 @@ arithmetic_fset = '+,-,*,/'
 sin_fset = "+,sin"
 
 
-result_dir = "./results/srbench"
+result_dir = "./results/prelim"
 
 
 experiments = []
