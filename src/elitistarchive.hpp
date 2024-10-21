@@ -13,7 +13,7 @@ struct ElitistArchive{
     int nr_objs = 2;
 
     vector<float> min_objs = {0.,0.,0.};
-    vector<float> max_objs = {10000.,200.,999999999999999999999.};
+    vector<float> max_objs = {1000.,200.,9999999999.};
 
     int num_boxes = 100;
 
@@ -58,13 +58,13 @@ struct ElitistArchive{
                 break;
             }
 
-            identical_objectives_already_exist = true;
-            for (size_t j = 0; j < nr_objs; j++) {
-                if (ind->fitness[j] != MO_archive[i]->fitness[j]) {
-                    identical_objectives_already_exist = false;
-                    break;
-                }
-            }
+            // identical_objectives_already_exist = true;
+            // for (size_t j = 0; j < nr_objs; j++) {
+            //     if (ind->fitness[j] != MO_archive[i]->fitness[j]) {
+            //         identical_objectives_already_exist = false;
+            //         break;
+            //     }
+            // }
             // if (identical_objectives_already_exist) {
             //     if (diversityAdded(ind, i)) {
             //         diversity_added = true;
@@ -72,7 +72,7 @@ struct ElitistArchive{
             //     break;
             // }
         }
-        return (!solution_is_dominated && !identical_objectives_already_exist);
+        return !solution_is_dominated;
     }
 
     bool dominates(Individual * ind1, Individual * ind2){
@@ -131,6 +131,7 @@ struct ElitistArchive{
         //bool diversity_added = false;
         bool identical_objectives_already_exist = false;
 
+
         for(int i = 0; i<MO_archive.size(); i++){
             // Check domination
             solution_is_dominated = dominates(MO_archive[i], individual);
@@ -139,15 +140,16 @@ struct ElitistArchive{
                 break;
             }
 
-//            identical_objectives_already_exist = true;
-//            for(int j=0; j<2; j++){
-//                if(individual->fitness[j] != MO_archive[i]->fitness[j]){
-//                    identical_objectives_already_exist = false;
-//                    break;
-//                }
-//            }
+            // identical_objectives_already_exist = true;
+            // for(int j=0; j<2; j++){
+            //     if(individual->fitness[j] != MO_archive[i]->fitness[j]){
+            //         identical_objectives_already_exist = false;
+            //         break;
+            //     }
+            // }
 
             // Rigid grid
+            //if(!identical_objectives_already_exist){
             identical_objectives_already_exist = true;
             for(int j=0; j<nr_objs; j++){
                 float epsilon;
@@ -164,6 +166,7 @@ struct ElitistArchive{
                     break;
                 }
             }
+            //}
 
             // if(identical_objectives_already_exist){
             //     if(dominates(individual, MO_archive[i])){
@@ -180,23 +183,24 @@ struct ElitistArchive{
             }
 
 
+
         }
         MO_archive.erase(std::remove_if(MO_archive.begin(), MO_archive.end(), [](Individual *ind){return ind== nullptr;}), MO_archive.end());
 
         // !identical_objectives_already_exist means hypercube not filled
-        if ((!solution_is_dominated && !identical_objectives_already_exist)) {
+        if ((!solution_is_dominated && !identical_objectives_already_exist) ) {
             Individual *new_individual = individual->clone();
             MO_archive.push_back(new_individual);
 
-//            // Update maxes for each objective
-//            for(int j=0; j<2; j++) {
-//                if (new_individual->fitness[j] > max_objs[j] && !isnan(new_individual->fitness[j]) && !isinf(new_individual->fitness[j])) {
-//                    max_objs[j] = new_individual->fitness[j];
-//                }
-//                if (new_individual->fitness[j] < min_objs[j] && !isnan(new_individual->fitness[j]) && !isinf(new_individual->fitness[j])) {
-//                    min_objs[j] = new_individual->fitness[j];
-//                }
-//            }
+            // // Update maxes for each objective
+            // for(int j=0; j<nr_objs; j++) {
+            //     if (new_individual->fitness[j] > max_objs[j] && !isnan(new_individual->fitness[j]) && !isinf(new_individual->fitness[j])) {
+            //         max_objs[j] = new_individual->fitness[j];
+            //     }
+            //     if (new_individual->fitness[j] < min_objs[j] && !isnan(new_individual->fitness[j]) && !isinf(new_individual->fitness[j])) {
+            //         min_objs[j] = new_individual->fitness[j];
+            //     }
+            // }
 
             improved_this_gen = true;
         }
