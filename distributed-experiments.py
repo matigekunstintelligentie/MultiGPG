@@ -18,6 +18,23 @@ class experiment:
             stri += " --{} {}".format(key, value)
         return stri
 
+    def construct_command(self):
+        """
+        Construct a command that will be passed to subprocess.run.
+        Returns a list of command parts instead of a shell string.
+        """
+        # Assuming your command is constructed from the dictionary in a non-shell format
+        command = [
+            'python', 'run_experiment.py'
+        ]
+
+        for idx, (key, value) in enumerate(self.experiment_dict.items()):
+            command.append("--{}".format(key))
+            command.append("{}".format(value))
+
+        return command
+
+
     def __str__(self):
         stri = ""
         for idx, (key, value) in enumerate(self.experiment_dict.items()):
@@ -108,13 +125,21 @@ def run(experiment):
         print("Skipping", filename)
 
     else:
-        subprocess.run(experiment.construct_string(), shell=True)
+        try:
+            # command = experiment.construct_command()
+            # # subprocess.run takes a list of command and args when shell=False
+            # subprocess.run(command, shell=False, check=True)
+            command = experiment.construct_string()
+            subprocess.run(command, shell=True, check=True)
+        except subprocess.CalledProcessError as e:
+            print(f"Experiment failed with error: {e}")
+
 
 log_pop = False
 verbose = False
-n_processes = 30
+n_processes = 2
 duration = 3600
-generations = 30
+generations = -1
 popsize = 4096
 nr_objs = 2
 
@@ -133,8 +158,7 @@ result_dir = "./results/prelim"
 experiments = []
 datasets = ["dowchemical","tower", "air", "concrete", "bike", "synthetic_1", "synthetic_2", "synthetic_3", "synthetic_4", "synthetic_5"]
 
-n_processes = 1
-duration = -1
+
 
 for i in range(10):
     for dataset in datasets:
@@ -158,17 +182,22 @@ for i in range(10):
             max_coeffs = 0
             coeff_p = 0.
 
-            gpgomea_experiment({"csv_name":"MO", "depth":4 , "dir": directory, "batch_size": 256, "ff": ff, "seed": i, "coeff_p": coeff_p, "MO_mode": True, "popsize":popsize,
-                                "n_clusters": 5, "max_coeffs": max_coeffs, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset,
-                                "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False,
-                                "discount_size":False, "k2":False,"balanced":False,"log_pop":log_pop,"nr_objs": 2, "remove_duplicates":False, "replacement_strategy":"sample", "drift": True,
-                                "donor_fraction":2., "full_mode":False}),
+            for exp in [
 
-            gpgomea_experiment({"csv_name":"MO_discounted", "depth":4 , "dir": directory, "batch_size": 256, "ff": ff, "seed": i, "coeff_p": coeff_p, "MO_mode": True, "popsize":popsize,
-                                "n_clusters": 5, "max_coeffs": max_coeffs, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset,
-                                "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False,
-                                "discount_size":True, "k2":False,"balanced":False,"log_pop":log_pop,"nr_objs": 2, "remove_duplicates":False, "replacement_strategy":"sample", "drift": True,
-                                "donor_fraction":2., "full_mode":False}),
+                gpgomea_experiment({"csv_name":"MO", "depth":4 , "dir": directory, "batch_size": 256, "ff": ff, "seed": i, "coeff_p": coeff_p, "MO_mode": True, "popsize":popsize,
+                                    "n_clusters": 5, "max_coeffs": max_coeffs, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset,
+                                    "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False,
+                                    "discount_size":False, "k2":False,"balanced":False,"log_pop":log_pop,"nr_objs": 2, "remove_duplicates":False, "replacement_strategy":"sample", "drift": True,
+                                    "donor_fraction":2., "full_mode":False}),
+
+                gpgomea_experiment({"csv_name":"MO_discounted", "depth":4 , "dir": directory, "batch_size": 256, "ff": ff, "seed": i, "coeff_p": coeff_p, "MO_mode": True, "popsize":popsize,
+                                    "n_clusters": 5, "max_coeffs": max_coeffs, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset,
+                                    "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False,
+                                    "discount_size":True, "k2":False,"balanced":False,"log_pop":log_pop,"nr_objs": 2, "remove_duplicates":False, "replacement_strategy":"sample", "drift": True,
+                                    "donor_fraction":2., "full_mode":False}),
+                ]:
+                    #pass
+                    experiments.append(exp)
 
         else:
             for exp in [
@@ -256,7 +285,9 @@ for i in range(10):
 
 print("NR EXPERIMENTS", len(experiments))
 # random.shuffle(experiments)
-p = Pool(n_processes)
+
+
+p = Pool(processes=n_processes)
 p.map(run, experiments)
 
 

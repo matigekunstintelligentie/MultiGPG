@@ -747,6 +747,11 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & do
     bool ever_improved = false;
 
     for(int fos_idx = 0; fos_idx < fos.size(); fos_idx++){
+        // Return when time runs out
+        if(g::max_time > 0 && tock(g::start_time) >= g::max_time){
+            return parent;
+        }
+
         int mt = fos[random_fos_order[fos_idx]].second;
 
         auto crossover_mask = fos[random_fos_order[fos_idx]].first;
