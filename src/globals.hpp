@@ -450,6 +450,7 @@ namespace g {
       Mat X = remove_column(Xy, Xy.cols()-1);
 
       Vec y = Xy.col(Xy.cols()-1);
+
       fit_func->set_Xy(X,y);
       mse_func->set_Xy(X,y);
 
@@ -462,10 +463,11 @@ namespace g {
         if (!exists(path_to_validation_set)) {
             throw runtime_error("Training set not found at path "+path_to_validation_set);
         }
-        Mat Xy_val = load_csv(path_to_training_set);
+        Mat Xy_val = load_csv(path_to_validation_set);
         Mat X_val = remove_column(Xy_val, Xy_val.cols()-1);
 
         Vec y_val = Xy_val.col(Xy_val.cols()-1);
+
 
         fit_func->set_Xy(X_val,y_val, "val");
         mse_func->set_Xy(X_val,y_val, "val");
@@ -590,6 +592,8 @@ namespace g {
       + " donor_fraction " + std::to_string(donor_fraction)
       + " accept_diversity " + std::to_string(accept_diversity)
       );
+
+
   }
 
   void clear_globals() {
