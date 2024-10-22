@@ -51,6 +51,8 @@ namespace g {
   bool drift = false;
   bool koza = false;
 
+  auto start_time = tick();
+
   int n_clusters = 7;
   int nr_objs = 2;
 
