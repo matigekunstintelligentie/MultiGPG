@@ -154,7 +154,7 @@ struct ElitistArchive{
             for(int j=0; j<nr_objs; j++){
                 float epsilon;
                 float difference = max_objs[j]-min_objs[j];
-                if(difference>0) {
+                if(difference>0.) {
                     epsilon = difference/num_boxes;
                 }
                 else{
@@ -166,6 +166,10 @@ struct ElitistArchive{
                     break;
                 }
             }
+            if(identical_objectives_already_exist){
+                break;
+            }
+
             //}
 
             // if(identical_objectives_already_exist){
