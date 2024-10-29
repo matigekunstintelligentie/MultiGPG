@@ -149,43 +149,35 @@ struct ElitistArchive{
             // }
 
             // Rigid grid
-            //if(!identical_objectives_already_exist){
-            identical_objectives_already_exist = true;
-            for(int j=0; j<nr_objs; j++){
-                float epsilon;
-                float difference = max_objs[j]-min_objs[j];
-                if(difference>0.) {
-                    epsilon = difference/num_boxes;
-                }
-                else{
-                    epsilon = 1./num_boxes;
-                }
+            if(!identical_objectives_already_exist) {
+                identical_objectives_already_exist = true;
+                for (int j = 0; j < nr_objs; j++) {
+                    float epsilon;
+                    float difference = max_objs[j] - min_objs[j];
+                    if (difference > 0.) {
+                        epsilon = difference / num_boxes;
+                    } else {
+                        epsilon = 1. / num_boxes;
+                    }
 
-                if(int((individual->fitness[j] - min_objs[j])/epsilon) != int((MO_archive[i]->fitness[j] - min_objs[j])/epsilon)){
-                    identical_objectives_already_exist = false;
-                    break;
+                    if (int((individual->fitness[j] - min_objs[j]) / epsilon) !=
+                        int((MO_archive[i]->fitness[j] - min_objs[j]) / epsilon)) {
+                        identical_objectives_already_exist = false;
+                        break;
+                    }
                 }
             }
-            if(identical_objectives_already_exist){
-                break;
-            }
 
-            //}
+//            if(identical_objectives_already_exist){
+//                break;
+//            }
 
-            // if(identical_objectives_already_exist){
-            //     if(dominates(individual, MO_archive[i])){
-            //         MO_archive[i]->clear();
-            //         MO_archive[i] = nullptr;
-            //         diversity_added = true;
-            //     }
-            //     break;
-            // }
 
             if(dominates(individual, MO_archive[i])){
                 MO_archive[i]->clear();
                 MO_archive[i] = nullptr;
+                identical_objectives_already_exist = false;
             }
-
 
 
         }
