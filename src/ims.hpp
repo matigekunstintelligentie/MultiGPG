@@ -232,11 +232,11 @@ struct IMS
                                                g::fit_func->y_train.mean())
                                                 .square()
                                                 .mean()),
-              " ",
+              " best size ",
               best_size,
-              " ",
+              " best size discount ",
               best_size_discount,
-              " ",
+              " best second obj ",
               best_second_obj,
               " ",
               best_string);

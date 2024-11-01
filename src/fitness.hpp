@@ -209,10 +209,15 @@ struct MSEFitness : Fitness
             n->fitness[2] = max_error;
 
         } else {
-            vector<float> tmp_fitness = { fitness,
-                                          static_cast<float>(
-                                                  n->get_num_nodes(true, discount_size)),
-                                          static_cast<float>(n->get_height()) };
+            vector<float> tmp_fitness = { 0.,0.,0 };
+            tmp_fitness[0] = fitness;
+            if (change_second_obj) {
+                tmp_fitness[1] = max_error;
+            } else {
+                tmp_fitness[1] = n->get_num_nodes(true, discount_size);
+            }
+            tmp_fitness[2] = max_error;
+
             return tmp_fitness;
         }
 
@@ -301,10 +306,15 @@ struct LSMSEFitness : Fitness
             }
             n->fitness[2] = max_error;
         } else {
-            vector<float> tmp_fitness = { fitness,
-                                          static_cast<float>(
-                                                  n->get_num_nodes(true, discount_size)),
-                                          static_cast<float>(n->get_height()) };
+            vector<float> tmp_fitness = { 0.,0.,0 };
+            tmp_fitness[0] = fitness;
+            if (change_second_obj) {
+                tmp_fitness[1] = max_error;
+            } else {
+                tmp_fitness[1] = n->get_num_nodes(true, discount_size);
+            }
+            tmp_fitness[2] = max_error;
+
             return tmp_fitness;
         }
 
