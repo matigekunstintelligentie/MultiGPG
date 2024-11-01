@@ -2,31 +2,31 @@ cmake_minimum_required(VERSION 3.17)  # CMake version check
 cmake_policy(SET CMP0026 NEW)
 cmake_policy(SET CMP0051 NEW)
 function(debug_message messages)
-  message(STATUS "\n")
-  message(STATUS "${messages}")
-  message(STATUS "\n")
+    message(STATUS "\n")
+    message(STATUS "${messages}")
+    message(STATUS "\n")
 endfunction()
 # Variables
 set(PROJECT_NAME mgpg)
 set(PY_LIB_NAME _pb_mgpg)
 set(NUM_PRECISION 9)
 set(CMAKE_CXX_FLAGS_VALGRIND
-    "${CMAKE_CXX_FLAGS_VALGRIND} -g -O0 -DDEBUG -Wall -Wconversion -pedantic ${CXX_EXTRA}")
+        "${CMAKE_CXX_FLAGS_VALGRIND} -g -O0 -DDEBUG -Wall -Wconversion -pedantic ${CXX_EXTRA}")
 set(CMAKE_CXX_FLAGS_DEBUG
-    "${CMAKE_CXX_FLAGS_DEBUG} -g -O0 -DDEBUG -Wall -Wconversion ${CXX_EXTRA}")
+        "${CMAKE_CXX_FLAGS_DEBUG} -g -O0 -DDEBUG -Wall -Wconversion ${CXX_EXTRA}")
 set(CMAKE_CXX_FLAGS_RELEASE
-    "${CMAKE_CXX_FLAGS_RELEASE} -O3 -DNDEBUG -march=native ${CXX_EXTRA}")
+        "${CMAKE_CXX_FLAGS_RELEASE} -O3 -DNDEBUG ${CXX_EXTRA}")
 # Create project
-project(${PROJECT_NAME})               
+project(${PROJECT_NAME})
 # Enable c++17 standard
-set(CMAKE_CXX_STANDARD 17)  
+set(CMAKE_CXX_STANDARD 17)
 set(PYBIND11_CPP_STANDARD -std=c++17)
 ### Inclusions
 # Include Eigen
 find_package(Eigen3 REQUIRED)
 set(EIGEN3_INCLUDE_DIR "${EIGEN3_INCLUDE_DIR}")
 if(NOT EIGEN3_INCLUDE_DIR)
-  message(FATAL_ERROR "Please point the environment variable EIGEN3_INCLUDE_DIR to the include directory of your Eigen3 installation.")
+    message(FATAL_ERROR "Please point the environment variable EIGEN3_INCLUDE_DIR to the include directory of your Eigen3 installation.")
 endif()
 #add_subdirectory(./dlib dlib_build)
 #include_directories(./dlib/)
@@ -38,11 +38,11 @@ find_package(pybind11 CONFIG REQUIRED)
 ### Compilation flags
 # Set correct compilation flags
 if(CMAKE_BUILD_TYPE STREQUAL "debug")
-  set(ALL_COMPILE_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}")
+    set(ALL_COMPILE_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_DEBUG}")
 elseif(CMAKE_BUILD_TYPE STREQUAL "release")
-  set(ALL_COMPILE_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
+    set(ALL_COMPILE_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_RELEASE}")
 elseif(CMAKE_BUILD_TYPE STREQUAL "valgrind")
-  set(ALL_COMPILE_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_VALGRIND}")
+    set(ALL_COMPILE_FLAGS "${CMAKE_CXX_FLAGS} ${CMAKE_CXX_FLAGS_VALGRIND}")
 endif()
 # Add executable target with source files listed in SOURCE_FILES variable
 add_executable(${PROJECT_NAME} src/main.cpp)

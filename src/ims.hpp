@@ -22,7 +22,7 @@ struct IMS
   // vectors for storing csv outputs
   vector<int> best_sizes;
   vector<int> best_sizes_discount;
-  vector<float> best_kommenda_complexities;
+  vector<float> best_second_objs;
   vector<float> best_train_mses;
   vector<float> best_val_mses;
   vector<float> times;
@@ -169,7 +169,7 @@ struct IMS
         float best_val_mse = 9999999.;
         float best_size = 9999999.;
         float best_size_discount = 999999999.;
-        float best_kommenda_complexity = 999999999.;
+        float best_second_obj = 999999999.;
         string best_substring = "";
 
         string MO_archive_string = "{";
@@ -178,22 +178,24 @@ struct IMS
 
         for (auto ind : g::ea->MO_archive) {
 
-          float train_mse = g::fit_func->get_fitness_MO(
-            ind, g::fit_func->X_train, g::fit_func->y_train, false)[0];
+          vector<float> fitness = g::fit_func->get_fitness_MO(
+            ind, g::fit_func->X_train, g::fit_func->y_train, false);
+
+          float train_mse = fitness[0];
 
           float val_mse = g::fit_func->get_fitness_MO(
             ind, g::fit_func->X_val, g::fit_func->y_val, false)[0];
 
           int size = ind->get_num_nodes(true, false);
 
-          float k_complexity = ind->get_complexity_kommenda();
+          float second_obj = fitness[1];
 
           if (best_train_mse > train_mse) {
             ;
             best_train_mse = train_mse;
             best_val_mse = val_mse;
             best_size = size;
-            best_kommenda_complexity = k_complexity;
+            best_second_obj = second_obj;
             best_size_discount = ind->get_num_nodes(true, true);
 
             best_string = "(" + to_string(ind->add) + "+(" +
@@ -213,7 +215,7 @@ struct IMS
                               "," + to_string(val_mse) + "," +
                               to_string(ind->get_num_nodes(true)) + "," +
                               to_string(ind->get_num_nodes(true, true)) + "," +
-                              to_string(ind->fitness[1]) + "," + str_ind + "]";
+                              to_string(second_obj) + "," + str_ind + "]";
         }
         MO_archive_string += "}";
 
@@ -235,7 +237,7 @@ struct IMS
               " ",
               best_size_discount,
               " ",
-              best_kommenda_complexity,
+              best_second_obj,
               " ",
               best_string);
 
@@ -244,7 +246,7 @@ struct IMS
         best_val_mses.push_back(best_val_mse);
         best_sizes.push_back(best_size);
         best_strings.push_back(best_string);
-        best_kommenda_complexities.push_back(best_kommenda_complexity);
+          best_second_objs.push_back(best_second_obj);
         best_sizes_discount.push_back(best_size_discount);
         times.push_back(tock(g::start_time));
         if (g::log_front) {
@@ -304,8 +306,7 @@ struct IMS
         to_string(best_sizes_discount[best_sizes_discount.size() - 1]) + "\t";
       // 5 best size
       str +=
-        to_string(
-          best_kommenda_complexities[best_kommenda_complexities.size() - 1]) +
+        to_string(best_second_objs[best_second_objs.size() - 1]) +
         "\t";
       // 6 best string
       str += best_string + "\t";

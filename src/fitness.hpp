@@ -21,7 +21,6 @@ struct Fitness
     Vec y_train, y_val, y_batch, y_batch_opt;
 
     bool discount_size = false;
-
     bool change_second_obj = false;
 
     virtual string name() { throw runtime_error("Not implemented"); }
@@ -207,8 +206,8 @@ struct MSEFitness : Fitness
                 n->fitness[1] = n->get_num_nodes(true, discount_size);
             }
 
-            n->fitness[2] = n->get_complexity_kommenda();
-            // n->get_complexity_kommenda();
+            n->fitness[2] = max_error;
+
         } else {
             vector<float> tmp_fitness = { fitness,
                                           static_cast<float>(
@@ -300,8 +299,7 @@ struct LSMSEFitness : Fitness
             } else {
                 n->fitness[1] = n->get_num_nodes(true, discount_size);
             }
-            n->fitness[2] = n->get_complexity_kommenda();
-            // n->get_complexity_kommenda();
+            n->fitness[2] = max_error;
         } else {
             vector<float> tmp_fitness = { fitness,
                                           static_cast<float>(

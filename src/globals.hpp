@@ -501,6 +501,8 @@ namespace g {
     koza = parser.get<bool>("koza");
     drift = parser.get<bool>("drift");
 
+    full_mode = parser.get<bool>("full_mode");
+
     discount_size = parser.get<bool>("discount_size");
     change_second_obj = parser.get<bool>("change_second_obj");
     balanced = parser.get<bool>("balanced");
