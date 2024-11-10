@@ -21,7 +21,7 @@ struct Fitness
     Vec y_train, y_val, y_batch, y_batch_opt;
 
     bool discount_size = false;
-    bool change_second_obj = false;
+    string change_second_obj = "size";
 
     virtual string name() { throw runtime_error("Not implemented"); }
 
@@ -191,7 +191,7 @@ struct MSEFitness : Fitness
             fitness < 0) // the latter can happen due to float overflow
             fitness = INF;
 
-        float max_error = (y - out).maxCoeff();
+        float max_error = (y - out).square().maxCoeff();
 
         if (isnan(max_error) || max_error < 0) {
             max_error = INF;
@@ -200,9 +200,20 @@ struct MSEFitness : Fitness
         if (change_fitness) {
             n->fitness[0] = fitness;
 
-            if (change_second_obj) {
+
+            if (change_second_obj=="maxerror") {
                 n->fitness[1] = max_error;
-            } else {
+            }
+            else if(change_second_obj=="kommenda"){
+                n->fitness[1] = n->get_complexity_kommenda();
+                if(isnan(n->fitness[1])){
+                    n->fitness[1] = INF;
+                }
+            }
+            else if(change_second_obj=="plus"){
+                n->fitness[1] = n->get_plus_loss(true);
+            }
+            else{
                 n->fitness[1] = n->get_num_nodes(true, discount_size);
             }
 
@@ -211,9 +222,19 @@ struct MSEFitness : Fitness
         } else {
             vector<float> tmp_fitness = { 0.,0.,0 };
             tmp_fitness[0] = fitness;
-            if (change_second_obj) {
+            if (change_second_obj=="maxerror") {
                 tmp_fitness[1] = max_error;
-            } else {
+            }
+            else if(change_second_obj=="kommenda"){
+                tmp_fitness[1] = n->get_complexity_kommenda();
+                if(isnan(tmp_fitness[1])){
+                    tmp_fitness[1] = INF;
+                }
+            }
+            else if(change_second_obj=="plus"){
+                tmp_fitness[1] = n->get_plus_loss(true);
+            }
+            else{
                 tmp_fitness[1] = n->get_num_nodes(true, discount_size);
             }
             tmp_fitness[2] = max_error;
@@ -291,7 +312,7 @@ struct LSMSEFitness : Fitness
         if (isnan(fitness) || fitness < 0 || isinf(fitness)) {
             fitness = INF;
         }
-        float max_error = (y - out).maxCoeff();
+        float max_error = (y - out).square().maxCoeff();
 
         if (isnan(max_error) || max_error < 0) {
             max_error = INF;
@@ -299,21 +320,41 @@ struct LSMSEFitness : Fitness
 
         if (change_fitness) {
             n->fitness[0] = fitness;
-            if (change_second_obj) {
+            if (change_second_obj=="maxerror") {
                 n->fitness[1] = max_error;
-            } else {
+            }
+            else if(change_second_obj=="kommenda"){
+                n->fitness[1] = n->get_complexity_kommenda();
+                if(isnan(n->fitness[1])){
+                    n->fitness[1] = INF;
+                }
+            }
+            else if(change_second_obj=="plus"){
+                n->fitness[1] = n->get_plus_loss(true);
+            }
+            else{
                 n->fitness[1] = n->get_num_nodes(true, discount_size);
             }
+
             n->fitness[2] = max_error;
         } else {
             vector<float> tmp_fitness = { 0.,0.,0 };
             tmp_fitness[0] = fitness;
-            if (change_second_obj) {
+            if (change_second_obj=="maxerror") {
                 tmp_fitness[1] = max_error;
-            } else {
+            }
+            else if(change_second_obj=="kommenda"){
+                tmp_fitness[1] = n->get_complexity_kommenda();
+                if(isnan(tmp_fitness[1])){
+                    tmp_fitness[1] = INF;
+                }
+            }
+            else if(change_second_obj=="plus"){
+                tmp_fitness[1] = n->get_plus_loss(true);
+            }
+            else{
                 tmp_fitness[1] = n->get_num_nodes(true, discount_size);
             }
-            tmp_fitness[2] = max_error;
 
             return tmp_fitness;
         }

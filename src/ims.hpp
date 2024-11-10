@@ -183,12 +183,14 @@ struct IMS
 
           float train_mse = fitness[0];
 
+          float second_obj = fitness[1];
+
           float val_mse = g::fit_func->get_fitness_MO(
             ind, g::fit_func->X_val, g::fit_func->y_val, false)[0];
 
           int size = ind->get_num_nodes(true, false);
 
-          float second_obj = fitness[1];
+
 
           if (best_train_mse > train_mse) {
             ;
