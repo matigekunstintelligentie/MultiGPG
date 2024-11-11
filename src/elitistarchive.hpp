@@ -140,15 +140,8 @@ struct ElitistArchive{
                 break;
             }
 
-            // identical_objectives_already_exist = true;
-            // for(int j=0; j<2; j++){
-            //     if(individual->fitness[j] != MO_archive[i]->fitness[j]){
-            //         identical_objectives_already_exist = false;
-            //         break;
-            //     }
-            // }
-
             // Rigid grid
+            // Only check if identical objective does not exist yet
             if(!identical_objectives_already_exist) {
                 identical_objectives_already_exist = true;
                 for (int j = 0; j < nr_objs; j++) {
@@ -168,15 +161,18 @@ struct ElitistArchive{
                 }
             }
 
-//            if(identical_objectives_already_exist){
-//                break;
-//            }
-
-
+            // Check whether individual dominates MO_archive, if it does, remove entry in archive and reset identical_objectives_already_exist
             if(dominates(individual, MO_archive[i])){
                 MO_archive[i]->clear();
                 MO_archive[i] = nullptr;
                 identical_objectives_already_exist = false;
+            }
+            else{
+                // If individual is too close in rigid grid and is also dominated, disregard itq
+                if(identical_objectives_already_exist){
+                    break;
+                }
+
             }
 
 
