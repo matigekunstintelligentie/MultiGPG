@@ -72,6 +72,24 @@ struct Individual {
   int get_height(){
       return trees[trees.size()-1]->get_height(this->trees);
   }
+
+//    new Add(), new Sub(), new Neg(), new Mul(), new Div(), new Inv(),
+//    new Square(), new Sqrt(), new Cube(),
+//    new Sin(), new Cos(), new Nothing(),
+//    new Log(), new Pow(), new Max(), new Min(), new Exp(), new Abs()
+
+  int get_plus_loss(bool excl_introns){
+      vector<Node*> nodes = trees[trees.size()-1]->subtree(this->trees, !excl_introns);
+
+      vector<Node*> node_vec;
+      int count = 99999;
+      for(auto node: nodes) {
+            if(node->op->sym()=="+"){
+                count--;
+            }
+      }
+      return count;
+  }
   
   int get_num_nodes(bool excl_introns, bool discount=false){
 

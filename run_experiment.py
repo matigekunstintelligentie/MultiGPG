@@ -77,7 +77,7 @@ parser.add_argument('--use_GA', type=str2bool)
 parser.add_argument('--use_GP', type=str2bool)
 parser.add_argument('--drift', type=str2bool)
 parser.add_argument('--koza', type=str2bool)
-parser.add_argument('--change_second_obj', type=str2bool)
+parser.add_argument('--change_second_obj', type=str)
 parser.add_argument('--full_mode', type=str2bool)
 
 args = parser.parse_args()

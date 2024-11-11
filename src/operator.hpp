@@ -129,7 +129,7 @@ struct Add : Fun {
   }
 
     float complexity_kommenda(vector<float> child_complexities) override {
-        return child_complexities[0] + child_complexities[1] + 90;
+        return child_complexities[0] + child_complexities[1];
     }
 
   string sym() override {
@@ -208,7 +208,7 @@ struct Sub : Fun {
   }
 
     float complexity_kommenda(vector<float> child_complexities) override {
-        return child_complexities[0] + child_complexities[1] + 80;
+        return child_complexities[0] + child_complexities[1];
     }
 
   string sym() override {
@@ -247,7 +247,7 @@ struct Mul : Fun {
   }
 
     float complexity_kommenda(vector<float> child_complexities) override {
-        return child_complexities[0] + child_complexities[1] + 70;
+        return child_complexities[0] * child_complexities[1] + 1;
     }
 
   string sym() override {
@@ -290,7 +290,7 @@ struct Inv : Fun {
   }
 
     float complexity_kommenda(vector<float> child_complexities) override {
-        return child_complexities[0] + child_complexities[1] + 2.;
+        return child_complexities[0] * child_complexities[1] + 1.;
     }
   
   Vec apply(const Mat & X) override {
@@ -375,7 +375,7 @@ struct Sin : Fun {
   }
 
     float complexity_kommenda(vector<float> child_complexities) override {
-        return child_complexities[0] + child_complexities[1] + 5.;
+        return std::pow(child_complexities[0],3);
     }
 
   string sym() override {
@@ -416,7 +416,7 @@ struct Abs : Fun {
 
 
     float complexity_kommenda(vector<float> child_complexities) override {
-        return child_complexities[0] + 1.;
+        return std::pow(child_complexities[0],2);
     }
 
   string sym() override {
@@ -459,7 +459,7 @@ struct Exp : Fun {
   }
 
     float complexity_kommenda(vector<float> child_complexities) override {
-        return child_complexities[0] + 5.;
+        return std::pow(child_complexities[0],3);
     }
 
   string sym() override {
@@ -500,7 +500,7 @@ struct Pow : Fun {
   }
 
     float complexity_kommenda(vector<float> child_complexities) override {
-        return child_complexities[0] + 5.;
+        return std::pow(child_complexities[0],3);
     }
 
 
@@ -542,7 +542,7 @@ struct Max : Fun {
   }
 
     float complexity_kommenda(vector<float> child_complexities) override {
-        return child_complexities[0] + child_complexities[1] + 2.;
+        return std::pow(child_complexities[0],2);
     }
 
 
@@ -584,7 +584,7 @@ struct Min : Fun {
   }
 
     float complexity_kommenda(vector<float> child_complexities) override {
-        return child_complexities[0] + child_complexities[1] + 2.;
+        return std::pow(child_complexities[0],2);
     }
 
   string sym() override {
@@ -626,7 +626,7 @@ struct Cos : Fun {
   }
 
     float complexity_kommenda(vector<float> child_complexities) override {
-        return child_complexities[0] + 4.;
+        return std::pow(child_complexities[0],3);
     }
 
   string sym() override {
@@ -666,7 +666,7 @@ struct Log : Fun {
   }
 
     float complexity_kommenda(vector<float> child_complexities) override {
-        return child_complexities[0] + 3.;
+        return std::pow(child_complexities[0],3);
     }
 
   string sym() override {
@@ -709,7 +709,7 @@ struct Sqrt : Fun {
   }
 
     float complexity_kommenda(vector<float> child_complexities) override {
-        return child_complexities[0] + 2.;
+        return std::pow(child_complexities[0],2);
     }
 
   string sym() override {
@@ -752,7 +752,7 @@ struct Square : Fun {
 
 
     float complexity_kommenda(vector<float> child_complexities) override {
-        return child_complexities[0] + 5.;
+        return std::pow(child_complexities[0],2);
     }
 
   string sym() override {
@@ -797,7 +797,7 @@ struct Cube : Fun {
   }
 
   float complexity_kommenda(vector<float> child_complexities) override {
-    return child_complexities[0] + 5.;
+      return std::pow(child_complexities[0],3);
   }
 
   string sym() override {
