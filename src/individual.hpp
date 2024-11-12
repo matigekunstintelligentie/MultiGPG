@@ -78,17 +78,21 @@ struct Individual {
 //    new Sin(), new Cos(), new Nothing(),
 //    new Log(), new Pow(), new Max(), new Min(), new Exp(), new Abs()
 
+float regularise_LS_terms(){
+      return pow(this->add, 2.) + pow(this->mul - 1., 2.);
+  }
+
   int get_plus_loss(bool excl_introns){
       vector<Node*> nodes = trees[trees.size()-1]->subtree(this->trees, !excl_introns);
 
       vector<Node*> node_vec;
-      int count = 99999;
+      int count = 32;
       for(auto node: nodes) {
             if(node->op->sym()=="+"){
                 count--;
             }
       }
-      return count;
+      return max(count, 0);
   }
   
   int get_num_nodes(bool excl_introns, bool discount=false){

@@ -213,6 +213,9 @@ struct MSEFitness : Fitness
             else if(change_second_obj=="plus"){
                 n->fitness[1] = n->get_plus_loss(true);
             }
+            else if(change_second_obj=="ls"){
+                n->fitness[1] = n->regularise_LS_terms();
+            }
             else{
                 n->fitness[1] = n->get_num_nodes(true, discount_size);
             }
@@ -233,6 +236,9 @@ struct MSEFitness : Fitness
             }
             else if(change_second_obj=="plus"){
                 tmp_fitness[1] = n->get_plus_loss(true);
+            }
+            else if(change_second_obj=="ls"){
+                n->fitness[1] = n->regularise_LS_terms();
             }
             else{
                 tmp_fitness[1] = n->get_num_nodes(true, discount_size);
@@ -332,6 +338,9 @@ struct LSMSEFitness : Fitness
             else if(change_second_obj=="plus"){
                 n->fitness[1] = n->get_plus_loss(true);
             }
+            else if(change_second_obj=="ls"){
+                n->fitness[1] = n->regularise_LS_terms();
+            }
             else{
                 n->fitness[1] = n->get_num_nodes(true, discount_size);
             }
@@ -351,6 +360,9 @@ struct LSMSEFitness : Fitness
             }
             else if(change_second_obj=="plus"){
                 tmp_fitness[1] = n->get_plus_loss(true);
+            }
+            else if(change_second_obj=="ls"){
+                n->fitness[1] = n->regularise_LS_terms();
             }
             else{
                 tmp_fitness[1] = n->get_num_nodes(true, discount_size);
