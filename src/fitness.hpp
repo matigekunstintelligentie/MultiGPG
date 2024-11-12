@@ -340,6 +340,11 @@ struct LSMSEFitness : Fitness
             }
             else if(change_second_obj=="ls"){
                 n->fitness[1] = n->regularise_LS_terms();
+
+                if(n->fitness[1]<=0){
+                    print(n->human_repr(true));
+                    print();
+                }
             }
             else{
                 n->fitness[1] = n->get_num_nodes(true, discount_size);
@@ -362,7 +367,7 @@ struct LSMSEFitness : Fitness
                 tmp_fitness[1] = n->get_plus_loss(true);
             }
             else if(change_second_obj=="ls"){
-                n->fitness[1] = n->regularise_LS_terms();
+                tmp_fitness[1] = n->regularise_LS_terms();
             }
             else{
                 tmp_fitness[1] = n->get_num_nodes(true, discount_size);
