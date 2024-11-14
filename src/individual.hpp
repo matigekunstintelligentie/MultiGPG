@@ -79,7 +79,7 @@ struct Individual {
 //    new Log(), new Pow(), new Max(), new Min(), new Exp(), new Abs()
 
 float regularise_LS_terms(){
-      return pow(this->add, 2.) + pow(this->mul - 1., 2.);
+      return std::log(1. + pow(this->add, 2.) + pow(this->mul - 1., 2.));
   }
 
   int get_plus_loss(bool excl_introns){
@@ -127,7 +127,7 @@ float regularise_LS_terms(){
 
   float get_complexity_kommenda(){
       vector<float> X;
-    return trees[trees.size()-1]->get_complexity_kommenda(X, this->trees);
+    return std::log(1. + trees[trees.size()-1]->get_complexity_kommenda(X, this->trees));
   }
 
   pair<Vec, Vec> get_output_der(const Mat & X){
