@@ -348,6 +348,18 @@ for i in range(10):
                                     "discount_size":False, "k2":True,"balanced":False,"log_pop":log_pop,"nr_objs": 2, "remove_duplicates":False, "replacement_strategy":"mutate", "drift": True,
                                     "donor_fraction":1., "full_mode":False, "change_second_obj": "ls"}),
 
+                gpgomea_experiment({"csv_name":"MO_equalclustersize_k2_frac1_mutate_plus", "depth":4 , "dir": directory, "batch_size": 256, "ff": ff, "seed": i, "coeff_p": coeff_p, "MO_mode": True, "popsize":popsize*5,
+                                    "n_clusters": 5, "max_coeffs": max_coeffs, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset,
+                                    "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False,
+                                    "discount_size":False, "k2":True,"balanced":False,"log_pop":log_pop,"nr_objs": 2, "remove_duplicates":True, "replacement_strategy":"mutate", "drift": True,
+                                    "donor_fraction":1., "full_mode":False, "change_second_obj": "plus"}),
+
+                gpgomea_experiment({"csv_name":"MO_equalclustersize_k2_frac1_plus", "depth":4 , "dir": directory, "batch_size": 256, "ff": ff, "seed": i, "coeff_p": coeff_p, "MO_mode": True, "popsize":popsize*5,
+                                    "n_clusters": 5, "max_coeffs": max_coeffs, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset,
+                                    "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False,
+                                    "discount_size":False, "k2":True,"balanced":False,"log_pop":log_pop,"nr_objs": 2, "remove_duplicates":False, "replacement_strategy":"mutate", "drift": True,
+                                    "donor_fraction":1., "full_mode":False, "change_second_obj": "plus"}),
+
                 gpgomea_experiment({"csv_name":"SO_maxerror", "depth":4 , "dir": directory, "batch_size": 256, "ff": ff, "seed": i, "coeff_p": coeff_p, "MO_mode": False, "popsize":popsize,
                                     "n_clusters": 1, "max_coeffs": max_coeffs, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset,
                                     "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False,
@@ -365,6 +377,38 @@ for i in range(10):
                                     "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False,
                                     "discount_size":False, "k2":False,"balanced":False,"log_pop":log_pop,"nr_objs": 2, "remove_duplicates":False, "replacement_strategy":"sample", "drift": True,
                                     "donor_fraction":2., "full_mode":False, "change_second_obj": "ls"}),
+
+                gpgomea_experiment({"csv_name":"SO_plus", "depth":4 , "dir": directory, "batch_size": 256, "ff": ff, "seed": i, "coeff_p": coeff_p, "MO_mode": False, "popsize":popsize,
+                                    "n_clusters": 1, "max_coeffs": max_coeffs, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset,
+                                    "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False,
+                                    "discount_size":False, "k2":False,"balanced":False,"log_pop":log_pop,"nr_objs": 2, "remove_duplicates":False, "replacement_strategy":"sample", "drift": True,
+                                    "donor_fraction":2., "full_mode":False, "change_second_obj": "plus"}),
+
+                gpgomea_experiment({"csv_name":"SO_mutate_maxerror", "depth":4 , "dir": directory, "batch_size": 256, "ff": ff, "seed": i, "coeff_p": coeff_p, "MO_mode": False, "popsize":popsize,
+                                    "n_clusters": 1, "max_coeffs": max_coeffs, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset,
+                                    "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False,
+                                    "discount_size":False, "k2":False,"balanced":False,"log_pop":log_pop,"nr_objs": 2, "remove_duplicates":True, "replacement_strategy":"mutate", "drift": True,
+                                    "donor_fraction":2., "full_mode":False, "change_second_obj": "maxerror"}),
+
+                gpgomea_experiment({"csv_name":"SO_mutate_kommenda", "depth":4 , "dir": directory, "batch_size": 256, "ff": ff, "seed": i, "coeff_p": coeff_p, "MO_mode": False, "popsize":popsize,
+                                    "n_clusters": 1, "max_coeffs": max_coeffs, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset,
+                                    "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False,
+                                    "discount_size":False, "k2":False,"balanced":False,"log_pop":log_pop,"nr_objs": 2, "remove_duplicates":True, "replacement_strategy":"mutate", "drift": True,
+                                    "donor_fraction":2., "full_mode":False, "change_second_obj": "kommenda"}),
+
+                gpgomea_experiment({"csv_name":"SO_mutate_ls", "depth":4 , "dir": directory, "batch_size": 256, "ff": ff, "seed": i, "coeff_p": coeff_p, "MO_mode": False, "popsize":popsize,
+                                    "n_clusters": 1, "max_coeffs": max_coeffs, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset,
+                                    "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False,
+                                    "discount_size":False, "k2":False,"balanced":False,"log_pop":log_pop,"nr_objs": 2, "remove_duplicates":True, "replacement_strategy":"mutate", "drift": True,
+                                    "donor_fraction":2., "full_mode":False, "change_second_obj": "ls"}),
+
+                gpgomea_experiment({"csv_name":"SO_mutate_plus", "depth":4 , "dir": directory, "batch_size": 256, "ff": ff, "seed": i, "coeff_p": coeff_p, "MO_mode": False, "popsize":popsize,
+                                    "n_clusters": 1, "max_coeffs": max_coeffs, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset,
+                                    "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False,
+                                    "discount_size":False, "k2":False,"balanced":False,"log_pop":log_pop,"nr_objs": 2, "remove_duplicates":True, "replacement_strategy":"mutate", "drift": True,
+                                    "donor_fraction":2., "full_mode":False, "change_second_obj": "plus"}),
+
+
                 #Missing: k2+equal+frac1, balanced_equal_frac1 -> use best of these with: init, duplicates and also SO (5)
                 #Best with Different objs, both SO and MO (2)
                 #Total: (7)

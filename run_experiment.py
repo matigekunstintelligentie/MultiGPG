@@ -105,7 +105,7 @@ g = MGPGRegressor(t=args.t, g=args.g, tour=args.tour, d=args.depth,
         use_optim=args.optimize,
         pop=args.popsize,
         bs_opt=args.batch_size,
-        bs=2048,
+        bs="auto",
 
         verbose=args.verbose, 
         csv_file="{}/{}_{}_{}.csv".format(args.dir, args.seed, args.csv_name, args.dataset), 
