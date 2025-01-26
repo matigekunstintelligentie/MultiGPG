@@ -918,14 +918,15 @@ struct Evolution {
           vector<pair<vector<int>,int>> cluster_fbs;
           vector<vector<Node*>> donor_pop;
           for(int j = 0; j<g::nr_multi_trees; j++){
-              if(clustered_population[i].size()>0) {
+              if(clustered_donor_population[i].size()>0) {
                   vector<Node *> fos_pop;
-                  fos_pop.reserve(clustered_population[i].size());
-                  for (int x = 0; x < clustered_population[i].size(); x++) {
-                      fos_pop.push_back(clustered_population[i][x]->trees[j]);
+                  fos_pop.reserve(clustered_donor_population[i].size());
+                  for (int x = 0; x < clustered_donor_population[i].size(); x++) {
+                      fos_pop.push_back(clustered_donor_population[i][x]->trees[j]);
                   }
 
                   vector<vector<int>> fos = fbs[i][j]->build_linkage_tree(fos_pop, j);
+                  // Add multi-tree number to FOS
                   for (auto fos_el: fos) {
                       cluster_fbs.push_back(make_pair(fos_el, j));
                   }
