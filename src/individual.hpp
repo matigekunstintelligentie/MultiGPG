@@ -86,9 +86,9 @@ float regularise_LS_terms(){
       vector<Node*> nodes = trees[trees.size()-1]->subtree(this->trees, !excl_introns);
 
       vector<Node*> node_vec;
-      int count = 32;
+      int count = 100;
       for(auto node: nodes) {
-            if(node->op->sym()=="+"){
+            if(node->op->sym()=="cos"){
                 count--;
             }
       }
