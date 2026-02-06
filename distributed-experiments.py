@@ -153,7 +153,7 @@ arithmetic_fset = '+,-,*,/'
 sin_fset = "+,sin"
 
 
-result_dir = "./results/equalcluster"
+result_dir = "./results/test"
 
 
 experiments = []
@@ -323,7 +323,13 @@ for i in range(10):
                                     "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False,
                                     "discount_size":False, "k2":True,"balanced":False,"log_pop":log_pop,"nr_objs": 2, "remove_duplicates":False, "replacement_strategy":"sample", "drift": True,
                                     "donor_fraction":1., "full_mode":False}),
-                #
+                
+		gpgomea_experiment({"csv_name":"MO_equalclustersize_k2", "depth":4 , "dir": directory, "batch_size": 256, "ff": ff, "seed": i, "coeff_p": coeff_p, "MO_mode": True, "popsize":popsize*5,
+                                    "n_clusters": 5, "max_coeffs": max_coeffs, "nr_multi_trees": 4,  "t": duration, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset,
+                                    "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False,
+                                    "discount_size":False, "k2":True,"balanced":False,"log_pop":log_pop,"nr_objs": 2, "remove_duplicates":False, "replacement_strategy":"sample", "drift": True,
+                                    "donor_fraction":2., "full_mode":False}),
+                
                 # gpgomea_experiment({"csv_name":"MO_equalclustersize_k2_frac1_10hrs", "depth":4 , "dir": directory, "batch_size": 256, "ff": ff, "seed": i, "coeff_p": coeff_p, "MO_mode": True, "popsize":popsize*5,
                 #                     "n_clusters": 5, "max_coeffs": max_coeffs, "nr_multi_trees": 4,  "t": 3600*10, "g":generations, "use_adf":True, "use_aro": False, "dataset": dataset, "fset": fset,
                 #                     "log": True, "verbose": verbose, "contains_train": contains_train, "use_mse_opt": False, "ss": False, "use_ftol": False, "optimize": False,
