@@ -61,7 +61,15 @@ struct IMS
       // macro generation
 
       // update mini batch
-      g::fit_func->update_batch(g::batch_size);
+      bool mini_batch_changed = g::fit_func->update_batch(g::batch_size);
+      if (mini_batch_changed) {
+        vector<Individual*> old = g::ea->MO_archive; g::ea->MO_archive.clear();
+        for (auto ind : old) g::fit_func->get_fitness_MO(ind);
+        for (auto ind : old) { g::ea->updateMOArchive(ind); ind->clear(); }
+        for (auto ind : evolution->population) { g::fit_func->get_fitness_MO(ind); g::ea->updateMOArchive(ind); }
+        for (auto ind : g::ea->SO_archive) if (ind) g::fit_func->get_fitness_MO(ind);
+        for (auto ind : evolution->population) g::ea->updateSOArchive(ind);
+      }
 
       bool expression_found = false;
       if (best_train_mses.size() > 0) {

@@ -87,11 +87,11 @@ def sympy_to_numpy_fn(sympy_model):
             local_dict["x_{}".format(d)] = X[:, d]
         local_dict.update(extra_local_dict)
         variables_symbols = sympy.symbols(
-            " ".join(["x_{}".format(d) for d in range(X.shape[1])])
+            " ".join(["x_{}".format(d) for d in range(X.shape[1])]), seq=True
         )
         extra_symbols = list(extra_local_dict.keys())
         if len(extra_symbols) > 0:
-            extra_symbols = sympy.symbols(" ".join(extra_symbols))
+            extra_symbols = sympy.symbols(" ".join(extra_symbols), seq=True)
         else:
             extra_symbols = ()
 

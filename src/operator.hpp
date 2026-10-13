@@ -25,6 +25,10 @@ std::string to_string_with_precision(const T a_value, const int n = 6)
     return std::move(out).str();
 }
 
+inline Vec tterm(const Vec & partial, const Vec & d) {
+  return (d == 0).select(Vec::Zero(d.rows()), partial*d);
+}
+
 struct Op {
 
   virtual ~Op(){
@@ -73,6 +77,10 @@ struct Op {
 
   virtual pair<Vec, Vec> apply_der(const Mat & X, Mat & D) {
     throw runtime_error("Not implemented apply der 2");
+  }
+
+  virtual Mat apply_back(const Mat & X, const Vec & G) {
+    throw runtime_error("Not implemented");
   }
 
 
@@ -144,6 +152,13 @@ struct Add : Fun {
     return make_pair(apply(X), D.col(0) + D.col(1));
   }
 
+  Mat apply_back(const Mat & X, const Vec & G) override {
+    Mat A(X.rows(), 2);
+    A.col(0) = G;
+    A.col(1) = G;
+    return A;
+  }
+
   string human_repr(vector<string> & args) override {
     return "(" + args[0]+"+"+args[1] + ")";
   }
@@ -182,6 +197,12 @@ struct Neg : Fun {
 
   pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
     return make_pair(apply(X), -D);
+  }
+
+  Mat apply_back(const Mat & X, const Vec & G) override {
+    Mat A(X.rows(), 1);
+    A.col(0) = -G;
+    return A;
   }
 
   string human_repr(vector<string> & args) override {
@@ -223,6 +244,13 @@ struct Sub : Fun {
     return make_pair(apply(X), D.col(0)-D.col(1));
   }
 
+  Mat apply_back(const Mat & X, const Vec & G) override {
+    Mat A(X.rows(), 2);
+    A.col(0) = G;
+    A.col(1) = -G;
+    return A;
+  }
+
   string human_repr(vector<string> & args) override {
     return "(" + args[0]+"-"+args[1] + ")";
   }
@@ -259,7 +287,14 @@ struct Mul : Fun {
   }
 
    pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
-    return make_pair(apply(X), X.col(1)*D.col(0) + X.col(0)*D.col(1));
+    return make_pair(apply(X), tterm(X.col(1), D.col(0)) + tterm(X.col(0), D.col(1)));
+  }
+
+  Mat apply_back(const Mat & X, const Vec & G) override {
+    Mat A(X.rows(), 2);
+    A.col(0) = tterm(X.col(1), G);
+    A.col(1) = tterm(X.col(0), G);
+    return A;
   }
 
   string human_repr(vector<string> & args) override {
@@ -303,7 +338,15 @@ struct Inv : Fun {
   pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
     Vec denom = X.col(0).square();
     replace(denom, 0, NAN);
-    return make_pair(apply(X), -D.col(0)/denom);
+    return make_pair(apply(X), tterm(-1./denom, D.col(0)));
+  }
+
+  Mat apply_back(const Mat & X, const Vec & G) override {
+    Vec denom = X.col(0).square();
+    replace(denom, 0, NAN);
+    Mat A(X.rows(), 1);
+    A.col(0) = tterm(-1./denom, G);
+    return A;
   }
 
   string human_repr(vector<string> & args) override {
@@ -348,7 +391,16 @@ struct Div : Fun {
   pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
     Vec denom = X.col(1);
     replace(denom, 0, NAN);
-    return make_pair(apply(X), (X.col(1)*D.col(0) - X.col(0)*D.col(1))/denom.square());
+    return make_pair(apply(X), tterm(X.col(1)/denom.square(), D.col(0)) - tterm(X.col(0)/denom.square(), D.col(1)));
+  }
+
+  Mat apply_back(const Mat & X, const Vec & G) override {
+    Vec denom = X.col(1);
+    replace(denom, 0, NAN);
+    Mat A(X.rows(), 2);
+    A.col(0) = tterm(X.col(1)/denom.square(), G);
+    A.col(1) = tterm(-X.col(0)/denom.square(), G);
+    return A;
   }
 
   string human_repr(vector<string> & args) override {
@@ -387,7 +439,13 @@ struct Sin : Fun {
   }
 
   pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
-    return make_pair(apply(X), X.cos()*D.col(0));
+    return make_pair(apply(X), tterm(X.col(0).cos(), D.col(0)));
+  }
+
+  Mat apply_back(const Mat & X, const Vec & G) override {
+    Mat A(X.rows(), 1);
+    A.col(0) = tterm(X.col(0).cos(), G);
+    return A;
   }
 
   string human_repr(vector<string> & args) override {
@@ -431,7 +489,15 @@ struct Abs : Fun {
     Vec applied = apply(X);
     Vec appliedzero = applied;
     replace(appliedzero, 0, NAN);
-    return make_pair(applied, (X.col(0)*D.col(0))/appliedzero);
+    return make_pair(applied, tterm(X.col(0)/appliedzero, D.col(0)));
+  }
+
+  Mat apply_back(const Mat & X, const Vec & G) override {
+    Vec appliedzero = X.col(0).abs();
+    replace(appliedzero, 0, NAN);
+    Mat A(X.rows(), 1);
+    A.col(0) = tterm(X.col(0)/appliedzero, G);
+    return A;
   }
 
   string human_repr(vector<string> & args) override {
@@ -472,7 +538,13 @@ struct Exp : Fun {
 
   pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
     Vec applied = apply(X);
-    return make_pair(applied, applied * D.col(0));
+    return make_pair(applied, tterm(applied, D.col(0)));
+  }
+
+  Mat apply_back(const Mat & X, const Vec & G) override {
+    Mat A(X.rows(), 1);
+    A.col(0) = tterm(X.col(0).exp(), G);
+    return A;
   }
 
   string human_repr(vector<string> & args) override {
@@ -513,7 +585,15 @@ struct Pow : Fun {
   }
 
   pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
-    return make_pair(apply(X), X.col(0).pow(X.col(1)-1.)*(X.col(0)*D.col(1)*X.col(0).log() + X.col(1)*D.col(0)));
+    return make_pair(apply(X), tterm(X.col(0).pow(X.col(1)-1.)*X.col(0)*X.col(0).log(), D.col(1)) + tterm(X.col(0).pow(X.col(1)-1.)*X.col(1), D.col(0)));
+  }
+
+  Mat apply_back(const Mat & X, const Vec & G) override {
+    Vec base = X.col(0).pow(X.col(1)-1.);
+    Mat A(X.rows(), 2);
+    A.col(0) = tterm(base*X.col(1), G);
+    A.col(1) = tterm(base*X.col(0)*X.col(0).log(), G);
+    return A;
   }
 
   string human_repr(vector<string> & args) override {
@@ -555,8 +635,15 @@ struct Max : Fun {
   }
 
   pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
-    Vec gt = (X.col(0)>=X.col(1)).cast<float>();
-    return make_pair(apply(X), gt*D.col(0) + (1.-gt)*D.col(1));
+    return make_pair(apply(X), (X.col(0)>=X.col(1)).select(D.col(0), D.col(1)));
+  }
+
+  Mat apply_back(const Mat & X, const Vec & G) override {
+    Vec zero = Vec::Zero(X.rows());
+    Mat A(X.rows(), 2);
+    A.col(0) = (X.col(0)>=X.col(1)).select(G, zero);
+    A.col(1) = (X.col(0)>=X.col(1)).select(zero, G);
+    return A;
   }
 
   string human_repr(vector<string> & args) override {
@@ -596,8 +683,15 @@ struct Min : Fun {
   }
 
   pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
-    Vec gt = (X.col(0)<=X.col(1)).cast<float>();
-    return make_pair(apply(X), gt*D.col(0) + (1.-gt)*D.col(1));
+    return make_pair(apply(X), (X.col(0)<=X.col(1)).select(D.col(0), D.col(1)));
+  }
+
+  Mat apply_back(const Mat & X, const Vec & G) override {
+    Vec zero = Vec::Zero(X.rows());
+    Mat A(X.rows(), 2);
+    A.col(0) = (X.col(0)<=X.col(1)).select(G, zero);
+    A.col(1) = (X.col(0)<=X.col(1)).select(zero, G);
+    return A;
   }
 
   string human_repr(vector<string> & args) override {
@@ -638,7 +732,13 @@ struct Cos : Fun {
   }
 
   pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
-    return make_pair(apply(X), D.col(0)*(-X.sin()));
+    return make_pair(apply(X), tterm(-X.col(0).sin(), D.col(0)));
+  }
+
+  Mat apply_back(const Mat & X, const Vec & G) override {
+    Mat A(X.rows(), 1);
+    A.col(0) = tterm(-X.col(0).sin(), G);
+    return A;
   }
 
   string human_repr(vector<string> & args) override {
@@ -681,7 +781,15 @@ struct Log : Fun {
   pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
     Vec denom = X.col(0);
     replace(denom, 0, NAN);
-    return make_pair(apply(X), D.col(0)/denom);
+    return make_pair(apply(X), tterm(1./denom, D.col(0)));
+  }
+
+  Mat apply_back(const Mat & X, const Vec & G) override {
+    Vec denom = X.col(0);
+    replace(denom, 0, NAN);
+    Mat A(X.rows(), 1);
+    A.col(0) = tterm(1./denom, G);
+    return A;
   }
 
   string human_repr(vector<string> & args) override {
@@ -723,7 +831,13 @@ struct Sqrt : Fun {
 
   pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
     Vec sqrt = apply(X);
-    return make_pair(sqrt, D.col(0)/(2.*sqrt));
+    return make_pair(sqrt, tterm(1./(2.*sqrt), D.col(0)));
+  }
+
+  Mat apply_back(const Mat & X, const Vec & G) override {
+    Mat A(X.rows(), 1);
+    A.col(0) = tterm(1./(2.*X.col(0).sqrt()), G);
+    return A;
   }
 
   string human_repr(vector<string> & args) override {
@@ -769,7 +883,13 @@ struct Square : Fun {
   }
 
   pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
-    return make_pair(apply(X), 2.*X*D.col(0));
+    return make_pair(apply(X), tterm(2.*X.col(0), D.col(0)));
+  }
+
+  Mat apply_back(const Mat & X, const Vec & G) override {
+    Mat A(X.rows(), 1);
+    A.col(0) = tterm(2.*X.col(0), G);
+    return A;
   }
 
   string human_repr(vector<string> & args) override {
@@ -814,7 +934,13 @@ struct Cube : Fun {
   }
 
   pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
-    return make_pair(apply(X), 3.*X.square()*D.col(0));
+    return make_pair(apply(X), tterm(3.*X.col(0).square(), D.col(0)));
+  }
+
+  Mat apply_back(const Mat & X, const Vec & G) override {
+    Mat A(X.rows(), 1);
+    A.col(0) = tterm(3.*X.col(0).square(), G);
+    return A;
   }
 
   string human_repr(vector<string> & args) override {
@@ -858,6 +984,12 @@ struct Nothing : Fun {
 
     pair<Vec, Vec> apply_der(const Mat & X, Mat & D) override {
         return make_pair(apply(X), D);
+    }
+
+    Mat apply_back(const Mat & X, const Vec & G) override {
+        Mat A(X.rows(), 1);
+        A.col(0) = G;
+        return A;
     }
 
     string human_repr(vector<string> & args) override {

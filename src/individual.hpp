@@ -121,6 +121,10 @@ float regularise_LS_terms(){
       }
   }
 
+  bool exceeds_size_cap(int cap){
+      return trees[trees.size()-1]->num_nodes_capped(this->trees, cap) > cap;
+  }
+
   Vec get_output(const Mat & X){
       return trees[trees.size()-1]->get_output(X, this->trees);
   }
@@ -132,6 +136,14 @@ float regularise_LS_terms(){
 
   pair<Vec, Vec> get_output_der(const Mat & X){
     return trees[trees.size()-1]->get_output_der(X, this->trees);
+  }
+
+  Vec get_output_backprop(const Mat & X, unordered_map<Node*, int> & coeff_col, Mat & J){
+    Tape t;
+    Mat noargs(X.rows(), 0);
+    Vec out = trees[trees.size()-1]->get_output_tape(X, noargs, this->trees, t);
+    trees[trees.size()-1]->backprop(Vec::Ones(X.rows()), t, noargs, coeff_col, J);
+    return out;
   }
 
   string human_repr(bool full_tree=false, bool add_ofa = true) {

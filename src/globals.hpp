@@ -75,6 +75,7 @@ namespace g {
   bool use_clip=false;
   float tol;
   bool use_ftol=false;
+  bool use_backprop=true;
   bool use_mse_opt=false;
   int lm_max_fev = 10;
 
@@ -100,6 +101,7 @@ namespace g {
 
   // representation
   int max_depth;
+  int max_size;
   string init_strategy;
   vector<Op*> functions;
   vector<Op*> terminals;
@@ -313,6 +315,7 @@ namespace g {
     parser.set_optional<string>("is", "initialization_strategy", "hh", "Strategy to sample the initial population");
     parser.set_optional<int>("d", "depth", 4, "Maximum depth that the trees can have");
     parser.set_optional<int>("nr_multi_trees", "nr_multi_trees", 2, "Nr of multi trees in individual");
+    parser.set_optional<int>("max_size", "max_size", 1023, "Max inlined expression size; infeasible above this. -1 = auto (nr_multi_trees*(2^(d+1)-1))");
     // problem & representation
     parser.set_optional<string>("ff", "fitness_function", "lsmse", "Fitness function");
     parser.set_optional<string>("fset", "function_set", "+,-,*,/,sin,cos,log", "Function set");
@@ -331,6 +334,7 @@ namespace g {
     // optimisation
     parser.set_optional<bool>("use_optim", "use_optimiser", false, "Whether optimisation is used");
     parser.set_optional<bool>("use_ftol", "use_ftol", false, "Whether ftol is used");
+    parser.set_optional<bool>("use_forward", "use_forward", false, "Whether forward mode instead of backprop is used for the LM Jacobian");
     parser.set_optional<bool>("use_mse_opt", "use_mse_opt", false, "Whether the mse is optimised is used");
     parser.set_optional<float>("tol", "tol", 1e-9, "Set tolerance");
     parser.set_optional<bool>("use_clip", "use_clip", false, "Whether gradients are clipped between -1 and 1");
@@ -414,18 +418,23 @@ namespace g {
     print("initialization strategy: ", init_strategy);
     max_depth = parser.get<int>("d");
     nr_multi_trees = parser.get<int>("nr_multi_trees");
+    max_size = parser.get<int>("max_size");
+    if (max_size < 0) {
+        max_size = nr_multi_trees * ((1 << (max_depth + 1)) - 1);
+    }
 
     for(int i =0;i<nr_multi_trees-1;i++){
         if(use_adf || use_aro) {
             all_operators.push_back(new FunctionTree(i));
         }
     }
-    if(use_adf) {
+    if(use_adf && nr_multi_trees > 1) {
         all_operators.push_back(new AnyOp(0));
         all_operators.push_back(new AnyOp(1));
     }
 
     print("max. depth: ", max_depth);
+    print("max. size: ", max_size);
     
     // variation
     cmut_prob = parser.get<float>("cmp");
@@ -523,6 +532,7 @@ namespace g {
     use_clip = parser.get<bool>("use_clip");
     use_optimiser = parser.get<bool>("use_optim");
     use_ftol = parser.get<bool>("use_ftol");
+    use_backprop = !parser.get<bool>("use_forward");
     log = parser.get<bool>("log");
     log_front = parser.get<bool>("log_front");
     log_pop = parser.get<bool>("log_pop");
@@ -549,7 +559,7 @@ namespace g {
 
     }
 
-      if(g::use_adf) {
+      if(g::use_adf && g::nr_multi_trees > 1) {
           for(int i =0;i<int(1);i++) {
               g::terminals.push_back(new AnyOp(0));
               g::terminals.push_back(new AnyOp(1));

@@ -200,7 +200,7 @@ class MGPGRegressor(BaseEstimator, RegressorMixin):
         my = np.mean(y)
         for i, m in enumerate(models):
             p = self.predict(X, model=m)
-            if np.isnan(p).any():
+            if not np.all(np.isfinite(p)):
                 # convert this model to a constant, i.e., the mean over the training y
                 models[i] = sympy.sympify(my)
                 p = np.repeat(my, y.shape[0])

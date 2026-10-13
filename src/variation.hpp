@@ -68,6 +68,8 @@ Op * _sample_terminal(int mt, vector<Node *> &trees) {
 
 
     vector<Op *> AB(first, last);
+    if(g::use_adf && mt == g::nr_multi_trees-1)
+      AB.erase(remove_if(AB.begin(), AB.end(), [](Op* o){ return o->type()==OpType::otAny; }), AB.end());
 
     Vec cumul_tset_probs(AB.size());
 
@@ -261,25 +263,42 @@ Individual * coeff_opt_lm(Individual * parent, bool return_copy=true){
                     Mat Jacobian(X_train.rows(), coeff_ptrs.size() + 2);
                     Jacobian = Mat::Zero(X_train.rows(), coeff_ptrs.size() + 2);
 
-                    for (int i = 0; i < coeff_ptrs.size(); i++) {
-                        // Mark the operator as being differentiable
-                        ((Const *) coeff_ptrs[i]->op)->d = static_cast<float>(1);
-                        pair<Vec, Vec> output = tree->get_output_der(X_train);
-
-                        g::mse_func->opt_evaluations += 1;
-                        if (g::use_clip) {
-                            Jacobian.col(i) = (-output.second * x(coeff_ptrs.size() + 1)).cwiseMax(-1).cwiseMin(1);
-                        } else {
-                            Jacobian.col(i) = -output.second * x(coeff_ptrs.size() + 1);
+                    Vec output;
+                    if (g::use_backprop) {
+                        unordered_map<Node *, int> coeff_col;
+                        for (int i = 0; i < coeff_ptrs.size(); i++) {
+                            coeff_col[coeff_ptrs[i]] = i;
                         }
-                        ((Const *) coeff_ptrs[i]->op)->d = static_cast<float>(0);
+                        output = tree->get_output_backprop(X_train, coeff_col, Jacobian);
+                        g::mse_func->opt_evaluations += 1;
+                        for (int i = 0; i < coeff_ptrs.size(); i++) {
+                            if (g::use_clip) {
+                                Jacobian.col(i) = (-Jacobian.col(i) * x(coeff_ptrs.size() + 1)).cwiseMax(-1).cwiseMin(1);
+                            } else {
+                                Jacobian.col(i) = -Jacobian.col(i) * x(coeff_ptrs.size() + 1);
+                            }
+                        }
+                    } else {
+                        for (int i = 0; i < coeff_ptrs.size(); i++) {
+                            // Mark the operator as being differentiable
+                            ((Const *) coeff_ptrs[i]->op)->d = static_cast<float>(1);
+                            pair<Vec, Vec> output = tree->get_output_der(X_train);
+
+                            g::mse_func->opt_evaluations += 1;
+                            if (g::use_clip) {
+                                Jacobian.col(i) = (-output.second * x(coeff_ptrs.size() + 1)).cwiseMax(-1).cwiseMin(1);
+                            } else {
+                                Jacobian.col(i) = -output.second * x(coeff_ptrs.size() + 1);
+                            }
+                            ((Const *) coeff_ptrs[i]->op)->d = static_cast<float>(0);
+                        }
+
+                        output = tree->get_output(g::mse_func->X_batch_opt);
+                        g::mse_func->opt_evaluations += 1;
                     }
 
-                    Vec output = tree->get_output(g::mse_func->X_batch_opt);
-                    g::mse_func->opt_evaluations += 1;
-
                     if (!g::use_mse_opt) {
-                        Jacobian.col(coeff_ptrs.size()) = Vec::Zero(X_train.rows()) + 1.;
+                        Jacobian.col(coeff_ptrs.size()) = Vec::Zero(X_train.rows()) - 1.;
                         Jacobian.col(coeff_ptrs.size() + 1) = -output;
                     } else {
                         Jacobian.col(coeff_ptrs.size()) = Vec::Zero(X_train.rows());
@@ -736,9 +755,9 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & do
     Individual * parent = og_parent->clone();
 
     // Get fitness for updated batch
-    g::fit_func->get_fitness_MO(parent);
-    g::ea->updateMOArchive(parent);
-    g::ea->updateSOArchive(parent);
+    // g::fit_func->get_fitness_MO(parent);
+    // g::ea->updateMOArchive(parent);
+    // g::ea->updateSOArchive(parent);
 
     auto random_fos_order = Rng::rand_perm(fos.size());
     vector<float> backup_fitness = parent->fitness;
@@ -781,24 +800,30 @@ Individual * efficient_gom_MO(Individual * og_parent, vector<vector<Node*>> & do
             effectively_changed_indices.push_back(idx);
         }
 
+        bool over_cap = parent->exceeds_size_cap(g::max_size);
+
         // check if at least one change was meaningful
-        for(int i : effectively_changed_indices) {
-            Node * n = offspring_nodes[i];
-
-            if (!parent->is_intron(n)) {
-                change_is_meaningful = true;
-                break;
+        if (over_cap) {
+            change_is_meaningful = true;
+        } else {
+            for(int i : effectively_changed_indices) {
+                Node * n = offspring_nodes[i];
+                if (!parent->is_intron(n)) {
+                    change_is_meaningful = true;
+                    break;
+                }
             }
-
         }
 
         // assume nothing changed
         if (change_is_meaningful) {
             //parent->trees[mt] = offspring;
 
-
-            g::fit_func->get_fitness_MO(parent);
-
+            if (over_cap) {
+                parent->fitness[objective] = INF;
+            } else {
+                g::fit_func->get_fitness_MO(parent);
+            }
 
 
             // TODO check all below
